@@ -4,7 +4,6 @@ const cors = require('cors');
 
 const app = express();
 
-// Enable CORS for all incoming connections
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'OPTIONS'],
@@ -13,12 +12,10 @@ app.use(cors({
 
 app.use(express.json());
 
-// Root Health Check
 app.get('/', (req, res) => {
   res.send('RPM Backend is Live and Connected!');
 });
 
-// Config Endpoint for Square Web SDK
 app.get('/api/square-config', (req, res) => {
   res.json({
     appId: process.env.SQUARE_APPLICATION_ID || process.env.SQUARE_APP_ID || '',
@@ -26,7 +23,6 @@ app.get('/api/square-config', (req, res) => {
   });
 });
 
-// Direct On-Page Card Payment Endpoint
 app.post('/api/process-payment', async (req, res) => {
   try {
     const { sourceId, basePrice, email } = req.body;
@@ -66,59 +62,59 @@ app.post('/api/process-payment', async (req, res) => {
   }
 });
 
-// Checkout Endpoint (Square Link Handler)
+// Dynamic Square Link Creation
 app.post('/api/create-square-checkout', async (req, res) => {
   try {
     const { basePrice, tierName, email } = req.body;
     const price = parseFloat(basePrice) || 5;
-    const total = price + (price * 0.03);
+    const totalCents = Math.round((price + (price * 0.03)) * 100);
+    const totalFormatted = (totalCents / 100).toFixed(2);
 
-    // Your active, accessible Square Checkout link
-    let squareUrl = `https://square.link/u/9OGHfW18`;
+    const { SquareClient, SquareEnvironment } = require('square');
+    const squareClient = new SquareClient({
+      token: process.env.SQUARE_ACCESS_TOKEN,
+      environment: process.env.SQUARE_ENVIRONMENT === 'production' 
+        ? SquareEnvironment.Production 
+        : SquareEnvironment.Sandbox,
+    });
+
+    const checkoutApi = squareClient.checkoutApi || squareClient.checkout;
     
-    try {
-      const { SquareClient, SquareEnvironment } = require('square');
-      const squareClient = new SquareClient({
-        token: process.env.SQUARE_ACCESS_TOKEN,
-        environment: process.env.SQUARE_ENVIRONMENT === 'production' 
-          ? SquareEnvironment.Production 
-          : SquareEnvironment.Sandbox,
-      });
+    const response = await checkoutApi.createPaymentLink({
+      idempotencyKey: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
+      order: {
+        locationId: process.env.SQUARE_LOCATION_ID,
+        lineItems: [{
+          name: `RPM Membership: ${tierName || 'Seller Plan'}`,
+          quantity: '1',
+          basePriceMoney: {
+            amount: BigInt(totalCents),
+            currency: 'USD'
+          }
+        }]
+      },
+      checkoutOptions: {
+        redirectUrl: 'https://rpm-equipment.netlify.app/dashboard.html',
+        askForShippingAddress: false
+      },
+      prePopulateBuyerEmail: email || ''
+    });
 
-      const checkoutApi = squareClient.checkoutApi || squareClient.checkout;
-      if (checkoutApi && checkoutApi.createPaymentLink) {
-        const response = await checkoutApi.createPaymentLink({
-          idempotencyKey: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
-          order: {
-            locationId: process.env.SQUARE_LOCATION_ID,
-            lineItems: [{
-              name: `RPM Membership: ${tierName}`,
-              quantity: '1',
-              basePriceMoney: {
-                amount: BigInt(Math.round(total * 100)),
-                currency: 'USD'
-              }
-            }]
-          },
-          prePopulateBuyerEmail: email
-        });
+    const dynamicUrl = response.result?.paymentLink?.url || response.paymentLink?.url;
 
-        const link = response.result?.paymentLink?.url || response.paymentLink?.url;
-        if (link) squareUrl = link;
-      }
-    } catch (squareErr) {
-      console.warn('Square API Fallback mode active. Using live link:', squareErr.message);
+    if (!dynamicUrl) {
+      throw new Error('Square did not return a valid payment link URL.');
     }
 
     return res.json({
       success: true,
-      url: squareUrl,
-      totalFormatted: total.toFixed(2),
-      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(squareUrl)}`
+      url: dynamicUrl,
+      totalFormatted: totalFormatted,
+      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(dynamicUrl)}`
     });
 
   } catch (error) {
-    console.error('Checkout Endpoint Error:', error);
+    console.error('Checkout API Error:', error);
     return res.status(500).json({ success: false, error: error.message });
   }
 });

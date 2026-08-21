@@ -1,63 +1,72 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Initialize Square Card Payments
-    async function initializeSquarePayments() {
-        if (!window.Square) {
-            console.error('Square SDK failed to load.');
-            return;
-        }
+async function loadB2BDirectory() {
+  const container = document.getElementById('b2b-directory') || document.querySelector('.b2b-grid');
+  if (!container) return;
 
-        try {
-            // Fetch credentials dynamically from your LIVE Render server
-            const configResponse = await fetch('https://rpm-qhrz.onrender.com/api/square-config');
-            const config = await configResponse.json();
+  try {
+    const response = await fetch('https://rpm-qhrz.onrender.com/api/b2b-listings');
+    if (!response.ok) throw new Error('Directory API unreachable');
+    
+    const businesses = await response.json();
 
-            if (!config.applicationId || !config.locationId) {
-                console.error('Failed to load Square credentials from live backend.');
-                return;
-            }
-
-            const payments = window.Square.payments(config.applicationId, config.locationId);
-            const card = await payments.card();
-            await card.attach('#card-container');
-
-            const cardButton = document.getElementById('card-button');
-            if (cardButton) {
-                cardButton.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    cardButton.disabled = true;
-
-                    try {
-                        const result = await card.tokenize();
-                        if (result.status === 'OK') {
-                            console.log('Token generated:', result.token);
-                            
-                            // Send token to live Render server for payment processing
-                            const paymentResponse = await fetch('https://rpm-qhrz.onrender.com/api/process-payment', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ token: result.token })
-                            });
-
-                            const paymentResult = await paymentResponse.json();
-                            if (paymentResult.success) {
-                                alert('Payment Successful!');
-                            } else {
-                                alert('Payment Failed: ' + paymentResult.error);
-                            }
-                        } else {
-                            console.error('Tokenization failed:', result.errors);
-                        }
-                    } catch (error) {
-                        console.error('Payment Processing Error:', error);
-                    } finally {
-                        cardButton.disabled = false;
-                    }
-                });
-            }
-        } catch (error) {
-            console.error('Initialization Error:', error);
-        }
+    if (Array.isArray(businesses) && businesses.length > 0) {
+      container.innerHTML = businesses.map(biz => `
+        <div class="listing-card">
+          <div class="card-header">
+            <h3 class="card-title">${biz.companyName || 'Verified Contractor'}</h3>
+            <span class="price-badge">${biz.category || 'B2B Service'}</span>
+          </div>
+          <ul class="card-details">
+            <li>Location <span>${biz.location || 'Central Valley, CA'}</span></li>
+            <li>Contact <span>${biz.phone || 'Available via Inquiry'}</span></li>
+          </ul>
+          <div class="card-actions">
+            <button class="btn-action primary">View Business Profile</button>
+          </div>
+        </div>
+      `).join('');
+    } else {
+      renderFallbackB2B(container);
     }
+  } catch (error) {
+    console.warn('B2B directory fetch failed. Rendering fallback content:', error.message);
+    renderFallbackB2B(container);
+  }
+}
 
-    initializeSquarePayments();
+// Fallback B2B Directory entries when database is empty
+function renderFallbackB2B(container) {
+  container.innerHTML = `
+    <div class="listing-card">
+      <div class="card-header">
+        <h3 class="card-title">Central Valley Fleet Logistics</h3>
+        <span class="price-badge">Hauling & Logistics</span>
+      </div>
+      <ul class="card-details">
+        <li>Location <span>Fresno, CA</span></li>
+        <li>Specialty <span>Heavy Equipment Transport</span></li>
+      </ul>
+      <div class="card-actions">
+        <button class="btn-action primary">Contact Business</button>
+      </div>
+    </div>
+    <div class="listing-card">
+      <div class="card-header">
+        <h3 class="card-title">Apex Hydraulic & Machine Repairs</h3>
+        <span class="price-badge">Maintenance</span>
+      </div>
+      <ul class="card-details">
+        <li>Location <span>Visalia, CA</span></li>
+        <li>Specialty <span>Commercial Machinery Service</span></li>
+      </ul>
+      <div class="card-actions">
+        <button class="btn-action primary">Contact Business</button>
+      </div>
+    </div>
+  `;
+}
+
+// Execute on DOM load
+document.addEventListener('DOMContentLoaded', () => {
+  loadMarketplaceInventory();
+  loadB2BDirectory();
 });

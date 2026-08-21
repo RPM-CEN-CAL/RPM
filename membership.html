@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Square Web Payments SDK -->
+  <script src="https://web.squarecdn.com/v1/square.js"></script>
   <style>
     body { font-family: 'Inter', sans-serif; }
   </style>
@@ -117,38 +119,56 @@
         </div>
 
         <button type="submit" id="checkout-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-blue-600/30 transition-all text-sm flex items-center justify-center gap-2">
-          <span>Generate Square Secure Link</span> &rarr;
+          <span>Proceed to Payment Options</span> &rarr;
         </button>
       </form>
     </div>
 
   </main>
 
-  <!-- Square Payment Modal -->
+  <!-- Square Dual-Option Payment Modal -->
   <div id="square-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-6 shadow-2xl relative">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
       <button onclick="closeSquareModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">✕</button>
       
-      <div class="text-center space-y-2">
-        <div class="inline-flex items-center justify-center w-12 h-12 bg-black text-white font-black text-xl rounded-xl border border-slate-700 mb-1">■</div>
-        <h3 class="text-xl font-bold text-white">Square Checkout Ready</h3>
-        <p class="text-xs text-slate-400">Scan QR Code or click below to complete your payment.</p>
+      <div class="text-center space-y-1">
+        <div class="inline-flex items-center justify-center w-10 h-10 bg-black text-white font-black text-lg rounded-xl border border-slate-700 mb-1">■</div>
+        <h3 class="text-xl font-bold text-white">Square Checkout</h3>
+        <p class="text-xs text-slate-400">Pay directly with card or scan the QR code.</p>
       </div>
 
       <div class="text-center bg-slate-800 p-3 rounded-xl border border-slate-700">
-        <div class="text-xs text-slate-400 uppercase font-semibold">Total Amount</div>
+        <div class="text-xs text-slate-400 uppercase font-semibold">Total Amount Due</div>
         <div id="square-modal-amount" class="text-3xl font-black text-emerald-400">$5.15</div>
         <div class="text-[10px] text-slate-500 mt-1">Includes 3% processing fee</div>
       </div>
 
-      <div class="flex flex-col items-center justify-center space-y-2 bg-white p-4 rounded-xl">
-        <img id="square-qr-image" src="" alt="Square Payment QR Code" class="w-40 h-40">
-        <span class="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Scan with phone to pay</span>
+      <!-- Option 1: Direct On-Site Card Entry -->
+      <div class="space-y-3 bg-slate-800/60 p-4 rounded-xl border border-slate-700/60">
+        <div class="text-xs font-bold text-white uppercase tracking-wider text-center">Option 1: Pay On Page</div>
+        <div id="card-container" class="bg-white p-3 rounded-lg min-h-[90px]"></div>
+        <button id="card-pay-btn" type="button" onclick="handleCardPaySubmit(event)" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-sm transition-all shadow-md">
+          Pay Directly ($<span id="btn-amount">5.15</span>)
+        </button>
       </div>
 
-      <a id="square-pay-link" href="#" target="_blank" class="block w-full bg-emerald-600 hover:bg-emerald-500 text-white text-center font-bold py-3 rounded-lg text-sm shadow-lg shadow-emerald-600/30 transition-all">
-        Open Square Checkout Page &rarr;
-      </a>
+      <div class="relative flex py-1 items-center">
+        <div class="flex-grow border-t border-slate-800"></div>
+        <span class="flex-shrink mx-4 text-[10px] text-slate-500 font-bold uppercase">OR</span>
+        <div class="flex-grow border-t border-slate-800"></div>
+      </div>
+
+      <!-- Option 2: Scan QR or External Link -->
+      <div class="space-y-3 text-center">
+        <div class="text-xs font-bold text-white uppercase tracking-wider">Option 2: Scan QR or External Checkout</div>
+        <div class="flex flex-col items-center justify-center p-3 bg-white rounded-xl max-w-[160px] mx-auto">
+          <img id="square-qr-image" src="" alt="Square Payment QR Code" class="w-32 h-32">
+          <span class="text-[9px] font-bold text-slate-700 uppercase tracking-wider mt-1">Scan to pay</span>
+        </div>
+        <a id="square-pay-link" href="#" target="_blank" class="block w-full bg-slate-800 hover:bg-slate-700 text-blue-400 text-center font-bold py-2.5 rounded-lg text-xs border border-slate-700 transition-all">
+          Open Square Web Page &rarr;
+        </a>
+      </div>
     </div>
   </div>
 
@@ -177,6 +197,8 @@
   <script>
     let selectedBasePrice = 5;
     let selectedTierName = "1 Active Listing";
+    let cardInstance = null;
+    let paymentsInstance = null;
 
     function selectTier(price, tierName, cardId) {
       selectedBasePrice = price;
@@ -199,6 +221,24 @@
       document.getElementById('summary-base').innerText = `$${selectedBasePrice.toFixed(2)}`;
       document.getElementById('summary-fee').innerText = `$${fee.toFixed(2)}`;
       document.getElementById('summary-total').innerText = `$${total.toFixed(2)}`;
+      document.getElementById('btn-amount').innerText = total.toFixed(2);
+    }
+
+    async function initSquarePaymentForm() {
+      if (cardInstance) return;
+
+      try {
+        const configRes = await fetch('https://rpm-qhrz.onrender.com/api/square-config');
+        const config = await configRes.json();
+
+        if (config.appId && config.locationId && typeof Square !== 'undefined') {
+          paymentsInstance = Square.payments(config.appId, config.locationId);
+          cardInstance = await paymentsInstance.card();
+          await cardInstance.attach('#card-container');
+        }
+      } catch (err) {
+        console.warn("Square Card field auto-load skipped:", err);
+      }
     }
 
     async function handleCheckout(e) {
@@ -245,6 +285,8 @@
           const modal = document.getElementById('square-modal');
           modal.classList.remove('hidden');
           modal.classList.add('flex');
+
+          initSquarePaymentForm();
         } else {
           alert("Payment Error: " + (data.error || "Unknown server error."));
         }
@@ -253,7 +295,50 @@
         alert(`Failed to connect to backend server (${err.message}). Make sure server.js is deployed and active.`);
       } finally {
         btn.disabled = false;
-        btn.innerText = "Generate Square Secure Link →";
+        btn.innerText = "Proceed to Payment Options →";
+      }
+    }
+
+    async function handleCardPaySubmit(e) {
+      e.preventDefault();
+      if (!cardInstance) {
+        alert("Direct card processing unavailable. Please use the Square web link below.");
+        return;
+      }
+
+      const payBtn = document.getElementById('card-pay-btn');
+      payBtn.disabled = true;
+      payBtn.innerText = "Processing Payment...";
+
+      try {
+        const result = await cardInstance.tokenize();
+        if (result.status === 'OK') {
+          const response = await fetch('https://rpm-qhrz.onrender.com/api/process-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sourceId: result.token,
+              basePrice: selectedBasePrice,
+              email: document.getElementById('email').value
+            })
+          });
+
+          const resData = await response.json();
+          if (resData.success) {
+            alert("Payment Successful! Your subscription is active.");
+            closeSquareModal();
+          } else {
+            alert("Payment Failed: " + resData.error);
+          }
+        } else {
+          alert("Card Details Error: " + result.errors[0].message);
+        }
+      } catch (err) {
+        console.error("Card payment error:", err);
+        alert("Transaction failed. Please try again or use the Square link.");
+      } finally {
+        payBtn.disabled = false;
+        payBtn.innerText = `Pay Directly ($${document.getElementById('btn-amount').innerText})`;
       }
     }
 

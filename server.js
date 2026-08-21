@@ -26,8 +26,9 @@ app.get('/api/square-config', (req, res) => {
 app.post('/api/process-payment', async (req, res) => {
   try {
     const { sourceId, basePrice, email } = req.body;
-    const price = parseFloat(basePrice) || 5;
-    const totalCents = Math.round((price + (price * 0.03)) * 100);
+    const base = parseFloat(basePrice) || 5;
+    const fee = base * 0.03;
+    const totalCents = Math.round((base + fee) * 100);
 
     const Square = require('square');
     const Client = Square.Client || Square.SquareClient;
@@ -62,12 +63,14 @@ app.post('/api/process-payment', async (req, res) => {
   }
 });
 
-// Robust Dynamic Checkout Endpoint
+// Dynamic Square Checkout with Itemized Fee
 app.post('/api/create-square-checkout', async (req, res) => {
   try {
     const { basePrice, tierName, email } = req.body;
-    const price = parseFloat(basePrice) || 5;
-    const totalCents = Math.round((price + (price * 0.03)) * 100);
+    const base = parseFloat(basePrice) || 5;
+    const baseCents = Math.round(base * 100);
+    const feeCents = Math.round((base * 0.03) * 100);
+    const totalCents = baseCents + feeCents;
     const totalFormatted = (totalCents / 100).toFixed(2);
 
     const Square = require('square');
@@ -84,8 +87,7 @@ app.post('/api/create-square-checkout', async (req, res) => {
 
     const checkoutApi = squareClient.checkoutApi || squareClient.checkout;
 
-    // Fallback static link if API call fails
-    let dynamicUrl = `https://square.link/u/9OGHfW18`;
+    let dynamicUrl = null;
 
     if (checkoutApi) {
       const createMethod = checkoutApi.createPaymentLink || checkoutApi.createCheckout;
@@ -94,14 +96,24 @@ app.post('/api/create-square-checkout', async (req, res) => {
           idempotencyKey: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
           order: {
             locationId: process.env.SQUARE_LOCATION_ID,
-            lineItems: [{
-              name: `RPM Membership: ${tierName || 'Seller Plan'}`,
-              quantity: '1',
-              basePriceMoney: {
-                amount: BigInt(totalCents),
-                currency: 'USD'
+            lineItems: [
+              {
+                name: `RPM Membership: ${tierName || 'Seller Plan'}`,
+                quantity: '1',
+                basePriceMoney: {
+                  amount: BigInt(baseCents),
+                  currency: 'USD'
+                }
+              },
+              {
+                name: '3% Card Processing Fee',
+                quantity: '1',
+                basePriceMoney: {
+                  amount: BigInt(feeCents),
+                  currency: 'USD'
+                }
               }
-            }]
+            ]
           },
           checkoutOptions: {
             redirectUrl: 'https://rpm-equipment.netlify.app/dashboard.html',
@@ -110,9 +122,12 @@ app.post('/api/create-square-checkout', async (req, res) => {
           prePopulateBuyerEmail: email || ''
         });
 
-        const link = response.result?.paymentLink?.url || response.paymentLink?.url || response.result?.checkout?.checkoutPageUrl;
-        if (link) dynamicUrl = link;
+        dynamicUrl = response.result?.paymentLink?.url || response.paymentLink?.url;
       }
+    }
+
+    if (!dynamicUrl) {
+      throw new Error("Failed to generate payment link from Square.");
     }
 
     return res.json({
@@ -124,17 +139,7 @@ app.post('/api/create-square-checkout', async (req, res) => {
 
   } catch (error) {
     console.error('Checkout API Error:', error);
-    // If Square API fails, gracefully fallback to the live square link instead of crashing
-    const price = parseFloat(req.body.basePrice) || 5;
-    const totalFormatted = (price * 1.03).toFixed(2);
-    const fallbackLink = `https://square.link/u/9OGHfW18`;
-
-    return res.json({
-      success: true,
-      url: fallbackLink,
-      totalFormatted: totalFormatted,
-      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(fallbackLink)}`
-    });
+    return res.status(500).json({ success: false, error: error.message });
   }
 });
 

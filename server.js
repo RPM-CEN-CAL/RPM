@@ -12,6 +12,18 @@ app.use(cors({
 
 app.use(express.json());
 
+// Free Lifetime VIP / Admin Accounts
+const VIP_EMAILS = [
+  'rpm_cen_cal@gmail.com',
+  'rpm.cen.cal@gmail.com',
+  'pezziracen23@gmail.com'
+];
+
+function isVIPUser(email) {
+  if (!email) return false;
+  return VIP_EMAILS.includes(email.toLowerCase().trim());
+}
+
 app.get('/', (req, res) => {
   res.send('RPM Backend is Live and Connected!');
 });
@@ -26,6 +38,17 @@ app.get('/api/square-config', (req, res) => {
 app.post('/api/process-payment', async (req, res) => {
   try {
     const { sourceId, basePrice, email } = req.body;
+
+    // VIP Bypass Check
+    if (isVIPUser(email)) {
+      return res.json({ 
+        success: true, 
+        vipAccess: true,
+        message: 'VIP Admin Access Granted',
+        payment: { status: 'COMPLETED', id: 'VIP_FREE_PASS' }
+      });
+    }
+
     const price = parseFloat(basePrice) || 5;
     const totalCents = Math.round((price * 1.03) * 100);
 
@@ -62,10 +85,22 @@ app.post('/api/process-payment', async (req, res) => {
   }
 });
 
-// Restored Working Checkout Endpoint
+// Checkout Endpoint with VIP Admin Authorization
 app.post('/api/create-square-checkout', async (req, res) => {
   try {
     const { basePrice, tierName, email } = req.body;
+
+    // VIP Bypass Check: Bypasses Square and sends directly to dashboard
+    if (isVIPUser(email)) {
+      return res.json({
+        success: true,
+        vipAccess: true,
+        url: 'https://rpm-equipment.netlify.app/dashboard.html',
+        totalFormatted: '0.00',
+        qrCodeUrl: ''
+      });
+    }
+
     const price = parseFloat(basePrice) || 5;
     const totalCents = Math.round((price * 1.03) * 100);
     const totalFormatted = (totalCents / 100).toFixed(2);

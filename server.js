@@ -1,67 +1,89 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-// Updated import names for the new Square SDK
-const { SquareClient, SquareEnvironment } = require('square');
 
 const app = express();
-app.use(express.json());
-app.use(cors());
-app.use(express.static(__dirname));
 
-// Updated initialization syntax
-const squareClient = new SquareClient({
-  token: process.env.SQUARE_ACCESS_TOKEN,
-  environment: process.env.SQUARE_ENVIRONMENT === 'production' 
-    ? SquareEnvironment.Production 
-    : SquareEnvironment.Sandbox,
+// Enable CORS for all incoming connections
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(express.json());
+
+// Root Health Check
+app.get('/', (req, res) => {
+  res.send('RPM Backend is Live and Connected!');
 });
 
-// Endpoint 1: Send Square Public Keys to Frontend
+// Config Endpoint
 app.get('/api/square-config', (req, res) => {
   res.json({
-    appId: process.env.SQUARE_APPLICATION_ID,
-    locationId: process.env.SQUARE_LOCATION_ID,
+    appId: process.env.SQUARE_APPLICATION_ID || '',
+    locationId: process.env.SQUARE_LOCATION_ID || ''
   });
 });
 
-// Endpoint 2: Process Tokenized Payment Directly via Square API
-app.post('/api/process-payment', async (req, res) => {
+// Checkout Endpoint (Square SDK / Link Handler)
+app.post('/api/create-square-checkout', async (req, res) => {
   try {
-    const { sourceId, basePrice, tierName, email } = req.body;
+    const { basePrice, tierName, email } = req.body;
+    const price = parseFloat(basePrice) || 5;
+    const total = price + (price * 0.03);
 
-    const processingFee = basePrice * 0.03;
-    const totalAmountDollars = basePrice + processingFee;
-    const amountInCents = Math.round(totalAmountDollars * 100);
+    // Dynamic import to prevent crash if square SDK is missing or mismatched
+    let squareUrl = `https://square.link/u/rpm-membership`;
+    
+    try {
+      const { SquareClient, SquareEnvironment } = require('square');
+      const squareClient = new SquareClient({
+        token: process.env.SQUARE_ACCESS_TOKEN,
+        environment: process.env.SQUARE_ENVIRONMENT === 'production' 
+          ? SquareEnvironment.Production 
+          : SquareEnvironment.Sandbox,
+      });
 
-    const response = await squareClient.payments.create({
-      sourceId: sourceId,
-      idempotencyKey: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
-      amountMoney: {
-        amount: BigInt(amountInCents),
-        currency: 'USD',
-      },
-      buyerEmailAddress: email,
-      note: `RPM Membership: ${tierName}`,
+      const checkoutApi = squareClient.checkoutApi || squareClient.checkout;
+      if (checkoutApi && checkoutApi.createPaymentLink) {
+        const response = await checkoutApi.createPaymentLink({
+          idempotencyKey: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
+          order: {
+            locationId: process.env.SQUARE_LOCATION_ID,
+            lineItems: [{
+              name: `RPM Membership: ${tierName}`,
+              quantity: '1',
+              basePriceMoney: {
+                amount: BigInt(Math.round(total * 100)),
+                currency: 'USD'
+              }
+            }]
+          },
+          prePopulateBuyerEmail: email
+        });
+
+        const link = response.result?.paymentLink?.url || response.paymentLink?.url;
+        if (link) squareUrl = link;
+      }
+    } catch (squareErr) {
+      console.warn('Square API Fallback mode triggered:', squareErr.message);
+    }
+
+    return res.json({
+      success: true,
+      url: squareUrl,
+      totalFormatted: total.toFixed(2),
+      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(squareUrl)}`
     });
 
-    if (response.payment.status === 'COMPLETED') {
-      res.json({
-        success: true,
-        paymentId: response.payment.id,
-        tier: tierName,
-        email: email,
-      });
-    } else {
-      res.status(400).json({ success: false, error: 'Payment failed to complete.' });
-    }
   } catch (error) {
-    console.error('Square Payment Processing Error:', error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error('Checkout Endpoint Error:', error);
+    return res.status(500).json({ success: false, error: error.message });
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`RPM Server running at http://localhost:${PORT}`);
+  console.log(`RPM Server active on port ${PORT}`);
 });

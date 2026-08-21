@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RPM Equipment | Client Portal & Inventory Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen antialiased">
+
+  <!-- Payment Enforcement Gate Script -->
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const session = urlParams.get('session');
+    const savedSession = localStorage.getItem('rpm_verified_session');
+
+    if (session === 'verified') {
+      localStorage.setItem('rpm_verified_session', 'active');
+      if (urlParams.get('tier')) {
+        localStorage.setItem('rpm_seller_tier', urlParams.get('tier'));
+      }
+    } else if (savedSession !== 'active') {
+      alert("Access Denied: Payment required to access Client Portal.");
+      window.location.href = 'membership.html';
+    }
+  </script>
+
+  <!-- Navigation Bar -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <a href="index.html" class="flex flex-col group">
+        <div class="text-2xl font-black tracking-tight text-white flex items-center gap-2">
+          <span class="bg-blue-600 text-white px-2 py-0.5 rounded-lg font-mono text-sm">RPM</span>
+          <span class="group-hover:text-blue-400 transition-colors">EQUIPMENT</span>
+        </div>
+        <span class="text-[10px] sm:text-xs font-semibold text-slate-400 tracking-tight">
+          Client Portal & Management
+        </span>
+      </a>
+
+      <div class="flex items-center space-x-4">
+        <span id="active-tier-badge" class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-semibold">
+          Active Plan: Verified
+        </span>
+        <a href="membership.html" class="text-xs text-slate-400 hover:text-white">Upgrade Plan</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+    
+    <div class="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-white">Client Portal & Equipment Hub</h1>
+        <p class="text-xs sm:text-sm text-slate-400 mt-1">Manage listings, specify details with auto-categorization, and get instant valuation estimates.</p>
+      </div>
+      <a href="#add-equipment" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-lg shadow-lg shadow-blue-600/30 transition-all">
+        + Add New Equipment
+      </a>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8">
+      
+      <!-- Add Equipment Form -->
+      <div id="add-equipment" class="lg:col-span-7 bg-slate-800/90 border border-slate-700 rounded-2xl p-6 sm:p-8 space-y-6">
+        <div class="border-b border-slate-700 pb-4">
+          <h2 class="text-xl font-bold text-white">Add Equipment Listing</h2>
+          <p class="text-xs text-slate-400">Fill in details. Our engine auto-selects the industry category.</p>
+        </div>
+
+        <form id="equipment-form" onsubmit="handleAddEquipment(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Equipment Title / Model Name</label>
+            <input type="text" id="equipment-title" oninput="autoCategorize()" required placeholder="e.g. Caterpillar 320 Excavator or John Deere Tractor" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Industry Category (Auto-Detected)</label>
+              <input type="text" id="auto-category" readonly value="General Equipment" class="w-full bg-slate-950 border border-slate-800 text-blue-400 font-semibold rounded-lg px-4 py-3 text-sm cursor-not-allowed">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Asking Price ($)</label>
+              <input type="number" required placeholder="25000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Year</label>
+              <input type="number" placeholder="2020" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Hours / Mileage</label>
+              <input type="text" placeholder="1,200 hrs" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Condition</label>
+              <select class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white">
+                <option>Excellent</option>
+                <option>Good</option>
+                <option>Fair</option>
+                <option>For Parts / Repair</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Specific Technical Specifications</label>
+            <textarea rows="3" placeholder="Enter attachments, engine specs, hydraulic flow rate, maintenance history..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500"></textarea>
+          </div>
+
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg text-sm shadow-lg shadow-blue-600/30 transition-all">
+            Publish Equipment to Marketplace &rarr;
+          </button>
+        </form>
+      </div>
+
+      <!-- Asset Valuation Calculator -->
+      <div class="lg:col-span-5 bg-slate-800/90 border border-slate-700 rounded-2xl p-6 sm:p-8 space-y-6">
+        <div class="border-b border-slate-700 pb-4">
+          <h2 class="text-xl font-bold text-white">Asset Valuation Estimator</h2>
+          <p class="text-xs text-slate-400">Get an instant market estimate before listing your equipment.</p>
+        </div>
+
+        <form onsubmit="calculateValuation(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Original Purchase Price ($)</label>
+            <input type="number" id="val-original" required placeholder="50000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Age (Years)</label>
+              <input type="number" id="val-age" required placeholder="4" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Overall Condition</label>
+              <select id="val-condition" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white">
+                <option value="1.0">Excellent (100% Value)</option>
+                <option value="0.85">Good (85% Value)</option>
+                <option value="0.70">Fair (70% Value)</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 rounded-lg text-sm transition-colors">
+            Calculate Valuation
+          </button>
+        </form>
+
+        <div id="valuation-result" class="hidden bg-slate-900/90 border border-blue-500/30 rounded-xl p-4 text-center space-y-1">
+          <div class="text-xs text-slate-400 uppercase font-semibold">Estimated Market Value Range</div>
+          <div id="valuation-amount" class="text-2xl font-black text-emerald-400">$0 - $0</div>
+          <div class="text-[10px] text-slate-500">Based on standard sector depreciation formulas</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const savedTier = localStorage.getItem('rpm_seller_tier');
+    if (savedTier) {
+      document.getElementById('active-tier-badge').innerText = `Active Plan: ${savedTier}`;
+    }
+
+    function autoCategorize() {
+      const title = document.getElementById('equipment-title').value.toLowerCase();
+      const categoryInput = document.getElementById('auto-category');
+
+      if (title.includes('excavator') || title.includes('dozer') || title.includes('crane') || title.includes('loader')) {
+        categoryInput.value = 'Construction & Heavy Equipment';
+      } else if (title.includes('tractor') || title.includes('combine') || title.includes('plow') || title.includes('harvester')) {
+        categoryInput.value = 'Agriculture & Farming';
+      } else if (title.includes('truck') || title.includes('van') || title.includes('trailer') || title.includes('semi')) {
+        categoryInput.value = 'Transportation & Logistics';
+      } else if (title.includes('lathe') || title.includes('cnc') || title.includes('generator') || title.includes('press')) {
+        categoryInput.value = 'Manufacturing & Industrial';
+      } else {
+        categoryInput.value = 'General Commercial Equipment';
+      }
+    }
+
+    function calculateValuation(e) {
+      e.preventDefault();
+      const orig = parseFloat(document.getElementById('val-original').value) || 0;
+      const age = parseFloat(document.getElementById('val-age').value) || 0;
+      const cond = parseFloat(document.getElementById('val-condition').value) || 1.0;
+
+      let depreciated = orig * Math.pow(0.90, age) * cond;
+      if (depreciated < orig * 0.15) depreciated = orig * 0.15;
+
+      const minVal = (depreciated * 0.92).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+      const maxVal = (depreciated * 1.08).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+      document.getElementById('valuation-amount').innerText = `${minVal} - ${maxVal}`;
+      document.getElementById('valuation-result').classList.remove('hidden');
+    }
+
+    function handleAddEquipment(e) {
+      e.preventDefault();
+      alert('Equipment listing created and published to RPM Equipment marketplace!');
+    }
+  </script>
+</body>
+</html>

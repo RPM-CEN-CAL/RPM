@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RPM Equipment | Seller Membership & Payment</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen antialiased flex flex-col justify-between">
+
+  <!-- Navigation Bar -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <a href="index.html" class="flex flex-col group">
+        <div class="text-2xl font-black tracking-tight text-white flex items-center gap-2">
+          <span class="bg-blue-600 text-white px-2 py-0.5 rounded-lg font-mono text-sm">RPM</span>
+          <span class="group-hover:text-blue-400 transition-colors">EQUIPMENT</span>
+        </div>
+        <span class="text-[10px] sm:text-xs font-semibold text-slate-400 tracking-tight">
+          Buy & Sell Equipment for All Industries
+        </span>
+      </a>
+
+      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
+        <a href="index.html" class="hover:text-blue-400 transition-colors">Home</a>
+        <a href="membership.html" class="text-blue-400">Pricing Tiers</a>
+      </nav>
+
+      <div class="flex items-center space-x-4">
+        <a href="dashboard.html" class="text-sm font-medium text-slate-300 hover:text-white px-3 py-2">Client Portal</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-12">
+    
+    <div class="text-center space-y-3">
+      <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight">Seller Membership & Plans</h1>
+      <p class="text-slate-400 text-sm sm:text-base max-w-xl mx-auto">Select a listing allocation tier to activate your inventory across all industry categories.</p>
+    </div>
+
+    <!-- Tiers Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div id="tier-card-5" onclick="selectTier(5, '1 Active Listing', 'tier-card-5')" class="tier-card bg-slate-800/80 border-2 border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center space-y-4 cursor-pointer transition-all">
+        <div class="text-3xl font-black text-white">$5 <span class="text-xs font-normal text-slate-400">/mo</span></div>
+        <div class="text-sm font-semibold text-blue-400">1 Active Listing</div>
+        <p class="text-xs text-slate-400">Ideal for single equipment sales.</p>
+        <button type="button" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg text-sm">Select Tier</button>
+      </div>
+
+      <div id="tier-card-10" onclick="selectTier(10, '5 Active Listings', 'tier-card-10')" class="tier-card bg-slate-800/80 border-2 border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center space-y-4 cursor-pointer transition-all">
+        <div class="text-3xl font-black text-white">$10 <span class="text-xs font-normal text-slate-400">/mo</span></div>
+        <div class="text-sm font-semibold text-blue-400">5 Active Listings</div>
+        <p class="text-xs text-slate-400">Great for small fleet liquidation.</p>
+        <button type="button" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg text-sm">Select Tier</button>
+      </div>
+
+      <div id="tier-card-20" onclick="selectTier(20, '15 Active Listings', 'tier-card-20')" class="tier-card bg-slate-800/80 border-2 border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center space-y-4 cursor-pointer transition-all">
+        <div class="text-3xl font-black text-white">$20 <span class="text-xs font-normal text-slate-400">/mo</span></div>
+        <div class="text-sm font-semibold text-blue-400">15 Active Listings</div>
+        <p class="text-xs text-slate-400">For active equipment dealers.</p>
+        <button type="button" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg text-sm">Select Tier</button>
+      </div>
+
+      <div id="tier-card-50" onclick="selectTier(50, 'Unlimited Listings', 'tier-card-50')" class="tier-card bg-slate-800/80 border-2 border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center space-y-4 cursor-pointer transition-all">
+        <div class="text-3xl font-black text-white">$50 <span class="text-xs font-normal text-slate-400">/mo</span></div>
+        <div class="text-sm font-semibold text-blue-400">Unlimited Listings</div>
+        <p class="text-xs text-slate-400">Enterprise volume & priority placement.</p>
+        <button type="button" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg text-sm">Select Tier</button>
+      </div>
+    </div>
+
+    <!-- Registration & Checkout Form -->
+    <div class="max-w-xl mx-auto bg-slate-800/90 border border-slate-700 rounded-2xl p-8 space-y-6 shadow-2xl">
+      <div class="text-center space-y-1">
+        <h2 class="text-2xl font-bold text-white">Account Setup</h2>
+        <p id="selected-tier-display" class="text-xs text-blue-400 font-medium">Selected Tier: $5 / mo (1 Active Listing)</p>
+      </div>
+
+      <form id="checkout-form" onsubmit="handleCheckout(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">EMAIL</label>
+          <input type="email" id="email" required placeholder="name@company.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">PASSWORD</label>
+          <input type="password" id="password" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+        </div>
+
+        <div class="flex items-start gap-3 bg-slate-900/60 p-4 rounded-xl border border-slate-700/60">
+          <input type="checkbox" id="terms-check" required class="mt-1 accent-blue-600 h-4 w-4 rounded">
+          <label for="terms-check" class="text-xs text-slate-300 leading-relaxed">
+            I agree to the <button type="button" onclick="openTermsModal()" class="text-blue-400 hover:underline font-semibold">RPM Seller Terms & Conditions</button>. I understand that trades are private agreements between parties and the 3% payment processing fee is non-refundable.
+          </label>
+        </div>
+
+        <div class="bg-slate-900/80 rounded-xl p-4 border border-slate-700/60 space-y-2 text-xs">
+          <div class="flex justify-between text-slate-400">
+            <span>Base Subscription Tier:</span>
+            <span id="summary-base">$5.00</span>
+          </div>
+          <div class="flex justify-between text-slate-400">
+            <span>Card Processing Fee (3%):</span>
+            <span id="summary-fee">$0.15</span>
+          </div>
+          <div class="flex justify-between text-white font-bold text-sm pt-2 border-t border-slate-800">
+            <span>Total Due Now:</span>
+            <span id="summary-total" class="text-blue-400">$5.15</span>
+          </div>
+        </div>
+
+        <button type="submit" id="checkout-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-blue-600/30 transition-all text-sm flex items-center justify-center gap-2">
+          <span>Generate Square Secure Link</span> &rarr;
+        </button>
+      </form>
+    </div>
+
+  </main>
+
+  <!-- Square Payment Modal -->
+  <div id="square-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-6 shadow-2xl relative">
+      <button onclick="closeSquareModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">✕</button>
+      
+      <div class="text-center space-y-2">
+        <div class="inline-flex items-center justify-center w-12 h-12 bg-black text-white font-black text-xl rounded-xl border border-slate-700 mb-1">■</div>
+        <h3 class="text-xl font-bold text-white">Square Checkout Ready</h3>
+        <p class="text-xs text-slate-400">Scan QR Code or click below to complete your payment.</p>
+      </div>
+
+      <div class="text-center bg-slate-800 p-3 rounded-xl border border-slate-700">
+        <div class="text-xs text-slate-400 uppercase font-semibold">Total Amount</div>
+        <div id="square-modal-amount" class="text-3xl font-black text-emerald-400">$5.15</div>
+        <div class="text-[10px] text-slate-500 mt-1">Includes 3% processing fee</div>
+      </div>
+
+      <div class="flex flex-col items-center justify-center space-y-2 bg-white p-4 rounded-xl">
+        <img id="square-qr-image" src="" alt="Square Payment QR Code" class="w-40 h-40">
+        <span class="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Scan with phone to pay</span>
+      </div>
+
+      <a id="square-pay-link" href="#" target="_blank" class="block w-full bg-emerald-600 hover:bg-emerald-500 text-white text-center font-bold py-3 rounded-lg text-sm shadow-lg shadow-emerald-600/30 transition-all">
+        Open Square Checkout Page &rarr;
+      </a>
+    </div>
+  </div>
+
+  <!-- Terms & Conditions Modal -->
+  <div id="terms-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl relative">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-bold text-white">RPM Seller Terms & Conditions</h3>
+        <button onclick="closeTermsModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <div class="text-xs text-slate-300 space-y-3 leading-relaxed max-h-60 overflow-y-auto pr-2">
+        <p><strong>1. Buy & Sell Platform Scope:</strong> RPM Equipment provides an online venue for listing equipment across all industries.</p>
+        <p><strong>2. Trade Agreements:</strong> Any trade or barter arrangements made between listing sellers and buyers are strictly independent, personal agreements.</p>
+        <p><strong>3. Processing Fees:</strong> A 3% payment processing fee is added to each subscription tier to cover credit card handling.</p>
+      </div>
+      <button onclick="closeTermsModal()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg text-xs">
+        I Understand & Agree
+      </button>
+    </div>
+  </div>
+
+  <footer class="bg-slate-950 border-t border-slate-800 py-6 text-center text-slate-500 text-xs">
+    &copy; RPM Equipment Marketplace. All rights reserved.
+  </footer>
+
+  <script>
+    let selectedBasePrice = 5;
+    let selectedTierName = "1 Active Listing";
+
+    function selectTier(price, tierName, cardId) {
+      selectedBasePrice = price;
+      selectedTierName = tierName;
+
+      document.querySelectorAll('.tier-card').forEach(card => {
+        card.classList.remove('border-blue-500', 'bg-slate-800');
+        card.classList.add('border-slate-700', 'bg-slate-800/80');
+      });
+      const activeCard = document.getElementById(cardId);
+      if(activeCard) {
+        activeCard.classList.remove('border-slate-700', 'bg-slate-800/80');
+        activeCard.classList.add('border-blue-500', 'bg-slate-800');
+      }
+
+      const fee = selectedBasePrice * 0.03;
+      const total = selectedBasePrice + fee;
+
+      document.getElementById('selected-tier-display').innerText = `Selected Tier: $${selectedBasePrice} / mo (${tierName})`;
+      document.getElementById('summary-base').innerText = `$${selectedBasePrice.toFixed(2)}`;
+      document.getElementById('summary-fee').innerText = `$${fee.toFixed(2)}`;
+      document.getElementById('summary-total').innerText = `$${total.toFixed(2)}`;
+    }
+
+    async function handleCheckout(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const btn = document.getElementById('checkout-btn');
+      btn.innerText = "Connecting to Square...";
+
+      try {
+        const response = await fetch('/api/create-square-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            basePrice: selectedBasePrice,
+            tierName: selectedTierName,
+            email: email
+          })
+        });
+
+        const data = await response.json();
+        btn.innerText = "Generate Square Secure Link →";
+
+        if (data.success) {
+          document.getElementById('square-modal-amount').innerText = `$${data.totalFormatted}`;
+          document.getElementById('square-qr-image').src = data.qrCodeUrl;
+          document.getElementById('square-pay-link').href = data.url;
+
+          const modal = document.getElementById('square-modal');
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+        } else {
+          alert("Payment Error: " + data.error);
+        }
+      } catch (err) {
+        btn.innerText = "Generate Square Secure Link →";
+        alert("Failed to connect to backend server. Make sure server.js is running.");
+      }
+    }
+
+    function closeSquareModal() {
+      const modal = document.getElementById('square-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function openTermsModal() {
+      const modal = document.getElementById('terms-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeTermsModal() {
+      const modal = document.getElementById('terms-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    selectTier(5, '1 Active Listing', 'tier-card-5');
+  </script>
+</body>
+</html>

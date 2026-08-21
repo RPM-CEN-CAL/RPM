@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seller Dashboard | Marketplace</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen antialiased">
+
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <a href="index.html" class="text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
+        <span class="bg-blue-600 text-white p-2 rounded-lg font-mono text-sm">HUB</span>
+        <span>Marketplace</span>
+      </a>
+      <a href="post.html" class="text-sm font-semibold bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg shadow-blue-600/30 transition-all">+ Post Listing</a>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
+    <div class="flex items-center justify-between border-b border-slate-800 pb-6">
+      <div>
+        <h1 class="text-3xl font-black text-white">Seller Dashboard</h1>
+        <p class="text-slate-400 text-sm">Manage active equipment and fleet listings.</p>
+      </div>
+    </div>
+
+    <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
+      <div id="listings" class="divide-y divide-slate-700/60"></div>
+    </div>
+  </main>
+
+  <script>
+    const sampleListings = [
+      { title: "Skid Steer Loader", price: "$24,500", location: "Visalia, CA" },
+      { title: "Air Compressor", price: "$450", location: "Tulare, CA" },
+      { title: "Work Truck", price: "$18,000", location: "Visalia, CA" }
+    ];
+
+    function loadListings() {
+      const container = document.getElementById('listings');
+      sampleListings.forEach((item) => {
+        const div = document.createElement('div');
+        div.className = "py-4 flex items-center justify-between first:pt-0 last:pb-0";
+        div.innerHTML = `
+          <div>
+            <h3 class="font-bold text-white text-lg">${item.title}</h3>
+            <p class="text-xs text-slate-400">${item.price} • ${item.location}</p>
+          </div>
+          <div class="space-x-2">
+            <button class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-600 transition-all">Edit</button>
+            <button class="bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs font-semibold px-3 py-1.5 rounded-lg border border-red-500/30 transition-all">Delete</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+    loadListings();
+  </script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>B2B Payment — $2 Listing</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script>
+  const supabase = supabase.createClient(
+    "https://qfjilrbhbcqwlrrwihcy.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmamlscmJoYmNxd2xycndpaGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNDgyMTcsImV4cCI6MjA4NjkyNDIxN30.SWnM-6ls0nTanHkaCViwQ-LbTFqrKo_qlKnhGTRMKa0"
+  );
+</script>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background:#f5f5f5;
+  padding:20px;
+  text-align:center;
+}
+.container {
+  background:#fff;
+  padding:20px;
+  border-radius:10px;
+  max-width:500px;
+  margin:auto;
+  box-shadow:0 5px 15px rgba(0,0,0,0.15);
+}
+button {
+  width:100%;
+  padding:12px;
+  background:#009933;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  font-size:1rem;
+  cursor:pointer;
+  margin-top:15px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Pay $2 — Small B2B Promotion</h2>
+  <p style="margin-top:10px;">
+    This payment activates your business listing on Pro Equipment Exchange.<br>
+    Once paid, your business will appear in the B2B section.
+  </p>
+
+  <!-- Placeholder for Square Web Payments SDK integration -->
+  <p style="margin-top:15px; font-size:0.9rem; color:#555;">
+    Secure payment via Square will be integrated here.
+  </p>
+
+  <button id="simulatePayBtn">Simulate $2 Payment (Dev Mode)</button>
+</div>
+
+<script>
+document.getElementById("simulatePayBtn").addEventListener("click", async () => {
+  const user = (await supabase.auth.getUser()).data.user;
+  if (!user) {
+    alert("You must be logged in.");
+    return;
+  }
+
+  // Find the most recent inactive B2B listing for this user
+  const { data, error } = await supabase
+    .from("b2b_listings")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("is_active", false)
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  if (error || !data || data.length === 0) {
+    alert("No pending B2B listing found.");
+    return;
+  }
+
+  const listingId = data[0].id;
+
+  // Activate the listing (simulating successful payment)
+  const { error: updateError } = await supabase
+    .from("b2b_listings")
+    .update({ is_active: true })
+    .eq("id", listingId);
+
+  if (updateError) {
+    alert("Error activating B2B listing: " + updateError.message);
+    return;
+  }
+
+  alert("Payment successful! Your business is now listed.");
+  window.location.href = "b2b-listings.html";
+});
+</script>
+
+</body>
+</html>

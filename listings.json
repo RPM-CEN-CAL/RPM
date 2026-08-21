@@ -1,0 +1,46 @@
+{
+  "heavy_equipment": [
+    {
+      "title": "Skid Steer Loader",
+      "price": "$24,500",
+      "location": "Visalia, CA",
+      "description": "Well-maintained skid steer with low hours.",
+      "condition": "Used - Good",
+      "delivery": true,
+      "photo": "skidsteer.png"
+    }
+  ],
+  "tools": [
+    {
+      "title": "Air Compressor",
+      "price": "$450",
+      "location": "Tulare, CA",
+      "description": "Portable compressor for jobsite use.",
+      "condition": "Used - Good",
+      "delivery": false,
+      "photo": "compressor.png"
+    }
+  ],
+  "vehicles": [
+    {
+      "title": "Work Truck",
+      "price": "$18,000",
+      "location": "Visalia, CA",
+      "description": "Reliable truck with toolboxes.",
+      "condition": "Used - Good",
+      "delivery": true,
+      "photo": "truck.png"
+    }
+  ],
+  "attachments": [
+    {
+      "title": "Bucket Attachment",
+      "price": "$1,200",
+      "location": "Visalia, CA",
+      "description": "General-purpose bucket.",
+      "condition": "Used - Good",
+      "delivery": false,
+      "photo": "bucket.png"
+    }
+  ]
+}

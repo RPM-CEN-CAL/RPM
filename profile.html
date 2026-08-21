@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Your Profile</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background:#f5f5f5;
+  padding:20px;
+}
+
+section {
+  background:#fff;
+  padding:20px;
+  margin-bottom:20px;
+  border-radius:10px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.15);
+}
+
+h2 {
+  margin-bottom:10px;
+  font-size:1.4rem;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Your Profile</h1>
+
+<section>
+  <h2>Saved Items</h2>
+  <ul id="savedList"></ul>
+</section>
+
+<section>
+  <h2>Messages to Sellers</h2>
+  <ul id="messagesList"></ul>
+</section>
+
+<section>
+  <h2>Delivery Requests</h2>
+  <ul id="deliveryList"></ul>
+</section>
+
+<section>
+  <h2>Reports Filed</h2>
+  <ul id="reportsList"></ul>
+</section>
+
+<script src="app.js"></script>
+
+<script>
+// DISPLAY PROFILE DATA
+document.addEventListener('DOMContentLoaded', () => {
+
+  // Saved Items
+  const savedUl = document.getElementById('savedList');
+  STORE.favorites.forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = item;
+    savedUl.appendChild(li);
+  });
+
+  // Messages
+  const msgUl = document.getElementById('messagesList');
+  STORE.messages.forEach(m => {
+    const li = document.createElement('li');
+    li.textContent = `${m.title} — "${m.msg}"`;
+    msgUl.appendChild(li);
+  });
+
+  // Delivery Requests
+  const delUl = document.getElementById('deliveryList');
+  STORE.deliveryRequests.forEach(d => {
+    const li = document.createElement('li');
+    li.textContent = `${d.title} — requested on ${d.date}`;
+    delUl.appendChild(li);
+  });
+
+  // Reports
+  const repUl = document.getElementById('reportsList');
+  STORE.reports.forEach(r => {
+    const li = document.createElement('li');
+    li.textContent = `${r.title} — reason: ${r.reason}`;
+    repUl.appendChild(li);
+  });
+
+});
+</script>
+
+</body>
+</html>

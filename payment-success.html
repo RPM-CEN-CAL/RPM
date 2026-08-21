@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Payment Successful</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body { font-family: Arial; background:#f5f5f5; padding:20px; text-align:center; }
+.container {
+  background:#fff; padding:20px; max-width:500px; margin:auto;
+  border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.15);
+}
+button {
+  margin-top:15px; padding:10px 20px;
+  background:#0033a0; color:#fff; border:none; border-radius:6px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Payment Successful</h2>
+  <p id="tierText"></p>
+  <button onclick="window.location.href='post.html'">Create Your Listing</button>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const tier = params.get("tier");
+document.getElementById("tierText").textContent = "You purchased: " + tier;
+</script>
+
+</body>
+</html>

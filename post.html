@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Post Equipment Listing | Pro Equipment Exchange</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script>
+  const supabase = supabase.createClient(
+    "https://qfjilrbhbcqwlrrwihcy.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmamlscmJoYmNxd2xycndpaGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNDgyMTcsImV4cCI6MjA4NjkyNDIxN30.SWnM-6ls0nTanHkaCViwQ-LbTFqrKo_qlKnhGTRMKa0"
+  );
+</script>
+
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+    font-family: Arial, sans-serif;
+    background-color:#f5f5f5;
+    color:#222;
+}
+
+header {
+    position:fixed;
+    top:0;
+    width:100%;
+    height:70px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+    background:linear-gradient(to right,#c40000,#ffffff,#0033a0);
+    border-bottom:2px solid #222;
+    z-index:1000;
+}
+
+.header-left {
+    font-size:1.8rem;
+    cursor:pointer;
+    background-color:rgba(255,255,255,0.3);
+    padding:6px 12px;
+    border-radius:4px;
+}
+
+.header-center {
+    font-weight:bold;
+    font-size:1.2rem;
+    text-align:center;
+    flex:1;
+}
+
+.header-right a {
+    text-decoration:none;
+    color:#000;
+    font-weight:600;
+    background-color:rgba(255,255,255,0.4);
+    padding:6px 10px;
+    border-radius:4px;
+}
+
+.side-menu {
+    position:fixed;
+    top:70px;
+    left:-260px;
+    width:260px;
+    height:100%;
+    background:#fff;
+    box-shadow:3px 0 10px rgba(0,0,0,0.25);
+    padding:20px;
+    transition:0.3s;
+    z-index:2000;
+}
+
+.side-menu ul { list-style:none; }
+.side-menu li { margin-bottom:15px; }
+
+.dropdown-btn {
+    width:100%;
+    background:#0033a0;
+    color:#fff;
+    padding:10px;
+    border:none;
+    text-align:left;
+    font-size:1rem;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.dropdown-container {
+    display:none;
+    background:#f5f5f5;
+    padding:10px;
+    border-radius:6px;
+    margin-top:5px;
+}
+
+.dropdown-container a {
+    display:block;
+    padding:6px 0;
+    text-decoration:none;
+    color:#222;
+    font-size:0.95rem;
+}
+
+.dropdown-container a:hover { color:#0033a0; }
+.menu-open { left:0; }
+
+main {
+    padding-top:100px;
+    width:100%;
+    max-width:1100px;
+    margin:auto;
+}
+
+.hero {
+    text-align:center;
+    padding:40px 20px 10px;
+}
+
+.hero-logo {
+    width:60vw;
+    max-width:420px;
+    border-radius:8px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.35);
+}
+
+section {
+    background:#fff;
+    margin:20px auto;
+    padding:25px 20px;
+    border-radius:10px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.15);
+    width:90%;
+    max-width:900px;
+    border-left:10px solid #0033a0;
+}
+
+section h2 {
+    margin-bottom:12px;
+    font-size:1.6rem;
+    font-weight:bold;
+    text-align:center;
+}
+
+section p {
+    font-size:1.05rem;
+    line-height:1.6rem;
+    text-align:center;
+}
+
+form {
+    margin-top:15px;
+    max-width:700px;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+form .field-group {
+    margin-bottom:12px;
+}
+
+form label {
+    display:block;
+    font-size:0.95rem;
+    margin-bottom:4px;
+}
+
+form input,
+form textarea,
+form select {
+    width:100%;
+    padding:10px;
+    border:2px solid #ccc;
+    border-radius:6px;
+    font-size:0.95rem;
+}
+
+form textarea {
+    resize:vertical;
+    min-height:90px;
+}
+
+form button {
+    margin-top:15px;
+    width:100%;
+    padding:12px;
+    background:#0033a0;
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    font-size:1rem;
+    cursor:pointer;
+}
+
+form button:hover {
+    background:#00246f;
+}
+
+.status-message {
+    margin-top:10px;
+    text-align:center;
+    font-size:0.95rem;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="header-left">☰</div>
+    <div class="header-center">Post Equipment Listing</div>
+    <div class="header-right">
+        <a href="index.html">Back to Home</a>
+    </div>
+</header>
+
+<div id="sideMenu" class="side-menu">
+    <ul>
+        <li>
+            <button class="dropdown-btn">Buy Equipment ▼</button>
+            <div class="dropdown-container">
+                <a href="heavy-equipment.html">Heavy Equipment</a>
+                <a href="tools.html">Tools</a>
+                <a href="vehicles.html">Vehicles</a>
+                <a href="attachments.html">Attachments</a>
+            </div>
+        </li>
+
+        <li>
+            <button class="dropdown-btn">Sell Equipment ▼</button>
+            <div class="dropdown-container">
+                <a href="membership.html">Seller Membership & Signup</a>
+                <a href="listing-payment.html">Buy Listing Credits</a>
+                <a href="post.html" style="color:#0033a0; font-weight:bold;">Post Equipment</a>
+            </div>
+        </li>
+
+        <li><a href="index.html#search">Search by Location</a></li>
+        <li><a href="index.html#b2b">Small B2B Promotion</a></li>
+        <li><a href="sellertips.html">Seller Tips</a></li>
+    </ul>
+</div>
+
+<main>
+
+<div class="hero">
+    <img src="Assets/logo.png" class="hero-logo" alt="Pro Equipment Exchange Logo">
+</div>
+
+<section>
+    <h2>Create Your Equipment Listing</h2>
+    <p id="creditInfo">Checking your listing credits…</p>
+
+    <form id="postForm">
+
+        <!-- BASIC INFO -->
+        <div class="field-group">
+            <label for="title">Listing Title</label>
+            <input id="title" type="text" placeholder="e.g., 2015 Bobcat T590 Skid Steer" required>
+        </div>
+
+        <div class="field-group">
+            <label for="category">Category</label>
+            <select id="category" required>
+                <option value="">Select a category</option>
+                <option value="heavy_equipment">Heavy Equipment</option>
+                <option value="tools">Tools</option>
+                <option value="vehicles">Vehicles</option>
+                <option value="attachments">Attachments</option>
+            </select>
+        </div>
+
+        <!-- EQUIPMENT DETAILS -->
+        <div class="field-group">
+            <label for="make">Make</label>
+            <input id="make" type="text" placeholder="e.g., Bobcat, Caterpillar, John Deere">
+        </div>
+
+        <div class="field-group">
+            <label for="model">Model</label>
+            <input id="model" type="text" placeholder="e.g., T590, 310G, D3K2">
+        </div>
+
+        <div class="field-group">
+            <label for="year">Year</label>
+            <input id="year" type="number" min="1900" max="2100" placeholder="e.g., 2015">
+        </div>
+
+        <div class="field-group">
+            <label for="hours">Hours / Miles</label>
+            <input id="hours" type="number" min="0" placeholder="e.g., 2450">
+        </div>
+
+        <div class="field-group">
+            <label for="fuel">Fuel Type</label>
+            <select id="fuel">
+                <option value="">Select fuel type</option>
+                <option value="diesel">Diesel</option>
+                <option value="gasoline">Gasoline</option>
+                <option value="electric">Electric</option>
+                <option value="hybrid">Hybrid</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label for="condition">Condition</label>
+            <select id="condition">
+                <option value="">Select condition</option>
+                <option value="excellent">Excellent</option>
+                <option value="good">Good</option>
+                <option value="fair">Fair</option>
+                <option value="needs_work">Needs Work</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label for="serial">Serial Number (optional)</label>
+            <input id="serial" type="text" placeholder="Optional">
+        </div>
+
+        <div class="field-group">
+            <label for="attachments">Attachments Included</label>
+            <textarea id="attachments" placeholder="Buckets, forks, augers, grapples, etc."></textarea>
+        </div>
+
+        <div class="field-group">
+            <label for="features">Additional Features</label>
+            <textarea id="features" placeholder="Cab, AC, quick attach, new tires, etc."></textarea>
+        </div>
+
+        <!-- DESCRIPTION -->
+        <div class="field-group">
+            <label for="description">Full Description</label>
+            <textarea id="description" placeholder="Condition, history, maintenance, issues, etc." required></textarea>
+        </div>
+
+        <!-- LOCATION -->
+        <div class="field-group">
+            <label for="location">Location</label>
+            <input id="location" type="text" placeholder="City / County / Region" required>
+        </div>
+
+        <!-- PRICE -->
+        <div class="field-group">
+            <label for="price">Price (USD)</label>
+            <input id="price" type="number" min="0" step="0.01" placeholder="e.g., 25000" required>
+        </div>
+
+        <!-- CONTACT -->
+        <div class="field-group">
+            <label for="contact">Contact Info</label>
+            <input id="contact" type="text" placeholder="Phone, email, or preferred contact method" required>
+        </div>
+
+        <button type="submit">Publish Listing</button>
+        <div id="status" class="status-message"></div>
+
+    </form>
+</section>
+
+</main>
+
+<script>
+const menuBtn = document.querySelector('.header-left');
+const sideMenu = document.getElementById('sideMenu');
+
+menuBtn.addEventListener('click', () => {
+    sideMenu.classList.toggle('menu-open');
+});
+
+const dropdownButtons = document.querySelectorAll('.dropdown-btn');
+
+dropdownButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const container = btn.nextElementSibling;
+
+        document.querySelectorAll('.dropdown-container').forEach(drop => {
+            if (drop !== container) drop.style.display = "none";
+        });
+
+        container.style.display = container.style.display === "block" ? "none" : "block";
+    });
+});
+
+const postForm = document.getElementById('postForm');
+const statusEl = document.getElementById('status');
+const creditInfoEl = document.getElementById('creditInfo');
+
+let canPost = false;
+let unlimited = false;
+
+async function checkCredits() {
+  creditInfoEl.textContent = "Checking your listing credits…";
+
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData || !userData.user) {
+    creditInfoEl.textContent = "You must log in and purchase credits first (membership page).";
+    canPost = false;
+    return;
+  }
+
+  const userId = userData.user.id;
+
+  const { data: creditRows, error: creditError } = await supabase
+    .from('credits')
+    .select('*')
+    .eq('user_id', userId);
+
+  if (creditError) {
+    creditInfoEl.textContent = "Error checking credits: " + creditError.message;
+    canPost = false;
+    return;
+  }
+
+  if (!creditRows || creditRows.length === 0) {
+    creditInfoEl.textContent = "No credits found. Go to listing payment to buy a tier.";
+    canPost = false;
+    return;
+  }
+
+  let totalCredits = 0;
+  creditRows.forEach(row => {
+    if (row.credits === -1) unlimited = true;
+    else totalCredits += row.credits;
+  });
+
+  if (unlimited) {
+    creditInfoEl.textContent = "Unlimited listings active.";
+    canPost = true;
+  } else if (totalCredits > 0) {
+    creditInfoEl.textContent = "You have " + totalCredits + " listing credits remaining.";
+    canPost = true;
+  } else {
+    creditInfoEl.textContent = "No remaining credits. Purchase more to post.";
+    canPost = false;
+  }
+}
+
+checkCredits();
+
+postForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  if (!canPost) {
+    statusEl.textContent = "Cannot publish: no credits or not logged in.";
+    return;
+  }
+
+  statusEl.textContent = "Publishing listing…";
+
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData || !userData.user) {
+    statusEl.textContent = "You must be logged in.";
+    return;
+  }
+
+  const userId = userData.user.id;
+
+  const title = document.getElementById('title').value.trim();
+  const category = document.getElementById('category').value;
+  const make = document.getElementById('make').value.trim();
+  const model = document.getElementById('model').value.trim();
+  const year = document.getElementById('year').value ? parseInt(document.getElementById('year').value) : null;
+  const hours = document.getElementById('hours').value ? parseInt(document.getElementById('hours').value) : null;
+  const fuel = document.getElementById('fuel').value;
+  const condition = document.getElementById('condition').value;
+  const serial = document.getElementById('serial').value.trim();
+  const attachments = document.getElementById('attachments').value.trim();
+  const features = document.getElementById('features').value.trim();
+  const description = document.getElementById('description').value.trim();
+  const location = document.getElementById('location').value.trim();
+  const price = parseFloat(document.getElementById('price').value);
+  const contact = document.getElementById('contact').value.trim();
+
+  const { error: insertError } = await supabase
+    .from('listings')
+    .insert({
+      user_id: userId,
+      title,
+      category,
+      make,
+      model,
+      year,
+      hours,
+      fuel,
+      condition,
+      serial,
+      attachments,
+      features,
+      description,
+      location,
+      price,
+      contact,
+      created_at: new Date().toISOString()
+    });
+
+  if (insertError) {
+    statusEl.textContent = "Error publishing listing: " + insertError.message;
+    return;
+  }
+
+  if (!unlimited) {
+    const { data: creditRows, error: creditError } = await supabase
+      .from('credits')
+      .select('*')
+      .eq('user_id', userId)
+      .gt('credits', 0)
+      .limit(1);
+
+    if (!creditError && creditRows && creditRows.length > 0) {
+      const row = creditRows[0];
+      await supabase
+        .from('credits')
+        .update({ credits: row.credits - 1 })
+        .eq('id', row.id);
+    }
+  }
+
+  statusEl.textContent = "Listing published successfully.";
+  postForm.reset();
+  unlimited = false;
+  canPost = false;
+  checkCredits();
+});
+</script>
+
+</body>
+</html>

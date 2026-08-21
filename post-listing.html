@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Post a Listing | Pro Equipment Exchange</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:Arial;background:#f5f5f5;color:#222;}
+header{position:fixed;top:0;width:100%;height:70px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:linear-gradient(to right,#0033a0,#ffffff,#0033a0);border-bottom:2px solid #222;z-index:1000;}
+.header-left{font-size:1.8rem;cursor:pointer;background:rgba(255,255,255,0.3);padding:6px 12px;border-radius:4px;}
+.header-center{font-weight:bold;font-size:1.2rem;text-align:center;flex:1;}
+.header-right a{text-decoration:none;color:#000;font-weight:600;background:rgba(255,255,255,0.4);padding:6px 10px;border-radius:4px;}
+.side-menu{position:fixed;top:70px;left:-260px;width:260px;height:100%;background:#fff;box-shadow:3px 0 10px rgba(0,0,0,0.25);padding:20px;transition:0.3s;z-index:2000;}
+.side-menu ul{list-style:none;}
+.side-menu li{margin-bottom:15px;}
+.dropdown-btn{width:100%;background:#0033a0;color:#fff;padding:10px;border:none;text-align:left;font-size:1rem;border-radius:6px;cursor:pointer;}
+.dropdown-container{display:none;background:#f5f5f5;padding:10px;border-radius:6px;margin-top:5px;}
+.dropdown-container a{display:block;padding:6px 0;text-decoration:none;color:#222;font-size:0.95rem;}
+.dropdown-container a:hover{color:#0033a0;}
+.menu-open{left:0;}
+main{padding-top:100px;width:100%;max-width:1100px;margin:auto;}
+section{background:#fff;margin:20px auto;padding:25px 20px;border-radius:10px;box-shadow:0 5px 15px rgba(0,0,0,0.15);width:90%;max-width:900px;border-left:10px solid #0033a0;}
+section h2{text-align:center;color:#0033a0;margin-bottom:20px;}
+form label{display:block;margin-top:15px;font-weight:bold;}
+form input,form textarea,form select{width:100%;padding:10px;margin-top:5px;border:2px solid #ccc;border-radius:6px;font-size:1rem;}
+form button{margin-top:20px;width:100%;padding:12px;background:#0033a0;color:#fff;border:none;border-radius:6px;font-size:1.2rem;cursor:pointer;}
+form button:hover{background:#00246e;}
+</style>
+</head>
+<body>
+
+<header>
+<div class="header-left">☰</div>
+<div class="header-center">The Valley's Choice</div>
+<div class="header-right"><a>Email Us</a></div>
+</header>
+
+<div id="sideMenu" class="side-menu">
+<ul>
+<li><button class="dropdown-btn">Buy Equipment ▼</button>
+<div class="dropdown-container">
+<a href="heavy-equipment.html">Heavy Equipment</a>
+<a href="tools.html">Tools</a>
+<a href="vehicles.html">Vehicles</a>
+<a href="attachments.html">Attachments</a>
+</div></li>
+<li><button class="dropdown-btn">Sell Equipment ▼</button>
+<div class="dropdown-container">
+<a href="post-listing.html">Post a Listing</a>
+<a href="seller-dashboard.html">Seller Dashboard</a>
+<a href="pricing.html">Pricing Guide</a>
+<a href="sellertips.html">Seller Tips</a>
+<a href="membership.html">Membership Info</a>
+<a href="online-payment.html">Online Payment</a>
+</div></li>
+<li><a href="search.html">Search</a></li>
+<li><a href="index.html">Home</a></li>
+</ul>
+</div>
+
+<main>
+<section>
+<h2>Post a Listing</h2>
+
+<form id="listingForm">
+<label>Title</label>
+<input name="title">
+
+<label>Category</label>
+<select name="category">
+<option>Heavy Equipment</option>
+<option>Tools</option>
+<option>Vehicles</option>
+<option>Attachments</option>
+</select>
+
+<label>Price</label>
+<input name="price">
+
+<label>Location</label>
+<input name="location">
+
+<label>Description</label>
+<textarea name="description" rows="5"></textarea>
+
+<label>Condition</label>
+<select name="condition">
+<option>New</option>
+<option>Used - Good</option>
+<option>Used - Fair</option>
+<option>Needs Repair</option>
+</select>
+
+<label>Delivery Eligible?</label>
+<select name="delivery">
+<option value="true">Yes</option>
+<option value="false">No</option>
+</select>
+
+<label>Photo Filename (Assets folder)</label>
+<input name="photo">
+
+<button type="button" onclick="saveListing()">Submit Listing</button>
+</form>
+
+</section>
+</main>
+
+<script>
+const menuBtn=document.querySelector('.header-left');
+const sideMenu=document.getElementById('sideMenu');
+menuBtn.addEventListener('click',()=>{sideMenu.classList.toggle('menu-open');});
+document.querySelectorAll('.dropdown-btn').forEach(btn=>{
+btn.addEventListener('click',()=>{const c=btn.nextElementSibling;c.style.display=c.style.display==='block'?'none':'block';});
+});
+
+function saveListing(){
+const form=new FormData(document.getElementById('listingForm'));
+const listing={
+title:form.get('title'),
+category:form.get('category'),
+price:form.get('price'),
+location:form.get('location'),
+description:form.get('description'),
+condition:form.get('condition'),
+delivery:form.get('delivery'),
+photo:form.get('photo')
+};
+alert("Listing saved locally. Add backend later.");
+}
+</script>
+
+</body>
+</html>

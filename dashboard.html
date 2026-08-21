@@ -16,11 +16,21 @@
 
   <!-- Payment Enforcement Gate Script -->
   <script>
+    const VIP_EMAILS = [
+      'rpm.cen.cal@gmail.com',
+      'rpm_cen_cal@gmail.com',
+      'pezziracen23@gmail.com'
+    ];
+
     const urlParams = new URLSearchParams(window.location.search);
     const session = urlParams.get('session');
     const savedSession = localStorage.getItem('rpm_verified_session');
+    const userEmail = (localStorage.getItem('userEmail') || '').toLowerCase().trim();
 
-    if (session === 'verified') {
+    // Check if user is a VIP admin account or has an active verified session
+    const isVIP = VIP_EMAILS.includes(userEmail);
+
+    if (session === 'verified' || isVIP) {
       localStorage.setItem('rpm_verified_session', 'active');
       if (urlParams.get('tier')) {
         localStorage.setItem('rpm_seller_tier', urlParams.get('tier'));
@@ -87,7 +97,7 @@
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Asking Price ($)</label>
-              <input type="number" required placeholder="25000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+              <input type="number" id="equipment-price" required placeholder="25000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
             </div>
           </div>
 
@@ -102,7 +112,7 @@
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Condition</label>
-              <select class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white">
+              <select id="equipment-condition" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white">
                 <option>Excellent</option>
                 <option>Good</option>
                 <option>Fair</option>
@@ -112,8 +122,13 @@
           </div>
 
           <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Image URL (Optional)</label>
+            <input type="text" id="equipment-image" placeholder="https://example.com/photo.jpg" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+          </div>
+
+          <div>
             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Specific Technical Specifications</label>
-            <textarea rows="3" placeholder="Enter attachments, engine specs, hydraulic flow rate, maintenance history..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500"></textarea>
+            <textarea id="equipment-desc" rows="3" placeholder="Enter attachments, engine specs, hydraulic flow rate, maintenance history..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500"></textarea>
           </div>
 
           <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg text-sm shadow-lg shadow-blue-600/30 transition-all">
@@ -176,15 +191,15 @@
       const categoryInput = document.getElementById('auto-category');
 
       if (title.includes('excavator') || title.includes('dozer') || title.includes('crane') || title.includes('loader')) {
-        categoryInput.value = 'Construction & Heavy Equipment';
+        categoryInput.value = 'Heavy Equipment';
       } else if (title.includes('tractor') || title.includes('combine') || title.includes('plow') || title.includes('harvester')) {
         categoryInput.value = 'Agriculture & Farming';
-      } else if (title.includes('truck') || title.includes('van') || title.includes('trailer') || title.includes('semi')) {
-        categoryInput.value = 'Transportation & Logistics';
-      } else if (title.includes('lathe') || title.includes('cnc') || title.includes('generator') || title.includes('press')) {
-        categoryInput.value = 'Manufacturing & Industrial';
+      } else if (title.includes('truck') || title.includes('van') || title.includes('trailer') || title.includes('quad') || title.includes('bike')) {
+        categoryInput.value = 'Vehicles & Transport';
+      } else if (title.includes('lathe') || title.includes('cnc') || title.includes('generator') || title.includes('compressor')) {
+        categoryInput.value = 'Tools & Industrial';
       } else {
-        categoryInput.value = 'General Commercial Equipment';
+        categoryInput.value = 'General Equipment';
       }
     }
 
@@ -204,9 +219,35 @@
       document.getElementById('valuation-result').classList.remove('hidden');
     }
 
-    function handleAddEquipment(e) {
+    async function handleAddEquipment(e) {
       e.preventDefault();
-      alert('Equipment listing created and published to RPM Equipment marketplace!');
+
+      const title = document.getElementById('equipment-title').value;
+      const category = document.getElementById('auto-category').value;
+      const price = document.getElementById('equipment-price').value;
+      const condition = document.getElementById('equipment-condition').value;
+      const imageUrl = document.getElementById('equipment-image').value;
+      const description = document.getElementById('equipment-desc').value;
+      const email = localStorage.getItem('userEmail') || 'rpm.cen.cal@gmail.com';
+
+      try {
+        const response = await fetch('https://rpm-qhrz.onrender.com/api/listings/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, description, price, condition, category, imageUrl, email })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          alert(`Equipment published successfully under ${result.category}!`);
+          document.getElementById('equipment-form').reset();
+        } else {
+          alert(`Submission error: ${result.error}`);
+        }
+      } catch (err) {
+        console.error('Publish error:', err);
+        alert('Failed to connect to backend server. Please try again.');
+      }
     }
   </script>
 </body>

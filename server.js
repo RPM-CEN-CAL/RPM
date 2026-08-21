@@ -73,7 +73,8 @@ app.post('/api/create-square-checkout', async (req, res) => {
     const price = parseFloat(basePrice) || 5;
     const total = price + (price * 0.03);
 
-    let squareUrl = `https://square.link/u/rpm-membership`;
+    // Your active, accessible Square Checkout link
+    let squareUrl = `https://square.link/u/9OGHfW18`;
     
     try {
       const { SquareClient, SquareEnvironment } = require('square');
@@ -106,7 +107,7 @@ app.post('/api/create-square-checkout', async (req, res) => {
         if (link) squareUrl = link;
       }
     } catch (squareErr) {
-      console.warn('Square API Fallback mode triggered:', squareErr.message);
+      console.warn('Square API Fallback mode active. Using live link:', squareErr.message);
     }
 
     return res.json({

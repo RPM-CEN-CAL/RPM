@@ -18,22 +18,61 @@ app.get('/', (req, res) => {
   res.send('RPM Backend is Live and Connected!');
 });
 
-// Config Endpoint
+// Config Endpoint for Square Web SDK
 app.get('/api/square-config', (req, res) => {
   res.json({
-    appId: process.env.SQUARE_APPLICATION_ID || '',
+    appId: process.env.SQUARE_APPLICATION_ID || process.env.SQUARE_APP_ID || '',
     locationId: process.env.SQUARE_LOCATION_ID || ''
   });
 });
 
-// Checkout Endpoint (Square SDK / Link Handler)
+// Direct On-Page Card Payment Endpoint
+app.post('/api/process-payment', async (req, res) => {
+  try {
+    const { sourceId, basePrice, email } = req.body;
+    const price = parseFloat(basePrice) || 5;
+    const totalCents = Math.round((price + (price * 0.03)) * 100);
+
+    const { SquareClient, SquareEnvironment } = require('square');
+    const squareClient = new SquareClient({
+      token: process.env.SQUARE_ACCESS_TOKEN,
+      environment: process.env.SQUARE_ENVIRONMENT === 'production' 
+        ? SquareEnvironment.Production 
+        : SquareEnvironment.Sandbox,
+    });
+
+    const paymentsApi = squareClient.paymentsApi || squareClient.payments;
+    
+    if (!paymentsApi) {
+      throw new Error('Square Payments API is unavailable.');
+    }
+
+    const response = await paymentsApi.createPayment({
+      sourceId: sourceId,
+      idempotencyKey: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
+      amountMoney: {
+        amount: BigInt(totalCents),
+        currency: 'USD'
+      },
+      buyerEmailAddress: email
+    });
+
+    const payment = response.result?.payment || response.payment;
+    return res.json({ success: true, payment: payment });
+
+  } catch (error) {
+    console.error('Direct Payment Processing Error:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Checkout Endpoint (Square Link Handler)
 app.post('/api/create-square-checkout', async (req, res) => {
   try {
     const { basePrice, tierName, email } = req.body;
     const price = parseFloat(basePrice) || 5;
     const total = price + (price * 0.03);
 
-    // Dynamic import to prevent crash if square SDK is missing or mismatched
     let squareUrl = `https://square.link/u/rpm-membership`;
     
     try {

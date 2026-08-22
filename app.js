@@ -105,6 +105,10 @@ async function handleBusinessSubmit(event) {
 
   const email = document.getElementById('email')?.value.trim() || '';
   const companyName = document.getElementById('companyName')?.value.trim() || '';
+  const phone = document.getElementById('phone')?.value.trim() || '';
+  const website = document.getElementById('website')?.value.trim() || '';
+  const location = document.getElementById('location')?.value.trim() || '';
+  const imageUrl = document.getElementById('imageUrl')?.value || '';
   const description = document.getElementById('description')?.value.trim() || '';
   
   const selectCat = document.getElementById('categorySelect')?.value;
@@ -113,7 +117,16 @@ async function handleBusinessSubmit(event) {
 
   const selectedPrice = '2';
 
-  const payload = { companyName, title: companyName, description, email, category };
+  const payload = { 
+    companyName, 
+    email, 
+    phone, 
+    website, 
+    location, 
+    imageUrl, 
+    category, 
+    description 
+  };
 
   if (submitBtn) {
     submitBtn.disabled = true;
@@ -192,6 +205,31 @@ async function checkEquipmentPostPayment() {
   }
 }
 
+// Check for post-payment return on b2b.html
+async function checkB2BPostPayment() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const isSuccess = urlParams.get('status') === 'success';
+  const rawData = localStorage.getItem('pending_b2b_listing');
+
+  if (isSuccess && rawData) {
+    localStorage.removeItem('pending_b2b_listing');
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    try {
+      const payload = JSON.parse(rawData);
+      await fetch(`${RENDER_BACKEND_URL}/api/b2b-listings/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      alert('Payment confirmed! Business listing is live in the directory.');
+      window.location.reload();
+    } catch (err) {
+      console.error('Failed to auto-publish business listing:', err);
+    }
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const marketplaceForm = document.getElementById('new-listing-form');
   if (marketplaceForm) {
@@ -204,4 +242,5 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   checkEquipmentPostPayment();
+  checkB2BPostPayment();
 });

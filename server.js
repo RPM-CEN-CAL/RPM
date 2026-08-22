@@ -143,115 +143,29 @@ app.post('/api/b2b-listings/create', (req, res) => {
 
 // SQUARE CHECKOUT & PAYMENT HANDLERS
 app.post('/api/create-square-checkout', async (req, res) => {
-  try {
-    const { email, tier } = req.body;
-    const cleanEmail = (email || '').toLowerCase().trim();
+    try {
+      const { email, tier } = req.body;
+      const cleanEmail = (email || '').toLowerCase().trim();
 
-    // 1. VIP Bypass Check
-    const VIP_EMAILS = ['rpm.cen.cal@gmail.com', 'rpm_cen_cal@gmail.com', 'pezziracen23@gmail.com'];
-    if (VIP_EMAILS.includes(cleanEmail)) {
-      return res.json({ success: true, isVip: true, message: 'VIP Access Granted' });
-    }
-
-    // 2. Square Checkout Link & QR Code Generation
-    const checkoutUrl = process.env.SQUARE_CHECKOUT_URL || 'https://square.link/u/RPM_SUBSCRIPTION_FALLBACK';
-    const qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(checkoutUrl);
-
-    return res.json({
-      success: true,
-      isVip: false,
-      checkoutUrl: checkoutUrl,
-      url: checkoutUrl,
-      qrCode: qrCodeUrl
-    });
-  } catch (err) {
-    console.error('Checkout creation error:', err);
-    res.status(500).json({ success: false, error: 'Failed to create checkout session' });
-  }
-});
-// Endpoint replacement applied
-  } catch (err) {
-    console.error('Checkout creation error:', err);
-    res.status(500).json({ success: false, error: 'Failed to create checkout session' });
-  }
-});
-    }
-
-    const baseAmount = Number(basePrice) || 5;
-    const totalAmount = Math.round((baseAmount * 1.03) * 100);
-
-    const locationId = process.env.SQUARE_LOCATION_ID;
-    if (!locationId) {
-      return res.status(500).json({ success: false, error: 'Square Location ID is missing in environment.' });
-    }
-
-    const response = await squareClient.checkoutApi.createPaymentLink({
-      idempotencyKey: `rpm-${Date.now()}`,
-      quickPay: {
-        name: `RPM - ${tierName || 'Service'}`,
-        priceMoney: {
-          amount: BigInt(totalAmount),
-          currency: 'USD'
-        },
-        locationId: locationId
-      },
-      redirectUrl: redirectUrl
-    });
-
-    const paymentLink = response.result.paymentLink;
-    const formattedTotal = (totalAmount / 100).toFixed(2);
-    
-    // Primary & Fallback QR code generation URLs
-    const encodedUrl = encodeURIComponent(paymentLink.url);
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodedUrl}`;
-
-    res.status(200).json({
-      success: true,
-      url: paymentLink.url,
-      totalFormatted: formattedTotal,
-      qrCodeUrl: qrCodeUrl
-    });
-
-  } catch (error) {
-    console.error('Square Payment Link Error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: error.errors ? error.errors[0].detail : 'Failed to initialize Square Checkout link.' 
-    });
-  }
-});
-
-app.post('/api/process-payment', async (req, res) => {
-  try {
-    const { sourceId, basePrice } = req.body;
-
-    const baseAmount = Number(basePrice) || 5;
-    const totalCents = Math.round((baseAmount * 1.03) * 100);
-
-    const { result } = await squareClient.paymentsApi.createPayment({
-      idempotencyKey: `pay-${Date.now()}`,
-      sourceId: sourceId,
-      amountMoney: {
-        currency: 'USD',
-        amount: BigInt(totalCents)
+      // 1. VIP Bypass Check
+      const VIP_EMAILS = ['rpm.cen.cal@gmail.com', 'rpm_cen_cal@gmail.com', 'pezziracen23@gmail.com'];
+      if (VIP_EMAILS.includes(cleanEmail)) {
+        return res.json({ success: true, isVip: true, message: 'VIP Access Granted' });
       }
-    });
 
-    res.status(200).json({ success: true, payment: result.payment });
-  } catch (error) {
-    console.error('Direct Card Payment Error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: error.errors ? error.errors[0].detail : 'Card payment processing failed.' 
-    });
-  }
+      // 2. Square Checkout Link & QR Code Generation
+      const checkoutUrl = process.env.SQUARE_CHECKOUT_URL || 'https://square.link/u/RPM_SUBSCRIPTION_FALLBACK';
+      const qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(checkoutUrl);
+
+      return res.json({
+        success: true,
+        isVip: false,
+        checkoutUrl: checkoutUrl,
+        url: checkoutUrl,
+        qrCode: qrCodeUrl
+      });
+    } catch (err) {
+      console.error('Checkout creation error:', err);
+      res.status(500).json({ success: false, error: 'Failed to create checkout session' });
+    }
 });
-
-app.listen(PORT, () => {
-  console.log(`RPM Server live on port ${PORT}`);
-});
-
-
-// Force deploy timestamp: 08/22/2026 15:42:22
-
-

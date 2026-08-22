@@ -8,93 +8,69 @@ const VIP_EMAILS = [
 
 function isVIPUser(email) {
   if (!email) return false;
-  const cleanEmail = email.toLowerCase().trim();
-  return VIP_EMAILS.some(vip => vip.toLowerCase() === cleanEmail);
+  return VIP_EMAILS.some(vip => vip.toLowerCase() === email.toLowerCase().trim());
 }
 
-// ==========================================
-// PATH 1: EQUIPMENT LISTINGS ($5 / $10)
-// ==========================================
-async function handleListingSubmit(event) {
-  if (event) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-
-  const form = document.getElementById('new-listing-form') || (event && event.target);
-  const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
-
-  const email = form?.querySelector('#email')?.value.trim() || '';
-  const title = form?.querySelector('#title')?.value.trim() || 'Equipment Item';
-  const price = form?.querySelector('#price')?.value || 0;
-  const listingTierPrice = form?.querySelector('#equipmentTierPrice')?.value || '5';
-
-  const payload = {
-    title,
-    description: form?.querySelector('#description')?.value || '',
-    price,
-    location: form?.querySelector('#location')?.value || 'Central Valley, CA',
-    condition: form?.querySelector('#condition')?.value || 'Used',
-    category: form?.querySelector('#category')?.value || 'General',
-    imageUrl: form?.querySelector('#imageUrl')?.value || '',
-    email
-  };
-
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    submitBtn.innerText = `Connecting to Square ($${listingTierPrice}.00)...`;
-  }
+async function fetchB2BDirectory() {
+  const container = document.getElementById('b2b-container');
+  if (!container) return;
 
   try {
-    if (isVIPUser(email)) {
-      const vipRes = await fetch(`${RENDER_BACKEND_URL}/api/listings/create`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      
-      if (vipRes.ok) {
-        alert('VIP Approved! Equipment posted directly to marketplace.');
-        window.location.href = 'index.html';
-        return;
-      }
+    const response = await fetch(`${RENDER_BACKEND_URL}/api/b2b-listings`);
+    if (!response.ok) throw new Error('Directory unreachable');
+
+    const listings = await response.json();
+
+    if (!listings || listings.length === 0) {
+      container.innerHTML = `
+        <div class="col-span-full p-8 bg-slate-900/50 rounded-xl border border-slate-800 text-center text-slate-400 text-sm">
+          No business listings currently registered. <a href="promote-business.html" class="text-blue-400 underline">Add your business &rarr;</a>
+        </div>`;
+      return;
     }
 
-    localStorage.setItem('pending_equipment_listing', JSON.stringify(payload));
+    container.innerHTML = listings.map(item => {
+      const defaultImg = 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80';
+      const rawImg = item.imageUrl || item.image_url;
+      const displayImg = (rawImg && (rawImg.startsWith('http') || rawImg.startsWith('data:image'))) 
+        ? rawImg 
+        : defaultImg;
 
-    const checkoutRes = await fetch(`${RENDER_BACKEND_URL}/api/create-square-checkout`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        basePrice: listingTierPrice, 
-        tierName: `Equipment Listing ($${listingTierPrice})`, 
-        email 
-      })
-    });
+      const companyName = item.companyName || 'Verified Business';
+      const contactEmail = item.email || 'rpm.cen.cal@gmail.com';
+      const categoryBadge = (item.category || 'COMMERCIAL').toUpperCase();
+      const locationText = item.location ? `• ${item.location}` : '';
 
-    const checkoutData = await checkoutRes.json();
-    if (checkoutData.success && checkoutData.url) {
-      window.location.href = checkoutData.url;
-    } else {
-      alert('Square checkout link creation failed.');
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.innerText = 'Pay & Post Item For Sale →';
-      }
-    }
+      return `
+        <div class="bg-[#111827] border border-slate-800/80 rounded-2xl overflow-hidden hover:border-slate-700 transition-all flex flex-col justify-between shadow-xl">
+          <div>
+            <div class="h-48 bg-slate-950 overflow-hidden relative border-b border-slate-800/60">
+              <img src="${displayImg}" class="w-full h-full object-cover">
+              <span class="absolute top-3 right-3 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow">
+                ${categoryBadge}
+              </span>
+            </div>
+            <div class="p-5 space-y-2">
+              <h3 class="font-bold text-white text-xl tracking-tight">${companyName}</h3>
+              ${locationText ? `<p class="text-xs text-slate-400 font-medium">${locationText}</p>` : ''}
+              <p class="text-xs text-slate-300 leading-relaxed line-clamp-3 mt-2">${item.description || 'Verified commercial business.'}</p>
+            </div>
+          </div>
+
+          <div class="p-5 pt-0 mt-4">
+            <a href="mailto:${contactEmail}?subject=B2B Inquiry regarding ${encodeURIComponent(companyName)}" class="w-full block text-center bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-3 rounded-xl transition-colors">
+              Contact Business &rarr;
+            </a>
+          </div>
+        </div>
+      `;
+    }).join('');
+
   } catch (err) {
-    console.error('Submit error:', err);
-    alert('Server connection error. Please retry.');
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.innerText = 'Pay & Post Item For Sale →';
-    }
+    console.error('Directory fetch error:', err);
   }
 }
 
-// ==========================================
-// PATH 2: BUSINESS PROMOTION (FIXED $2.00)
-// ==========================================
 async function handleBusinessSubmit(event) {
   if (event) {
     event.preventDefault();
@@ -115,18 +91,7 @@ async function handleBusinessSubmit(event) {
   const customCat = document.getElementById('customCategoryInput')?.value.trim();
   const category = (selectCat === 'OTHER' && customCat) ? customCat : selectCat;
 
-  const selectedPrice = '2';
-
-  const payload = { 
-    companyName, 
-    email, 
-    phone, 
-    website, 
-    location, 
-    imageUrl, 
-    category, 
-    description 
-  };
+  const payload = { companyName, email, phone, website, location, imageUrl, category, description };
 
   if (submitBtn) {
     submitBtn.disabled = true;
@@ -142,7 +107,7 @@ async function handleBusinessSubmit(event) {
       });
 
       if (vipRes.ok) {
-        alert('VIP Approved! Business posted directly to B2B directory.');
+        alert('VIP Approved! Business posted directly.');
         window.location.href = 'b2b.html';
         return;
       }
@@ -153,18 +118,14 @@ async function handleBusinessSubmit(event) {
     const checkoutRes = await fetch(`${RENDER_BACKEND_URL}/api/create-square-checkout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        basePrice: selectedPrice, 
-        tierName: `B2B Directory Listing ($2.00)`, 
-        email 
-      })
+      body: JSON.stringify({ basePrice: '2', email })
     });
 
     const checkoutData = await checkoutRes.json();
     if (checkoutData.success && checkoutData.url) {
       window.location.href = checkoutData.url;
     } else {
-      alert('Square payment link creation failed.');
+      alert('Square checkout failed.');
       if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.innerText = 'Pay $2.00 & Post Business →';
@@ -172,7 +133,7 @@ async function handleBusinessSubmit(event) {
     }
   } catch (err) {
     console.error('Submit error:', err);
-    alert('Server connection error. Please retry.');
+    alert('Server connection error.');
     if (submitBtn) {
       submitBtn.disabled = false;
       submitBtn.innerText = 'Pay $2.00 & Post Business →';
@@ -180,32 +141,6 @@ async function handleBusinessSubmit(event) {
   }
 }
 
-// Check for post-payment return on index.html
-async function checkEquipmentPostPayment() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const isSuccess = urlParams.get('status') === 'success';
-  const rawData = localStorage.getItem('pending_equipment_listing');
-
-  if (isSuccess && rawData) {
-    localStorage.removeItem('pending_equipment_listing');
-    window.history.replaceState({}, document.title, window.location.pathname);
-
-    try {
-      const payload = JSON.parse(rawData);
-      await fetch(`${RENDER_BACKEND_URL}/api/listings/create`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      alert('Payment confirmed! Equipment listing is live.');
-      window.location.reload();
-    } catch (err) {
-      console.error('Failed to auto-publish item:', err);
-    }
-  }
-}
-
-// Check for post-payment return on b2b.html
 async function checkB2BPostPayment() {
   const urlParams = new URLSearchParams(window.location.search);
   const isSuccess = urlParams.get('status') === 'success';
@@ -222,25 +157,19 @@ async function checkB2BPostPayment() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      alert('Payment confirmed! Business listing is live in the directory.');
-      window.location.reload();
+      fetchB2BDirectory();
     } catch (err) {
-      console.error('Failed to auto-publish business listing:', err);
+      console.error('Auto-publish failed:', err);
     }
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const marketplaceForm = document.getElementById('new-listing-form');
-  if (marketplaceForm) {
-    marketplaceForm.addEventListener('submit', handleListingSubmit);
-  }
-
   const businessForm = document.getElementById('businessForm');
   if (businessForm) {
     businessForm.addEventListener('submit', handleBusinessSubmit);
   }
 
-  checkEquipmentPostPayment();
   checkB2BPostPayment();
+  fetchB2BDirectory();
 });

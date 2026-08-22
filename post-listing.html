@@ -63,12 +63,17 @@ form button:hover{background:#00246e;}
 <section>
 <h2>Post a Listing</h2>
 
-<form id="listingForm">
+<form id="new-listing-form">
+<input type="hidden" id="equipmentTierPrice" value="5">
+
+<label>Email Address (Required)</label>
+<input type="email" id="email" name="email" required placeholder="seller@company.com">
+
 <label>Title</label>
-<input name="title">
+<input type="text" id="title" name="title" required>
 
 <label>Category</label>
-<select name="category">
+<select id="category" name="category">
 <option>Heavy Equipment</option>
 <option>Tools</option>
 <option>Vehicles</option>
@@ -76,16 +81,16 @@ form button:hover{background:#00246e;}
 </select>
 
 <label>Price</label>
-<input name="price">
+<input type="number" id="price" name="price" required>
 
 <label>Location</label>
-<input name="location">
+<input type="text" id="location" name="location">
 
 <label>Description</label>
-<textarea name="description" rows="5"></textarea>
+<textarea id="description" name="description" rows="5"></textarea>
 
 <label>Condition</label>
-<select name="condition">
+<select id="condition" name="condition">
 <option>New</option>
 <option>Used - Good</option>
 <option>Used - Fair</option>
@@ -93,15 +98,15 @@ form button:hover{background:#00246e;}
 </select>
 
 <label>Delivery Eligible?</label>
-<select name="delivery">
+<select id="delivery" name="delivery">
 <option value="true">Yes</option>
 <option value="false">No</option>
 </select>
 
 <label>Photo Filename (Assets folder)</label>
-<input name="photo">
+<input type="text" id="imageUrl" name="photo">
 
-<button type="button" onclick="saveListing()">Submit Listing</button>
+<button type="submit">Pay & Post Item For Sale →</button>
 </form>
 
 </section>
@@ -114,22 +119,8 @@ menuBtn.addEventListener('click',()=>{sideMenu.classList.toggle('menu-open');});
 document.querySelectorAll('.dropdown-btn').forEach(btn=>{
 btn.addEventListener('click',()=>{const c=btn.nextElementSibling;c.style.display=c.style.display==='block'?'none':'block';});
 });
-
-function saveListing(){
-const form=new FormData(document.getElementById('listingForm'));
-const listing={
-title:form.get('title'),
-category:form.get('category'),
-price:form.get('price'),
-location:form.get('location'),
-description:form.get('description'),
-condition:form.get('condition'),
-delivery:form.get('delivery'),
-photo:form.get('photo')
-};
-alert("Listing saved locally. Add backend later.");
-}
 </script>
+<script src="app.js"></script>
 
 </body>
 </html>

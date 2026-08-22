@@ -5,12 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>B2B Directory & Commercial Exchange | RPM Equipment</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>body { font-family: 'Inter', sans-serif; }</style>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #0b1120; }
+  </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen antialiased">
+<body class="text-slate-100 min-h-screen antialiased flex flex-col justify-between">
 
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+  <!-- Header -->
+  <header class="border-b border-slate-800/80 bg-[#0b1120]/90 backdrop-blur sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
       <a href="index.html" class="flex flex-col group">
         <div class="text-2xl font-black tracking-tight text-white flex items-center gap-2">
@@ -22,124 +27,38 @@
         </span>
       </a>
 
-      <div class="flex items-center space-x-4">
-        <a href="index.html" class="text-xs text-slate-400 hover:text-white">&larr; Back to Home</a>
-        <a href="promote-business.html" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-4 py-2 rounded-lg transition-all">
+      <div class="flex items-center space-x-6">
+        <a href="index.html" class="text-xs font-medium text-slate-300 hover:text-white transition-colors">&larr; Back to Home</a>
+        <a href="promote-business.html" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition-all shadow">
           + Promote Your Business
         </a>
       </div>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-    <div class="border-b border-slate-800 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+  <main class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
-        <h1 class="text-3xl font-bold text-white">Commercial B2B & Business Directory</h1>
-        <p class="text-sm text-slate-400 mt-1">Verified commercial operations, fleet providers, and equipment dealers.</p>
+        <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight">Commercial B2B & Business Directory</h1>
+        <p class="text-slate-400 text-sm mt-1">Verified commercial operations, fleet providers, and equipment dealers.</p>
       </div>
-      <a href="promote-business.html" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow">
+      <a href="promote-business.html" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-5 py-2.5 rounded-lg text-sm transition-all shadow flex items-center gap-1.5">
         Promote Your Business &rarr;
       </a>
     </div>
 
-    <div id="b2b-container" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div class="col-span-full p-8 bg-slate-800/50 rounded-xl border border-slate-800 text-center text-slate-400 text-sm animate-pulse">
-        Fetching verified business listings...
+    <!-- Container for Rendered Cards -->
+    <div id="b2b-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="col-span-full p-12 text-center text-slate-500 text-sm">
+        Loading directory listings...
       </div>
     </div>
   </main>
 
-  <script>
-    const RENDER_BACKEND_URL = 'https://rpm-qhrz.onrender.com';
+  <footer class="bg-slate-950 border-t border-slate-800/60 py-6 text-center text-slate-500 text-xs">
+    &copy; RPM Equipment Marketplace & B2B Directory. All rights reserved.
+  </footer>
 
-    async function fetchB2BDirectory() {
-      const container = document.getElementById('b2b-container');
-      if (!container) return;
-      
-      try {
-        const response = await fetch(`${RENDER_BACKEND_URL}/api/b2b-listings`);
-        if (!response.ok) throw new Error('Directory endpoint unreachable');
-
-        const listings = await response.json();
-
-        if (!listings || listings.length === 0) {
-          container.innerHTML = `
-            <div class="col-span-full p-8 bg-slate-800/50 rounded-xl border border-slate-800 text-center text-slate-400 text-sm">
-              No business listings currently registered. <a href="promote-business.html" class="text-blue-400 underline">Add your business &rarr;</a>
-            </div>`;
-          return;
-        }
-
-        container.innerHTML = listings.map(item => {
-          const defaultImage = 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80';
-          const rawImg = item.imageUrl || item.image_url;
-          const displayImg = (rawImg && (rawImg.startsWith('http') || rawImg.startsWith('data:image'))) 
-            ? rawImg 
-            : defaultImage;
-
-          const contactEmail = item.email || item.seller_email || 'rpm.cen.cal@gmail.com';
-
-          return `
-            <div class="bg-slate-800/90 border border-slate-700 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all flex flex-col justify-between">
-              <div>
-                <div class="h-44 bg-slate-900 overflow-hidden relative">
-                  <img src="${displayImg}" class="w-full h-full object-cover">
-                  <span class="absolute top-3 right-3 bg-emerald-600 text-white text-[10px] font-bold uppercase px-2.5 py-1 rounded-full shadow">
-                    ${item.category || 'Commercial Provider'}
-                  </span>
-                </div>
-                <div class="p-5 space-y-2">
-                  <h3 class="font-bold text-white text-lg line-clamp-1">${item.title || 'Verified Business'}</h3>
-                  <p class="text-xs text-slate-400 line-clamp-3">${item.description || 'Verified commercial equipment operator and provider.'}</p>
-                </div>
-              </div>
-              <div class="p-5 pt-0 border-t border-slate-700/50 mt-4">
-                <a href="mailto:${contactEmail}?subject=B2B Inquiry regarding ${encodeURIComponent(item.title || 'Directory Listing')}" class="w-full block text-center bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold py-2.5 rounded-lg transition-colors mt-3">
-                  Contact Business &rarr;
-                </a>
-              </div>
-            </div>
-          `;
-        }).join('');
-
-      } catch (err) {
-        console.error('Directory error:', err);
-        container.innerHTML = `
-          <div class="col-span-full p-8 bg-slate-800/50 rounded-xl border border-slate-800 text-center text-slate-400 text-sm">
-            Unable to load directory at this time. Please refresh or check server connection.
-          </div>`;
-      }
-    }
-
-    async function checkPostPaymentPublish() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const isSuccess = urlParams.get('status') === 'success';
-      const rawData = localStorage.getItem('pending_b2b_listing');
-
-      if (isSuccess && rawData) {
-        localStorage.removeItem('pending_b2b_listing');
-        window.history.replaceState({}, document.title, window.location.pathname);
-
-        try {
-          const payload = JSON.parse(rawData);
-          const res = await fetch(`${RENDER_BACKEND_URL}/api/b2b-listings/create`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-
-          if (res.ok) {
-            alert('Payment Successful! Your business listing is live in the directory.');
-          }
-        } catch (err) {
-          console.error('Failed to post business listing after payment:', err);
-        }
-      }
-      
-      fetchB2BDirectory();
-    }
-
-    document.addEventListener('DOMContentLoaded', checkPostPaymentPublish);
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>

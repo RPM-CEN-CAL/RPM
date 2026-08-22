@@ -155,7 +155,7 @@ app.post('/api/create-square-checkout', async (req, res) => {
 
     // 2. Square Checkout Link Generation (or Fallback URL)
     const checkoutUrl = process.env.SQUARE_CHECKOUT_URL || 'https://square.link/u/RPM_SUBSCRIPTION_FALLBACK';
-    const qrCodeUrl = https://api.qrserver.com/v1/create-qr-code/?size=250x250&data= + encodeURIComponent(checkoutUrl);
+    const qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(checkoutUrl);
 
     return res.json({
       success: true,
@@ -243,3 +243,4 @@ app.post('/api/process-payment', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`RPM Server live on port ${PORT}`);
 });
+

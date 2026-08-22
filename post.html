@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -209,7 +209,7 @@ form button:hover {
 <body>
 
 <header>
-    <div class="header-left">☰</div>
+    <div class="header-left">â˜°</div>
     <div class="header-center">Post Equipment Listing</div>
     <div class="header-right">
         <a href="index.html">Back to Home</a>
@@ -219,7 +219,7 @@ form button:hover {
 <div id="sideMenu" class="side-menu">
     <ul>
         <li>
-            <button class="dropdown-btn">Buy Equipment ▼</button>
+            <button class="dropdown-btn">Buy Equipment â–¼</button>
             <div class="dropdown-container">
                 <a href="heavy-equipment.html">Heavy Equipment</a>
                 <a href="tools.html">Tools</a>
@@ -229,7 +229,7 @@ form button:hover {
         </li>
 
         <li>
-            <button class="dropdown-btn">Sell Equipment ▼</button>
+            <button class="dropdown-btn">Sell Equipment â–¼</button>
             <div class="dropdown-container">
                 <a href="membership.html">Seller Membership & Signup</a>
                 <a href="listing-payment.html">Buy Listing Credits</a>
@@ -251,7 +251,7 @@ form button:hover {
 
 <section>
     <h2>Create Your Equipment Listing</h2>
-    <p id="creditInfo">Checking your listing credits…</p>
+    <p id="creditInfo">Checking your listing creditsâ€¦</p>
 
     <form id="postForm">
 
@@ -393,7 +393,7 @@ let canPost = false;
 let unlimited = false;
 
 async function checkCredits() {
-  creditInfoEl.textContent = "Checking your listing credits…";
+  creditInfoEl.textContent = "Checking your listing creditsâ€¦";
 
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData || !userData.user) {
@@ -449,7 +449,7 @@ postForm.addEventListener('submit', async (e) => {
     return;
   }
 
-  statusEl.textContent = "Publishing listing…";
+  statusEl.textContent = "Publishing listingâ€¦";
 
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData || !userData.user) {

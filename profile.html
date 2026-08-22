@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const msgUl = document.getElementById('messagesList');
   STORE.messages.forEach(m => {
     const li = document.createElement('li');
-    li.textContent = `${m.title} — "${m.msg}"`;
+    li.textContent = `${m.title} â€” "${m.msg}"`;
     msgUl.appendChild(li);
   });
 
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const delUl = document.getElementById('deliveryList');
   STORE.deliveryRequests.forEach(d => {
     const li = document.createElement('li');
-    li.textContent = `${d.title} — requested on ${d.date}`;
+    li.textContent = `${d.title} â€” requested on ${d.date}`;
     delUl.appendChild(li);
   });
 
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const repUl = document.getElementById('reportsList');
   STORE.reports.forEach(r => {
     const li = document.createElement('li');
-    li.textContent = `${r.title} — reason: ${r.reason}`;
+    li.textContent = `${r.title} â€” reason: ${r.reason}`;
     repUl.appendChild(li);
   });
 

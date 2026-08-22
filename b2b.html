@@ -10,7 +10,6 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen antialiased">
 
-  <!-- Navigation Bar -->
   <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
       <a href="index.html" class="flex flex-col group">
@@ -43,7 +42,6 @@
       </a>
     </div>
 
-    <!-- Live Business Directory Container -->
     <div id="b2b-container" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
       <div class="col-span-full p-8 bg-slate-800/50 rounded-xl border border-slate-800 text-center text-slate-400 text-sm animate-pulse">
         Fetching verified business listings...
@@ -52,13 +50,17 @@
   </main>
 
   <script>
+    const RENDER_BACKEND_URL = 'https://rpm-qhrz.onrender.com';
+
     async function fetchB2BDirectory() {
       const container = document.getElementById('b2b-container');
+      if (!container) return;
       
       try {
-        const response = await fetch('https://rpm-qhrz.onrender.com/api/listings');
-        const data = await response.json();
-        const listings = Array.isArray(data) ? data : (data.listings || []);
+        const response = await fetch(`${RENDER_BACKEND_URL}/api/b2b-listings`);
+        if (!response.ok) throw new Error('Directory endpoint unreachable');
+
+        const listings = await response.json();
 
         if (!listings || listings.length === 0) {
           container.innerHTML = `
@@ -70,7 +72,12 @@
 
         container.innerHTML = listings.map(item => {
           const defaultImage = 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80';
-          const displayImg = (item.imageUrl && item.imageUrl.startsWith('http')) ? item.imageUrl : defaultImage;
+          const rawImg = item.imageUrl || item.image_url;
+          const displayImg = (rawImg && (rawImg.startsWith('http') || rawImg.startsWith('data:image'))) 
+            ? rawImg 
+            : defaultImage;
+
+          const contactEmail = item.email || item.seller_email || 'rpm.cen.cal@gmail.com';
 
           return `
             <div class="bg-slate-800/90 border border-slate-700 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all flex flex-col justify-between">
@@ -87,7 +94,7 @@
                 </div>
               </div>
               <div class="p-5 pt-0 border-t border-slate-700/50 mt-4">
-                <a href="mailto:${item.email || 'rpm.cen.cal@gmail.com'}?subject=B2B Inquiry regarding ${encodeURIComponent(item.title || 'Directory Listing')}" class="w-full block text-center bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold py-2.5 rounded-lg transition-colors mt-3">
+                <a href="mailto:${contactEmail}?subject=B2B Inquiry regarding ${encodeURIComponent(item.title || 'Directory Listing')}" class="w-full block text-center bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold py-2.5 rounded-lg transition-colors mt-3">
                   Contact Business &rarr;
                 </a>
               </div>
@@ -99,12 +106,40 @@
         console.error('Directory error:', err);
         container.innerHTML = `
           <div class="col-span-full p-8 bg-slate-800/50 rounded-xl border border-slate-800 text-center text-slate-400 text-sm">
-            Unable to load directory at this time. Please check backend connection.
+            Unable to load directory at this time. Please refresh or check server connection.
           </div>`;
       }
     }
 
-    document.addEventListener('DOMContentLoaded', fetchB2BDirectory);
+    async function checkPostPaymentPublish() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isSuccess = urlParams.get('status') === 'success';
+      const rawData = localStorage.getItem('pending_b2b_listing');
+
+      if (isSuccess && rawData) {
+        localStorage.removeItem('pending_b2b_listing');
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        try {
+          const payload = JSON.parse(rawData);
+          const res = await fetch(`${RENDER_BACKEND_URL}/api/b2b-listings/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (res.ok) {
+            alert('Payment Successful! Your business listing is live in the directory.');
+          }
+        } catch (err) {
+          console.error('Failed to post business listing after payment:', err);
+        }
+      }
+      
+      fetchB2BDirectory();
+    }
+
+    document.addEventListener('DOMContentLoaded', checkPostPaymentPublish);
   </script>
 </body>
 </html>

@@ -200,6 +200,13 @@
     let cardInstance = null;
     let paymentsInstance = null;
 
+    // Admin & VIP Email Accounts
+    const VIP_EMAILS = [
+      'rpm.cen.cal@gmail.com',
+      'rpm_cen_cal@gmail.com',
+      'pezziracen23@gmail.com'
+    ];
+
     function selectTier(price, tierName, cardId) {
       selectedBasePrice = price;
       selectedTierName = tierName;
@@ -244,11 +251,18 @@
     async function handleCheckout(e) {
       e.preventDefault();
       const emailInput = document.getElementById('email');
-      const email = emailInput ? emailInput.value.trim() : '';
+      const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
       const btn = document.getElementById('checkout-btn');
 
       if (!email) {
         alert("Please enter a valid email address.");
+        return;
+      }
+
+      // VIP ADMIN CHECK - Bypass Square completely
+      if (VIP_EMAILS.includes(email)) {
+        alert("VIP Admin Account Detected! Skipping payment modal...");
+        window.location.href = "dashboard.html";
         return;
       }
 
@@ -327,6 +341,7 @@
           if (resData.success) {
             alert("Payment Successful! Your subscription is active.");
             closeSquareModal();
+            window.location.href = "dashboard.html";
           } else {
             alert("Payment Failed: " + resData.error);
           }

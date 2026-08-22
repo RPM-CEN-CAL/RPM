@@ -1,221 +1,326 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Tools | Pro Equipment Exchange</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tools & Equipment | RPM Marketplace</title>
+    <link rel="stylesheet" href="Assets/listing-card.css">
+    <style>
+        :root {
+            --bg-dark: #0b0f19;
+            --card-bg: rgba(18, 26, 44, 0.75);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-blue: #2563eb;
+            --accent-blue-hover: #1d4ed8;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --glass-header: rgba(11, 15, 25, 0.85);
+        }
 
-<link rel="stylesheet" href="Assets/listing-card.css">
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
 
-<style>
-* { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-body {
-    font-family: Arial, sans-serif;
-    background-color:#f5f5f5;
-    color:#222;
-}
+        /* Modern Glass Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background: var(--glass-header);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 1000;
+        }
 
-header {
-    position:fixed;
-    top:0;
-    width:100%;
-    height:70px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 20px;
-    background:linear-gradient(to right,#c40000,#ffffff,#0033a0);
-    border-bottom:2px solid #222;
-    z-index:1000;
-}
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #fff;
+            text-decoration: none;
+        }
 
-.header-left {
-    font-size:1.8rem;
-    cursor:pointer;
-    background-color:rgba(255,255,255,0.3);
-    padding:6px 12px;
-    border-radius:4px;
-}
+        .brand-badge {
+            background: var(--accent-blue);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
 
-.header-center {
-    font-weight:bold;
-    font-size:1.2rem;
-    text-align:center;
-    flex:1;
-}
+        nav.nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
 
-.header-right a {
-    text-decoration:none;
-    color:#000;
-    font-weight:600;
-    background-color:rgba(255,255,255,0.4);
-    padding:6px 10px;
-    border-radius:4px;
-}
+        nav.nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
 
-.side-menu {
-    position:fixed;
-    top:70px;
-    left:-260px;
-    width:260px;
-    height:100%;
-    background:#fff;
-    box-shadow:3px 0 10px rgba(0,0,0,0.25);
-    padding:20px;
-    transition:0.3s;
-    z-index:2000;
-}
+        nav.nav-links a:hover, nav.nav-links a.active {
+            color: var(--text-main);
+        }
 
-.side-menu ul { list-style:none; }
-.side-menu li { margin-bottom:15px; }
+        .btn-portal {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
 
-.dropdown-btn {
-    width:100%;
-    background:#0033a0;
-    color:#fff;
-    padding:10px;
-    border:none;
-    text-align:left;
-    font-size:1rem;
-    border-radius:6px;
-    cursor:pointer;
-}
+        .btn-portal:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
 
-.dropdown-container {
-    display:none;
-    background:#f5f5f5;
-    padding:10px;
-    border-radius:6px;
-    margin-top:5px;
-}
+        /* Mobile Menu Toggle */
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-main);
+        }
 
-.dropdown-container a {
-    display:block;
-    padding:6px 0;
-    text-decoration:none;
-    color:#222;
-    font-size:0.95rem;
-}
+        /* Main Container */
+        main {
+            margin-top: 90px;
+            padding: 2rem 1.5rem;
+            max-width: 1200px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            flex: 1;
+        }
 
-.dropdown-container a:hover { color:#0033a0; }
-.menu-open { left:0; }
+        .page-header {
+            margin-bottom: 2rem;
+            text-align: left;
+        }
 
-main {
-    padding-top:100px;
-    width:100%;
-    max-width:1100px;
-    margin:auto;
-}
+        .page-header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.5rem;
+        }
 
-section {
-    background:#fff;
-    margin:20px auto;
-    padding:25px 20px;
-    border-radius:10px;
-    box-shadow:0 5px 15px rgba(0,0,0,0.15);
-    width:90%;
-    max-width:900px;
-}
+        .page-header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
 
-section h2 {
-    margin-bottom:12px;
-    font-size:1.6rem;
-    font-weight:bold;
-    text-align:center;
-}
-</style>
+        /* Listings Grid */
+        .listings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .listing-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .listing-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(37, 99, 235, 0.4);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .price-badge {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #38bdf8;
+        }
+
+        .card-details {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-details li {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .card-details li span {
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .card-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .btn-action {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-action.primary {
+            grid-column: span 2;
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: #fff;
+        }
+
+        .btn-action.primary:hover {
+            background: var(--accent-blue-hover);
+        }
+
+        footer {
+            margin-top: auto;
+            border-top: 1px solid var(--card-border);
+            padding: 1.5rem 0;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            nav.nav-links { display: none; }
+            .menu-toggle { display: block; }
+            .page-header h1 { font-size: 1.75rem; }
+        }
+    </style>
 </head>
-
 <body>
 
-<header>
-    <div class="header-left">☰</div>
-    <div class="header-center">Tools Listings</div>
-    <div class="header-right">
-        <a href="index.html">Home</a>
-    </div>
-</header>
+    <header>
+        <a href="index.html" class="brand-logo">
+            <span class="brand-badge">RPM</span> EQUIPMENT
+        </a>
 
-<div id="sideMenu" class="side-menu">
-    <ul>
-        <li>
-            <button class="dropdown-btn">Buy Equipment ▼</button>
-            <div class="dropdown-container">
-                <a href="heavy-equipment.html">Heavy Equipment</a>
-                <a href="tools.html">Tools</a>
-                <a href="vehicles.html">Vehicles</a>
-                <a href="attachments.html">Attachments</a>
-            </div>
-        </li>
+        <nav class="nav-links">
+            <a href="heavy-equipment.html">Heavy Equipment</a>
+            <a href="tools.html" class="active">Tools</a>
+            <a href="vehicles.html">Vehicles</a>
+            <a href="attachments.html">Attachments</a>
+            <a href="membership.html">Membership</a>
+        </nav>
 
-        <li>
-            <button class="dropdown-btn">Sell Equipment ▼</button>
-            <div class="dropdown-container">
-                <a href="pricing.html">Pricing Guide</a>
-                <a href="sellertips.html">Seller Tips</a>
-                <a href="membership.html">Membership Info</a>
-                <a href="online-payment.html">Online Payment & Delivery</a>
-            </div>
-        </li>
+        <a href="dashboard.html" class="btn-portal">Client Portal</a>
+    </header>
 
-        <li><a href="!search.html">Search</a></li>
-        <li><a href="pricing.html">Pricing Guide</a></li>
-        <li><a href="sellertips.html">Seller Tips</a></li>
-        <li><a href="membership.html">Membership</a></li>
-        <li><a href="online-payment.html">Online Payment</a></li>
-    </ul>
-</div>
-
-<main>
-    <section>
-        <h2>Available Tools</h2>
-
-        <div class="listing-card" id="compressor">
-            <h3>Industrial Air Compressor</h3>
-            <p>Price: $1,200</p>
-            <p>Location: Fresno, CA</p>
-            <p>Condition: Used - Excellent</p>
-
-            <button>Contact Seller</button>
-            <button>Request Delivery</button>
-            <button>Save Listing</button>
-            <button>Report Listing</button>
+    <main>
+        <div class="page-header">
+            <h1>Industrial Tools & Equipment</h1>
+            <p>Browse active listings for high-grade commercial tools and shop equipment.</p>
         </div>
 
-        <div class="listing-card">
-            <h3>Concrete Saw</h3>
-            <p>Price: $650</p>
-            <p>Location: Visalia, CA</p>
-            <p>Condition: Used - Good</p>
+        <div class="listings-grid">
+            
+            <div class="listing-card" id="compressor">
+                <div>
+                    <div class="card-header">
+                        <h3 class="card-title">Industrial Air Compressor</h3>
+                        <span class="price-badge">$1,200</span>
+                    </div>
+                    <ul class="card-details">
+                        <li>Location <span>Fresno, CA</span></li>
+                        <li>Condition <span>Used - Excellent</span></li>
+                        <li>Category <span>Air Tools</span></li>
+                    </ul>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-action primary">Contact Seller</button>
+                    <button class="btn-action">Request Delivery</button>
+                    <button class="btn-action">Save Listing</button>
+                </div>
+            </div>
 
-            <button>Contact Seller</button>
-            <button>Request Delivery</button>
-            <button>Save Listing</button>
-            <button>Report Listing</button>
+            <div class="listing-card">
+                <div>
+                    <div class="card-header">
+                        <h3 class="card-title">Concrete Saw</h3>
+                        <span class="price-badge">$650</span>
+                    </div>
+                    <ul class="card-details">
+                        <li>Location <span>Visalia, CA</span></li>
+                        <li>Condition <span>Used - Good</span></li>
+                        <li>Category <span>Cutting Equipment</span></li>
+                    </ul>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-action primary">Contact Seller</button>
+                    <button class="btn-action">Request Delivery</button>
+                    <button class="btn-action">Save Listing</button>
+                </div>
+            </div>
+
         </div>
+    </main>
 
-    </section>
-</main>
+    <footer>
+        <p>&copy; RPM Equipment Marketplace. All rights reserved.</p>
+    </footer>
 
-<script src="app.js" defer></script>
-
-<script>
-const menuBtn = document.querySelector('.header-left');
-const sideMenu = document.getElementById('sideMenu');
-const dropdowns = document.getElementsByClassName("dropdown-btn");
-
-menuBtn.addEventListener('click', () => {
-    sideMenu.classList.toggle('menu-open');
-});
-
-for (let i = 0; i < dropdowns.length; i++) {
-    dropdowns[i].addEventListener("click", function () {
-        const container = this.nextElementSibling;
-        container.style.display = container.style.display === "block" ? "none" : "block";
-    });
-}
-</script>
-
+    <script src="app.js" defer></script>
 </body>
 </html>

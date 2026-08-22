@@ -1,167 +1,207 @@
-// RPM Equipment Marketplace & B2B Directory Handler
-
 const RENDER_BACKEND_URL = 'https://rpm-qhrz.onrender.com';
 
-// 1. Fetch & Render Marketplace Inventory
-async function loadMarketplaceInventory() {
-  const container = document.getElementById('featured-inventory') || document.querySelector('.listings-grid');
-  if (!container) return;
+const VIP_EMAILS = [
+  'rpm_cen_cal@gmail.com',
+  'rpm.cen.cal@gmail.com',
+  'pezziracen23@gmail.com'
+];
+
+function isVIPUser(email) {
+  if (!email) return false;
+  const cleanEmail = email.toLowerCase().trim();
+  return VIP_EMAILS.some(vip => vip.toLowerCase() === cleanEmail);
+}
+
+// ==========================================
+// PATH 1: EQUIPMENT LISTINGS ($5 / $10)
+// ==========================================
+async function handleListingSubmit(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  const form = document.getElementById('new-listing-form') || (event && event.target);
+  const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+
+  const email = form?.querySelector('#email')?.value.trim() || '';
+  const title = form?.querySelector('#title')?.value.trim() || 'Equipment Item';
+  const price = form?.querySelector('#price')?.value || 0;
+  const listingTierPrice = form?.querySelector('#equipmentTierPrice')?.value || '5';
+
+  const payload = {
+    title,
+    description: form?.querySelector('#description')?.value || '',
+    price,
+    location: form?.querySelector('#location')?.value || 'Central Valley, CA',
+    condition: form?.querySelector('#condition')?.value || 'Used',
+    category: form?.querySelector('#category')?.value || 'General',
+    imageUrl: form?.querySelector('#imageUrl')?.value || '',
+    email
+  };
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerText = `Connecting to Square ($${listingTierPrice}.00)...`;
+  }
 
   try {
-    const response = await fetch(`${RENDER_BACKEND_URL}/api/listings`);
-    
-    if (!response.ok) throw new Error('Listings endpoint unreachable');
-    
-    const listings = await response.json();
-
-    if (Array.isArray(listings) && listings.length > 0) {
-      container.innerHTML = listings.map(item => `
-        <div class="listing-card">
-          <div class="card-header">
-            <h3 class="card-title">${item.title || 'Equipment Item'}</h3>
-            <span class="price-badge">$${item.price || '0'}</span>
-          </div>
-          <ul class="card-details">
-            <li>Location <span>${item.location || 'Central Valley, CA'}</span></li>
-            <li>Condition <span>${item.condition || 'Used'}</span></li>
-          </ul>
-          <div class="card-actions">
-            <button class="btn-action primary">Contact Seller</button>
-            <button class="btn-action">Request Delivery</button>
-          </div>
-        </div>
-      `).join('');
-    } else {
-      renderFallbackInventory(container);
+    if (isVIPUser(email)) {
+      const vipRes = await fetch(`${RENDER_BACKEND_URL}/api/listings/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      if (vipRes.ok) {
+        alert('VIP Approved! Equipment posted directly to marketplace.');
+        window.location.href = 'index.html';
+        return;
+      }
     }
-  } catch (error) {
-    console.warn('Backend fetch failed or no items returned. Rendering fallback inventory:', error.message);
-    renderFallbackInventory(container);
+
+    localStorage.setItem('pending_equipment_listing', JSON.stringify(payload));
+
+    const checkoutRes = await fetch(`${RENDER_BACKEND_URL}/api/create-square-checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        basePrice: listingTierPrice, 
+        tierName: `Equipment Listing ($${listingTierPrice})`, 
+        email 
+      })
+    });
+
+    const checkoutData = await checkoutRes.json();
+    if (checkoutData.success && checkoutData.url) {
+      window.location.href = checkoutData.url;
+    } else {
+      alert('Square checkout link creation failed.');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Pay & Post Item For Sale →';
+      }
+    }
+  } catch (err) {
+    console.error('Submit error:', err);
+    alert('Server connection error. Please retry.');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'Pay & Post Item For Sale →';
+    }
   }
 }
 
-// Fallback Marketplace Inventory
-function renderFallbackInventory(container) {
-  container.innerHTML = `
-    <div class="listing-card">
-      <div class="card-header">
-        <h3 class="card-title">2018 Caterpillar 320 Excavator</h3>
-        <span class="price-badge">$68,500</span>
-      </div>
-      <ul class="card-details">
-        <li>Location <span>Fresno, CA</span></li>
-        <li>Condition <span>Excellent</span></li>
-      </ul>
-      <div class="card-actions">
-        <button class="btn-action primary">Contact Seller</button>
-        <button class="btn-action">Request Delivery</button>
-      </div>
-    </div>
-    <div class="listing-card">
-      <div class="card-header">
-        <h3 class="card-title">Industrial Air Compressor</h3>
-        <span class="price-badge">$1,200</span>
-      </div>
-      <ul class="card-details">
-        <li>Location <span>Visalia, CA</span></li>
-        <li>Condition <span>Used - Good</span></li>
-      </ul>
-      <div class="card-actions">
-        <button class="btn-action primary">Contact Seller</button>
-        <button class="btn-action">Request Delivery</button>
-      </div>
-    </div>
-  `;
-}
+// ==========================================
+// PATH 2: BUSINESS PROMOTION (FIXED $2.00)
+// ==========================================
+async function handleBusinessSubmit(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
 
-// 2. Fetch & Render B2B Directory
-async function loadB2BDirectory() {
-  const container = document.getElementById('b2b-directory') || document.querySelector('.b2b-grid');
-  if (!container) return;
+  const submitBtn = document.getElementById('payBtn');
+
+  const email = document.getElementById('email')?.value.trim() || '';
+  const companyName = document.getElementById('companyName')?.value.trim() || '';
+  const description = document.getElementById('description')?.value.trim() || '';
+  
+  const selectCat = document.getElementById('categorySelect')?.value;
+  const customCat = document.getElementById('customCategoryInput')?.value.trim();
+  const category = (selectCat === 'OTHER' && customCat) ? customCat : selectCat;
+
+  const selectedPrice = '2';
+
+  const payload = { companyName, title: companyName, description, email, category };
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerText = `Connecting to Square ($2.00)...`;
+  }
 
   try {
-    const response = await fetch(`${RENDER_BACKEND_URL}/api/b2b-listings`);
-    if (!response.ok) throw new Error('B2B directory endpoint unreachable');
-    
-    const businesses = await response.json();
+    if (isVIPUser(email)) {
+      const vipRes = await fetch(`${RENDER_BACKEND_URL}/api/b2b-listings/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-    if (Array.isArray(businesses) && businesses.length > 0) {
-      container.innerHTML = businesses.map(biz => `
-        <div class="listing-card">
-          <div class="card-header">
-            <h3 class="card-title">${biz.companyName || 'Verified Contractor'}</h3>
-            <span class="price-badge">${biz.category || 'B2B Service'}</span>
-          </div>
-          <ul class="card-details">
-            <li>Location <span>${biz.location || 'Central Valley, CA'}</span></li>
-            <li>Contact <span>${biz.phone || biz.email || 'Available via Inquiry'}</span></li>
-          </ul>
-          <div class="card-actions">
-            <button class="btn-action primary">View Business Profile</button>
-          </div>
-        </div>
-      `).join('');
-    } else {
-      renderFallbackB2B(container);
+      if (vipRes.ok) {
+        alert('VIP Approved! Business posted directly to B2B directory.');
+        window.location.href = 'b2b.html';
+        return;
+      }
     }
-  } catch (error) {
-    console.warn('B2B directory fetch failed. Rendering fallback content:', error.message);
-    renderFallbackB2B(container);
+
+    localStorage.setItem('pending_b2b_listing', JSON.stringify(payload));
+
+    const checkoutRes = await fetch(`${RENDER_BACKEND_URL}/api/create-square-checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        basePrice: selectedPrice, 
+        tierName: `B2B Directory Listing ($2.00)`, 
+        email 
+      })
+    });
+
+    const checkoutData = await checkoutRes.json();
+    if (checkoutData.success && checkoutData.url) {
+      window.location.href = checkoutData.url;
+    } else {
+      alert('Square payment link creation failed.');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Pay $2.00 & Post Business →';
+      }
+    }
+  } catch (err) {
+    console.error('Submit error:', err);
+    alert('Server connection error. Please retry.');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'Pay $2.00 & Post Business →';
+    }
   }
 }
 
-// Real Business Directory Entries (RPM, Reliable Property Methods, Creator Flow AI)
-function renderFallbackB2B(container) {
-  container.innerHTML = `
-    <div class="listing-card">
-      <div class="card-header">
-        <h3 class="card-title">RPM Equipment Marketplace</h3>
-        <span class="price-badge">Equipment Exchange</span>
-      </div>
-      <ul class="card-details">
-        <li>Coverage <span>Central Valley, CA</span></li>
-        <li>Specialty <span>Heavy Equipment, Tools & Commercial Marketplace</span></li>
-        <li>Contact <span>rpm.cen.cal@gmail.com</span></li>
-      </ul>
-      <div class="card-actions">
-        <button class="btn-action primary" onclick="window.location.href='membership.html'">Browse Listings</button>
-      </div>
-    </div>
+// Check for post-payment return on index.html
+async function checkEquipmentPostPayment() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const isSuccess = urlParams.get('status') === 'success';
+  const rawData = localStorage.getItem('pending_equipment_listing');
 
-    <div class="listing-card">
-      <div class="card-header">
-        <h3 class="card-title">Reliable Property Methods</h3>
-        <span class="price-badge">Property & Inspections</span>
-      </div>
-      <ul class="card-details">
-        <li>Service Area <span>Tulare County & Surrounding Areas</span></li>
-        <li>Specialty <span>Property Assessments & Field Inspections</span></li>
-        <li>Website <span>rpm-inspections.com</span></li>
-      </ul>
-      <div class="card-actions">
-        <button class="btn-action primary" onclick="window.open('https://rpm-inspections.com', '_blank')">Visit Website</button>
-      </div>
-    </div>
-    
-    <div class="listing-card">
-      <div class="card-header">
-        <h3 class="card-title">Creator Flow AI (RPM-Digital)</h3>
-        <span class="price-badge">AI & Digital Solutions</span>
-      </div>
-      <ul class="card-details">
-        <li>Service Area <span>Serving All U.S.</span></li>
-        <li>Specialty <span>Automated Workflow & Commercial AI Software</span></li>
-        <li>Website <span>creator-flow-ai.com</span></li>
-      </ul>
-      <div class="card-actions">
-        <button class="btn-action primary" onclick="window.open('https://creator-flow-ai.com', '_blank')">Visit Website</button>
-      </div>
-    </div>
-  `;
+  if (isSuccess && rawData) {
+    localStorage.removeItem('pending_equipment_listing');
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    try {
+      const payload = JSON.parse(rawData);
+      await fetch(`${RENDER_BACKEND_URL}/api/listings/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      alert('Payment confirmed! Equipment listing is live.');
+      window.location.reload();
+    } catch (err) {
+      console.error('Failed to auto-publish item:', err);
+    }
+  }
 }
 
-// Execute triggers when page loads
 document.addEventListener('DOMContentLoaded', () => {
-  loadMarketplaceInventory();
-  loadB2BDirectory();
+  const marketplaceForm = document.getElementById('new-listing-form');
+  if (marketplaceForm) {
+    marketplaceForm.addEventListener('submit', handleListingSubmit);
+  }
+
+  const businessForm = document.getElementById('businessForm');
+  if (businessForm) {
+    businessForm.addEventListener('submit', handleBusinessSubmit);
+  }
+
+  checkEquipmentPostPayment();
 });

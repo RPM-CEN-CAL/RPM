@@ -8,20 +8,7 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' })); // Allows Base64 image payload handling
 
 // In-Memory Database
-let b2bListings = [
-  {
-    id: "1",
-    companyName: "RPM Inspections",
-    email: "rpm.cen.cal@gmail.com",
-    phone: "(555) 000-0000",
-    category: "RPM Commercial Inspections",
-    website: "https://rpm-equipment.netlify.app",
-    location: "Visalia, CA",
-    imageUrl: "",
-    description: "Certified commercial and residential property assessments, pre-purchase home inspections, heavy equipment site evaluations, and structural checks throughout the Central Valley.",
-    createdAt: new Date().toISOString()
-  }
-];
+let b2bListings = [];
 
 // Health Check Endpoint
 app.get('/', (req, res) => {

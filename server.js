@@ -153,7 +153,7 @@ app.post('/api/create-square-checkout', async (req, res) => {
       return res.json({ success: true, isVip: true, message: 'VIP Access Granted' });
     }
 
-    // 2. Square Checkout Link Generation (or Fallback URL)
+    // 2. Square Checkout Link & QR Code Generation
     const checkoutUrl = process.env.SQUARE_CHECKOUT_URL || 'https://square.link/u/RPM_SUBSCRIPTION_FALLBACK';
     const qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(checkoutUrl);
 
@@ -161,8 +161,15 @@ app.post('/api/create-square-checkout', async (req, res) => {
       success: true,
       isVip: false,
       checkoutUrl: checkoutUrl,
+      url: checkoutUrl,
       qrCode: qrCodeUrl
     });
+  } catch (err) {
+    console.error('Checkout creation error:', err);
+    res.status(500).json({ success: false, error: 'Failed to create checkout session' });
+  }
+});
+// Endpoint replacement applied
   } catch (err) {
     console.error('Checkout creation error:', err);
     res.status(500).json({ success: false, error: 'Failed to create checkout session' });
@@ -246,4 +253,5 @@ app.listen(PORT, () => {
 
 
 // Force deploy timestamp: 08/22/2026 15:42:22
+
 

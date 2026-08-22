@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Square Web Payments SDK -->
+  <script src="https://web.squarecdn.com/v1/square.js"></script>
   <style>
     body { font-family: 'Inter', sans-serif; }
   </style>
@@ -33,7 +35,7 @@
       </nav>
 
       <div class="flex items-center space-x-4">
-        <a href="seller-dashboard.html" class="text-sm font-medium text-slate-300 hover:text-white px-3 py-2">Client Portal</a>
+        <a href="dashboard.html" class="text-sm font-medium text-slate-300 hover:text-white px-3 py-2">Client Portal</a>
       </div>
     </div>
   </header>
@@ -97,7 +99,7 @@
         <div class="flex items-start gap-3 bg-slate-900/60 p-4 rounded-xl border border-slate-700/60">
           <input type="checkbox" id="terms-check" required class="mt-1 accent-blue-600 h-4 w-4 rounded">
           <label for="terms-check" class="text-xs text-slate-300 leading-relaxed">
-            I agree to the <button type="button" onclick="openTermsModal()" class="text-blue-400 hover:underline font-semibold">RPM Seller Terms & Conditions</button>.
+            I agree to the <button type="button" onclick="openTermsModal()" class="text-blue-400 hover:underline font-semibold">RPM Seller Terms & Conditions</button>. I understand that trades are private agreements between parties and the 3% payment processing fee is non-refundable.
           </label>
         </div>
 
@@ -106,19 +108,71 @@
             <span>Base Subscription Tier:</span>
             <span id="summary-base">$5.00</span>
           </div>
+          <div class="flex justify-between text-slate-400">
+            <span>Card Processing Fee (3%):</span>
+            <span id="summary-fee">$0.15</span>
+          </div>
           <div class="flex justify-between text-white font-bold text-sm pt-2 border-t border-slate-800">
             <span>Total Due Now:</span>
-            <span id="summary-total" class="text-blue-400">$5.00</span>
+            <span id="summary-total" class="text-blue-400">$5.15</span>
           </div>
         </div>
 
         <button type="submit" id="checkout-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-blue-600/30 transition-all text-sm flex items-center justify-center gap-2">
-          <span>Proceed to Checkout</span> &rarr;
+          <span>Proceed to Payment Options</span> &rarr;
         </button>
       </form>
     </div>
 
   </main>
+
+  <!-- Square Dual-Option Payment Modal -->
+  <div id="square-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <button onclick="closeSquareModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">✕</button>
+      
+      <div class="text-center space-y-1">
+        <div class="inline-flex items-center justify-center w-10 h-10 bg-black text-white font-black text-lg rounded-xl border border-slate-700 mb-1">■</div>
+        <h3 class="text-xl font-bold text-white">Square Checkout</h3>
+        <p class="text-xs text-slate-400">Pay directly with card or scan the QR code.</p>
+      </div>
+
+      <div class="text-center bg-slate-800 p-3 rounded-xl border border-slate-700">
+        <div class="text-xs text-slate-400 uppercase font-semibold">Total Amount Due</div>
+        <div id="square-modal-amount" class="text-3xl font-black text-emerald-400">$5.15</div>
+        <div class="text-[10px] text-slate-500 mt-1">Includes 3% processing fee</div>
+      </div>
+
+      <!-- Option 1: Direct On-Site Card Entry -->
+      <div class="space-y-3 bg-slate-800/60 p-4 rounded-xl border border-slate-700/60">
+        <div class="text-xs font-bold text-white uppercase tracking-wider text-center">Option 1: Pay On Page</div>
+        <div id="card-container" class="bg-white p-3 rounded-lg min-h-[90px] flex items-center justify-center text-slate-800">
+          <span class="text-xs text-slate-500">Loading credit card form...</span>
+        </div>
+        <button id="card-pay-btn" type="button" onclick="handleCardPaySubmit(event)" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-sm transition-all shadow-md">
+          Pay Directly ($<span id="btn-amount">5.15</span>)
+        </button>
+      </div>
+
+      <div class="relative flex py-1 items-center">
+        <div class="flex-grow border-t border-slate-800"></div>
+        <span class="flex-shrink mx-4 text-[10px] text-slate-500 font-bold uppercase">OR</span>
+        <div class="flex-grow border-t border-slate-800"></div>
+      </div>
+
+      <!-- Option 2: Scan QR or External Link -->
+      <div class="space-y-3 text-center">
+        <div class="text-xs font-bold text-white uppercase tracking-wider">Option 2: Scan QR or External Checkout</div>
+        <div class="flex flex-col items-center justify-center p-3 bg-white rounded-xl max-w-[160px] mx-auto min-h-[140px]">
+          <img id="square-qr-image" src="" alt="Square Payment QR Code" class="w-32 h-32 object-contain">
+          <span class="text-[9px] font-bold text-slate-700 uppercase tracking-wider mt-1">Scan to pay</span>
+        </div>
+        <a id="square-pay-link" href="#" target="_blank" class="block w-full bg-slate-800 hover:bg-slate-700 text-blue-400 text-center font-bold py-2.5 rounded-lg text-xs border border-slate-700 transition-all">
+          Open Square Web Page &rarr;
+        </a>
+      </div>
+    </div>
+  </div>
 
   <!-- Terms & Conditions Modal -->
   <div id="terms-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
@@ -130,6 +184,7 @@
       <div class="text-xs text-slate-300 space-y-3 leading-relaxed max-h-60 overflow-y-auto pr-2">
         <p><strong>1. Buy & Sell Platform Scope:</strong> RPM Equipment provides an online venue for listing equipment across all industries.</p>
         <p><strong>2. Trade Agreements:</strong> Any trade or barter arrangements made between listing sellers and buyers are strictly independent, personal agreements.</p>
+        <p><strong>3. Processing Fees:</strong> A 3% payment processing fee is added to each subscription tier to cover credit card handling.</p>
       </div>
       <button onclick="closeTermsModal()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg text-xs">
         I Understand & Agree
@@ -144,7 +199,10 @@
   <script>
     let selectedBasePrice = 5;
     let selectedTierName = "1 Active Listing";
+    let cardInstance = null;
+    let paymentsInstance = null;
 
+    // Admin & VIP Email Accounts
     const VIP_EMAILS = [
       'rpm.cen.cal@gmail.com',
       'rpm_cen_cal@gmail.com',
@@ -152,7 +210,7 @@
     ];
 
     function selectTier(price, tierName, cardId) {
-      selectedBasePrice = price;
+      selectedBasePrice = Number(price);
       selectedTierName = tierName;
 
       document.querySelectorAll('.tier-card').forEach(card => {
@@ -165,9 +223,38 @@
         activeCard.classList.add('border-blue-500', 'bg-slate-800');
       }
 
+      const fee = selectedBasePrice * 0.03;
+      const total = selectedBasePrice + fee;
+
       document.getElementById('selected-tier-display').innerText = `Selected Tier: $${selectedBasePrice} / mo (${tierName})`;
       document.getElementById('summary-base').innerText = `$${selectedBasePrice.toFixed(2)}`;
-      document.getElementById('summary-total').innerText = `$${selectedBasePrice.toFixed(2)}`;
+      document.getElementById('summary-fee').innerText = `$${fee.toFixed(2)}`;
+      document.getElementById('summary-total').innerText = `$${total.toFixed(2)}`;
+      document.getElementById('square-modal-amount').innerText = `$${total.toFixed(2)}`;
+      document.getElementById('btn-amount').innerText = total.toFixed(2);
+    }
+
+    async function initSquarePaymentForm() {
+      if (cardInstance) return;
+
+      const container = document.getElementById('card-container');
+
+      try {
+        const configRes = await fetch('https://rpm-qhrz.onrender.com/api/square-config');
+        const config = await configRes.json();
+
+        if (config.appId && config.locationId && typeof Square !== 'undefined') {
+          paymentsInstance = Square.payments(config.appId, config.locationId);
+          cardInstance = await paymentsInstance.card();
+          if (container) container.innerHTML = '';
+          await cardInstance.attach('#card-container');
+        } else {
+          if (container) container.innerHTML = '<span class="text-xs text-red-500">Square credentials unconfigured or script blocked.</span>';
+        }
+      } catch (err) {
+        console.warn("Square Card field load error:", err);
+        if (container) container.innerHTML = '<span class="text-xs text-amber-600 font-medium">Use external checkout below to complete payment.</span>';
+      }
     }
 
     async function handleCheckout(e) {
@@ -181,9 +268,11 @@
         return;
       }
 
+      localStorage.setItem('rpm_user_email', email);
+
       if (VIP_EMAILS.includes(email)) {
-        alert("VIP Admin Account Detected! Redirecting to seller portal...");
-        window.location.href = "seller-dashboard.html";
+        alert("VIP Admin Account Detected! Skipping payment modal...");
+        window.location.href = "dashboard.html";
         return;
       }
 
@@ -193,38 +282,115 @@
       try {
         const response = await fetch('https://rpm-qhrz.onrender.com/api/create-square-checkout', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          mode: 'cors',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
           body: JSON.stringify({
-            basePrice: String(selectedBasePrice),
+            basePrice: Number(selectedBasePrice),
             tierName: String(selectedTierName),
-            email: email
+            email: email,
+            type: 'seller'
           })
         });
 
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: `Server status: ${response.status}` }));
+          throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+        }
+
         const data = await response.json();
 
-        if (data.success && data.url) {
-          window.location.href = data.url;
+        if (data.success) {
+          const formattedTotal = data.totalFormatted || (selectedBasePrice * 1.03).toFixed(2);
+          document.getElementById('square-modal-amount').innerText = `$${formattedTotal}`;
+          document.getElementById('btn-amount').innerText = formattedTotal;
+
+          if (data.qrCodeUrl) {
+            document.getElementById('square-qr-image').src = data.qrCodeUrl;
+          }
+          if (data.url) {
+            document.getElementById('square-pay-link').href = data.url;
+          }
+
+          const modal = document.getElementById('square-modal');
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+
+          initSquarePaymentForm();
         } else {
-          alert("Payment Link Error: " + (data.error || "Unable to reach Square."));
+          alert("Payment Error: " + (data.error || "Unknown server error."));
         }
       } catch (err) {
-        console.error("Checkout Error:", err);
-        alert("Server connection failed. Please try again.");
+        console.error("Fetch Execution Error:", err);
+        alert(`Failed to connect to backend server (${err.message}). Make sure server.js is deployed and active on Render.`);
       } finally {
         btn.disabled = false;
-        btn.innerText = "Proceed to Checkout →";
+        btn.innerText = "Proceed to Payment Options →";
       }
     }
 
+    async function handleCardPaySubmit(e) {
+      e.preventDefault();
+      if (!cardInstance) {
+        alert("Direct card processing unavailable. Please use the Square web link below.");
+        return;
+      }
+
+      const payBtn = document.getElementById('card-pay-btn');
+      payBtn.disabled = true;
+      payBtn.innerText = "Processing Payment...";
+
+      try {
+        const result = await cardInstance.tokenize();
+        if (result.status === 'OK') {
+          const response = await fetch('https://rpm-qhrz.onrender.com/api/process-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sourceId: result.token,
+              basePrice: selectedBasePrice,
+              email: document.getElementById('email').value
+            })
+          });
+
+          const resData = await response.json();
+          if (resData.success) {
+            alert("Payment Successful! Your subscription is active.");
+            closeSquareModal();
+            window.location.href = "dashboard.html";
+          } else {
+            alert("Payment Failed: " + resData.error);
+          }
+        } else {
+          alert("Card Details Error: " + (result.errors?.[0]?.message || "Invalid card credentials"));
+        }
+      } catch (err) {
+        console.error("Card payment error:", err);
+        alert("Transaction failed. Please try again or use the Square link.");
+      } finally {
+        payBtn.disabled = false;
+        payBtn.innerText = `Pay Directly ($${document.getElementById('btn-amount').innerText})`;
+      }
+    }
+
+    function closeSquareModal() {
+      const modal = document.getElementById('square-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
     function openTermsModal() {
-      document.getElementById('terms-modal').classList.remove('hidden');
-      document.getElementById('terms-modal').classList.add('flex');
+      const modal = document.getElementById('terms-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
     }
 
     function closeTermsModal() {
-      document.getElementById('terms-modal').classList.add('hidden');
-      document.getElementById('terms-modal').classList.remove('flex');
+      const modal = document.getElementById('terms-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
     }
 
     selectTier(5, '1 Active Listing', 'tier-card-5');

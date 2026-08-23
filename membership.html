@@ -124,7 +124,19 @@
       </form>
     </div>
 
-  </main>
+  <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 text-center space-y-4">
+  <h3 class="text-xl font-bold text-white">Complete Membership Payment</h3>
+  <a href="https://square.link/u/9OGHfW18" target="_blank" rel="noopener noreferrer" class="inline-block bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-colors">
+    Pay via Square Checkout &rarr;
+  </a>
+  <div class="pt-2">
+    <p class="text-xs text-slate-400 mb-2">Or Scan to Pay:</p>
+    <div class="p-2 bg-white rounded-xl inline-block shadow-md">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fsquare.link%2Fu%2F9OGHfW18" alt="Square Payment QR Code" class="w-40 h-40">
+    </div>
+  </div>
+</div>
+</main>
 
   <!-- Square Dual-Option Payment Modal -->
   <div id="square-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">

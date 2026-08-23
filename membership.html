@@ -29,7 +29,7 @@
         <p class="text-blue-400 font-medium text-sm mt-1">Selected Tier:  / mo (1 Active Listing)</p>
       </div>
 
-      <form id="membershipForm" onsubmit="handleProceed(event)" class="space-y-6">
+      <form id="membershipForm" onsubmit="event.preventDefault(); handleProceed(event)" class="space-y-6">
         <div>
           <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Email</label>
           <input type="email" required placeholder="name@company.com" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors">
@@ -105,7 +105,7 @@
       <div class="space-y-2 flex flex-col items-center">
         <span class="text-xs font-bold text-slate-300 uppercase tracking-wider block">Option 2: Scan QR Code</span>
         <div class="p-3 bg-white rounded-xl shadow-md inline-block">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fsquare.link%2Fu%2F9OGHfW18" alt="Square Payment QR Code" class="w-44 h-44 object-contain">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fsquare.link%2Fu%2F9OGHfW18" alt="Square Payment QR Code" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fsquare.link%2Fu%2F9OGHfW18">
         </div>
         <p class="text-xs text-slate-400 mt-1">Scan with phone camera to complete payment</p>
       </div>
@@ -117,7 +117,7 @@
   </footer>
 
   <script>
-    function handleProceed(event) {
+    function handleProceed(event) { if (event && event.preventDefault) event.preventDefault();
       event.preventDefault(); // Prevents page reload / blink
       document.getElementById('paymentModal').classList.remove('hidden');
     }

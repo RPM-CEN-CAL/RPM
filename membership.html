@@ -3,424 +3,128 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RPM Equipment | Seller Membership & Payment</title>
+  <title>RPM Equipment - Seller Membership</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- Square Web Payments SDK -->
-  <script src="https://web.squarecdn.com/v1/square.js"></script>
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-  </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen antialiased flex flex-col justify-between">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
 
-  <!-- Navigation Bar -->
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      <a href="index.html" class="flex flex-col group">
-        <div class="text-2xl font-black tracking-tight text-white flex items-center gap-2">
-          <span class="bg-blue-600 text-white px-2 py-0.5 rounded-lg font-mono text-sm">RPM</span>
-          <span class="group-hover:text-blue-400 transition-colors">EQUIPMENT</span>
-        </div>
-        <span class="text-[10px] sm:text-xs font-semibold text-slate-400 tracking-tight">
-          Buy & Sell Equipment for All Industries
-        </span>
-      </a>
-
-      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
-        <a href="index.html" class="hover:text-blue-400 transition-colors">Home</a>
-        <a href="membership.html" class="text-blue-400">Pricing Tiers</a>
-      </nav>
-
-      <div class="flex items-center space-x-4">
-        <a href="dashboard.html" class="text-sm font-medium text-slate-300 hover:text-white px-3 py-2">Client Portal</a>
-      </div>
+  <!-- Header Navigation -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <span class="text-2xl font-black tracking-wider text-blue-500">RPM</span>
+      <span class="text-xl font-bold tracking-tight text-white">EQUIPMENT</span>
     </div>
+    <nav class="hidden md:flex space-x-6 text-sm font-medium text-slate-300">
+      <a href="index.html" class="hover:text-white">Home</a>
+      <a href="pricing.html" class="hover:text-white">Pricing Tiers</a>
+    </nav>
+    <a href="seller-dashboard.html" class="text-sm font-semibold text-slate-300 hover:text-white">Client Portal</a>
   </header>
 
-  <main class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-12">
-    
-    <div class="text-center space-y-3">
-      <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight">Seller Membership & Plans</h1>
-      <p class="text-slate-400 text-sm sm:text-base max-w-xl mx-auto">Select a listing allocation tier to activate your inventory across all industry categories.</p>
-    </div>
-
-    <!-- Tiers Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div id="tier-card-5" onclick="selectTier(5, '1 Active Listing', 'tier-card-5')" class="tier-card bg-slate-800/80 border-2 border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center space-y-4 cursor-pointer transition-all">
-        <div class="text-3xl font-black text-white">$5 <span class="text-xs font-normal text-slate-400">/mo</span></div>
-        <div class="text-sm font-semibold text-blue-400">1 Active Listing</div>
-        <p class="text-xs text-slate-400">Ideal for single equipment sales.</p>
-        <button type="button" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg text-sm">Select Tier</button>
+  <!-- Main Content -->
+  <main class="max-w-2xl mx-auto w-full px-4 py-12 flex-grow">
+    <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-8 shadow-2xl backdrop-blur-sm">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-extrabold text-white tracking-tight">Account Setup</h1>
+        <p class="text-blue-400 font-medium text-sm mt-1">Selected Tier:  / mo (1 Active Listing)</p>
       </div>
 
-      <div id="tier-card-10" onclick="selectTier(10, '5 Active Listings', 'tier-card-10')" class="tier-card bg-slate-800/80 border-2 border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center space-y-4 cursor-pointer transition-all">
-        <div class="text-3xl font-black text-white">$10 <span class="text-xs font-normal text-slate-400">/mo</span></div>
-        <div class="text-sm font-semibold text-blue-400">5 Active Listings</div>
-        <p class="text-xs text-slate-400">Great for small fleet liquidation.</p>
-        <button type="button" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg text-sm">Select Tier</button>
-      </div>
-
-      <div id="tier-card-20" onclick="selectTier(20, '15 Active Listings', 'tier-card-20')" class="tier-card bg-slate-800/80 border-2 border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center space-y-4 cursor-pointer transition-all">
-        <div class="text-3xl font-black text-white">$20 <span class="text-xs font-normal text-slate-400">/mo</span></div>
-        <div class="text-sm font-semibold text-blue-400">15 Active Listings</div>
-        <p class="text-xs text-slate-400">For active equipment dealers.</p>
-        <button type="button" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg text-sm">Select Tier</button>
-      </div>
-
-      <div id="tier-card-50" onclick="selectTier(50, 'Unlimited Listings', 'tier-card-50')" class="tier-card bg-slate-800/80 border-2 border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center space-y-4 cursor-pointer transition-all">
-        <div class="text-3xl font-black text-white">$50 <span class="text-xs font-normal text-slate-400">/mo</span></div>
-        <div class="text-sm font-semibold text-blue-400">Unlimited Listings</div>
-        <p class="text-xs text-slate-400">Enterprise volume & priority placement.</p>
-        <button type="button" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg text-sm">Select Tier</button>
-      </div>
-    </div>
-
-    <!-- Registration & Checkout Form -->
-    <div class="max-w-xl mx-auto bg-slate-800/90 border border-slate-700 rounded-2xl p-8 space-y-6 shadow-2xl">
-      <div class="text-center space-y-1">
-        <h2 class="text-2xl font-bold text-white">Account Setup</h2>
-        <p id="selected-tier-display" class="text-xs text-blue-400 font-medium">Selected Tier: $5 / mo (1 Active Listing)</p>
-      </div>
-
-      <form id="checkout-form" onsubmit="handleCheckout(event)" class="space-y-4">
+      <form id="membershipForm" onsubmit="handleProceed(event)" class="space-y-6">
         <div>
-          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">EMAIL</label>
-          <input type="email" id="email" required placeholder="name@company.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Email</label>
+          <input type="email" required placeholder="name@company.com" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">PASSWORD</label>
-          <input type="password" id="password" required placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Password</label>
+          <input type="password" required placeholder="••••••••" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors">
         </div>
 
-        <div class="flex items-start gap-3 bg-slate-900/60 p-4 rounded-xl border border-slate-700/60">
-          <input type="checkbox" id="terms-check" required class="mt-1 accent-blue-600 h-4 w-4 rounded">
-          <label for="terms-check" class="text-xs text-slate-300 leading-relaxed">
-            I agree to the <button type="button" onclick="openTermsModal()" class="text-blue-400 hover:underline font-semibold">RPM Seller Terms & Conditions</button>. I understand that trades are private agreements between parties and the 3% payment processing fee is non-refundable.
+        <div class="p-4 bg-slate-900/40 border border-slate-700/60 rounded-xl">
+          <label class="flex items-start space-x-3 cursor-pointer">
+            <input type="checkbox" required class="mt-1 rounded bg-slate-800 border-slate-600 text-blue-600 focus:ring-blue-500">
+            <span class="text-xs text-slate-300 leading-relaxed">
+              I agree to the <a href="terms.html" class="text-blue-400 underline">RPM Seller Terms & Conditions</a>. I understand that trades are private agreements between parties and the 3% payment processing fee is non-refundable.
+            </span>
           </label>
         </div>
 
-        <div class="bg-slate-900/80 rounded-xl p-4 border border-slate-700/60 space-y-2 text-xs">
-          <div class="flex justify-between text-slate-400">
+        <div class="bg-slate-900/70 p-5 rounded-xl border border-slate-700/80 space-y-2">
+          <div class="flex justify-between text-sm text-slate-300">
             <span>Base Subscription Tier:</span>
-            <span id="summary-base">$5.00</span>
+            <span>.00</span>
           </div>
-          <div class="flex justify-between text-slate-400">
+          <div class="flex justify-between text-sm text-slate-300">
             <span>Card Processing Fee (3%):</span>
-            <span id="summary-fee">$0.15</span>
+            <span>.15</span>
           </div>
-          <div class="flex justify-between text-white font-bold text-sm pt-2 border-t border-slate-800">
+          <div class="border-t border-slate-700/80 pt-2 mt-2 flex justify-between text-base font-bold text-white">
             <span>Total Due Now:</span>
-            <span id="summary-total" class="text-blue-400">$5.15</span>
+            <span class="text-emerald-400">.15</span>
           </div>
         </div>
 
-        <button type="submit" id="checkout-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-blue-600/30 transition-all text-sm flex items-center justify-center gap-2">
-          <span>Proceed to Payment Options</span> &rarr;
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all text-base flex items-center justify-center space-x-2">
+          <span>Proceed to Payment Options</span>
+          <span>&rarr;</span>
         </button>
       </form>
     </div>
+  </main>
 
-  
-</div>
-</main>
-
-  <!-- Square Dual-Option Payment Modal -->
-  <div id="square-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-      <button onclick="closeSquareModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">âœ•</button>
+  <!-- Square Payment Modal -->
+  <div id="paymentModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl relative space-y-6 text-center">
+      <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl font-bold px-2 py-1">&times;</button>
       
-      <div class="text-center space-y-1">
-        <div class="inline-flex items-center justify-center w-10 h-10 bg-black text-white font-black text-lg rounded-xl border border-slate-700 mb-1">â– </div>
-        <h3 class="text-xl font-bold text-white">Square Checkout</h3>
-        <p class="text-xs text-slate-400">Pay directly with card or scan the QR code.</p>
+      <div>
+        <h2 class="text-2xl font-bold text-white">Square Checkout</h2>
+        <p class="text-xs text-slate-400 mt-1">Pay directly with card or scan the QR code.</p>
       </div>
 
-      <div class="text-center bg-slate-800 p-3 rounded-xl border border-slate-700">
-        <div class="text-xs text-slate-400 uppercase font-semibold">Total Amount Due</div>
-        <div id="square-modal-amount" class="text-3xl font-black text-emerald-400">$5.15</div>
-        <div class="text-[10px] text-slate-500 mt-1">Includes 3% processing fee</div>
+      <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700">
+        <span class="text-xs uppercase font-semibold text-slate-400 block">Total Amount Due</span>
+        <span class="text-3xl font-extrabold text-emerald-400 mt-1 block">.15</span>
       </div>
 
-      <!-- Option 1: Direct On-Site Card Entry -->
-      <div class="space-y-3 bg-slate-800/60 p-4 rounded-xl border border-slate-700/60">
-        <div class="text-xs font-bold text-white uppercase tracking-wider text-center">Option 1: Pay On Page</div>
-        <div id="card-container" class="bg-white p-3 rounded-lg min-h-[90px] flex items-center justify-center text-slate-800">
-          <span class="text-xs text-slate-500">Loading credit card form...</span>
-        </div>
-        <button id="card-pay-btn" type="button" onclick="handleCardPaySubmit(event)" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-sm transition-all shadow-md">
-          Pay Directly ($<span id="btn-amount">5.15</span>)
-        </button>
+      <!-- Option 1: Direct Square Card Payment -->
+      <div class="space-y-2">
+        <span class="text-xs font-bold text-slate-300 uppercase tracking-wider block">Option 1: Pay via Square Link</span>
+        <a href="https://square.link/u/9OGHfW18" target="_blank" rel="noopener noreferrer" class="inline-block w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all">
+          Pay Directly (.15) &rarr;
+        </a>
       </div>
 
       <div class="relative flex py-1 items-center">
-        <div class="flex-grow border-t border-slate-800"></div>
-        <span class="flex-shrink mx-4 text-[10px] text-slate-500 font-bold uppercase">OR</span>
-        <div class="flex-grow border-t border-slate-800"></div>
+        <div class="flex-grow border-t border-slate-700"></div>
+        <span class="flex-shrink mx-4 text-slate-400 text-xs uppercase font-semibold">OR</span>
+        <div class="flex-grow border-t border-slate-700"></div>
       </div>
 
-      <!-- Option 2: Scan QR or External Link -->
-      <div class="space-y-3 text-center">
-        <div class="text-xs font-bold text-white uppercase tracking-wider">Option 2: Scan QR or External Checkout</div>
-        <div class="flex flex-col items-center justify-center p-3 bg-white rounded-xl max-w-[160px] mx-auto min-h-[140px]">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fsquare.link%2Fu%2F9OGHfW18" alt="Square Payment QR Code" class="w-40 h-40 mx-auto object-contain">
-          <span class="text-[9px] font-bold text-slate-700 uppercase tracking-wider mt-1">Scan to pay</span>
+      <!-- Option 2: Dynamic Working QR Code -->
+      <div class="space-y-2 flex flex-col items-center">
+        <span class="text-xs font-bold text-slate-300 uppercase tracking-wider block">Option 2: Scan QR Code</span>
+        <div class="p-3 bg-white rounded-xl shadow-md inline-block">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fsquare.link%2Fu%2F9OGHfW18" alt="Square Payment QR Code" class="w-44 h-44 object-contain">
         </div>
-        <a id="square-pay-link" href="#" target="_blank" class="block w-full bg-slate-800 hover:bg-slate-700 text-blue-400 text-center font-bold py-2.5 rounded-lg text-xs border border-slate-700 transition-all">
-          Open Square Web Page &rarr;
-        </a>
+        <p class="text-xs text-slate-400 mt-1">Scan with phone camera to complete payment</p>
       </div>
     </div>
   </div>
 
-  <!-- Terms & Conditions Modal -->
-  <div id="terms-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl relative">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="text-lg font-bold text-white">RPM Seller Terms & Conditions</h3>
-        <button onclick="closeTermsModal()" class="text-slate-400 hover:text-white">âœ•</button>
-      </div>
-      <div class="text-xs text-slate-300 space-y-3 leading-relaxed max-h-60 overflow-y-auto pr-2">
-        <p><strong>1. Buy & Sell Platform Scope:</strong> RPM Equipment provides an online venue for listing equipment across all industries.</p>
-        <p><strong>2. Trade Agreements:</strong> Any trade or barter arrangements made between listing sellers and buyers are strictly independent, personal agreements.</p>
-        <p><strong>3. Processing Fees:</strong> A 3% payment processing fee is added to each subscription tier to cover credit card handling.</p>
-      </div>
-      <button onclick="closeTermsModal()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg text-xs">
-        I Understand & Agree
-      </button>
-    </div>
-  </div>
-
-  <footer class="bg-slate-950 border-t border-slate-800 py-6 text-center text-slate-500 text-xs">
+  <footer class="text-center py-6 text-xs text-slate-500">
     &copy; RPM Equipment Marketplace. All rights reserved.
   </footer>
 
   <script>
-    let selectedBasePrice = 5;
-    let selectedTierName = "1 Active Listing";
-    let cardInstance = null;
-    let paymentsInstance = null;
-
-    // Admin & VIP Email Accounts
-    const VIP_EMAILS = [
-      'rpm.cen.cal@gmail.com',
-      'rpm_cen_cal@gmail.com',
-      'pezziracen23@gmail.com'
-    ];
-
-    function selectTier(price, tierName, cardId) {
-      selectedBasePrice = Number(price);
-      selectedTierName = tierName;
-
-      document.querySelectorAll('.tier-card').forEach(card => {
-        card.classList.remove('border-blue-500', 'bg-slate-800');
-        card.classList.add('border-slate-700', 'bg-slate-800/80');
-      });
-      const activeCard = document.getElementById(cardId);
-      if(activeCard) {
-        activeCard.classList.remove('border-slate-700', 'bg-slate-800/80');
-        activeCard.classList.add('border-blue-500', 'bg-slate-800');
-      }
-
-      const fee = selectedBasePrice * 0.03;
-      const total = selectedBasePrice + fee;
-
-      document.getElementById('selected-tier-display').innerText = `Selected Tier: $${selectedBasePrice} / mo (${tierName})`;
-      document.getElementById('summary-base').innerText = `$${selectedBasePrice.toFixed(2)}`;
-      document.getElementById('summary-fee').innerText = `$${fee.toFixed(2)}`;
-      document.getElementById('summary-total').innerText = `$${total.toFixed(2)}`;
-      document.getElementById('square-modal-amount').innerText = `$${total.toFixed(2)}`;
-      document.getElementById('btn-amount').innerText = total.toFixed(2);
+    function handleProceed(event) {
+      event.preventDefault(); // Prevents page reload / blink
+      document.getElementById('paymentModal').classList.remove('hidden');
     }
 
-    async function initSquarePaymentForm() {
-      if (cardInstance) return;
-
-      const container = document.getElementById('card-container');
-
-      try {
-        const configRes = await fetch('https://rpm-qhrz.onrender.com/api/square-config');
-        const config = await configRes.json();
-
-        if (config.appId && config.locationId && typeof Square !== 'undefined') {
-          paymentsInstance = Square.payments(config.appId, config.locationId);
-          cardInstance = await paymentsInstance.card();
-          if (container) container.innerHTML = '';
-          await cardInstance.attach('#card-container');
-        } else {
-          if (container) container.innerHTML = '<span class="text-xs text-red-500">Square credentials unconfigured or script blocked.</span>';
-        }
-      } catch (err) {
-        console.warn("Square Card field load error:", err);
-        if (container) container.innerHTML = '<span class="text-xs text-amber-600 font-medium"><div class="space-y-3 p-2">
-  <a href="https://square.link/u/9OGHfW18" target="_blank" rel="noopener noreferrer" class="inline-block w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl shadow transition-all text-center">
-    Pay Directly via Square Card Checkout (.15) &rarr;
-  </a>
-</div></span>';
-      }
+    function closeModal() {
+      document.getElementById('paymentModal').classList.add('hidden');
     }
-
-    async function handleCheckout(e) {
-      e.preventDefault();
-      const emailInput = document.getElementById('email');
-      const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
-      const btn = document.getElementById('checkout-btn');
-
-      if (!email) {
-        alert("Please enter a valid email address.");
-        return;
-      }
-
-      localStorage.setItem('rpm_user_email', email);
-
-      if (VIP_EMAILS.includes(email)) {
-        alert("VIP Admin Account Detected! Skipping payment modal...");
-        window.location.href = "dashboard.html";
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerText = "Connecting to Square...";
-
-      try {
-        const response = await fetch('https://rpm-qhrz.onrender.com/api/create-square-checkout', {
-          method: 'POST',
-          mode: 'cors',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            basePrice: Number(selectedBasePrice),
-            tierName: String(selectedTierName),
-            email: email,
-            type: 'seller'
-          })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: `Server status: ${response.status}` }));
-          throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-          const formattedTotal = data.totalFormatted || (selectedBasePrice * 1.03).toFixed(2);
-          document.getElementById('square-modal-amount').innerText = `$${formattedTotal}`;
-          document.getElementById('btn-amount').innerText = formattedTotal;
-
-          if (data.qrCodeUrl) {
-            document.getElementById('square-qr-image').src = data.qrCodeUrl;
-          }
-          if (data.url) {
-            document.getElementById('square-pay-link').href = data.url;
-          }
-
-          const modal = document.getElementById('square-modal');
-          modal.classList.remove('hidden');
-          modal.classList.add('flex');
-
-          initSquarePaymentForm();
-        } else {
-          alert("Payment Error: " + (data.error || "Unknown server error."));
-        }
-      } catch (err) {
-        console.error("Fetch Execution Error:", err);
-        alert(`Failed to connect to backend server (${err.message}). Make sure server.js is deployed and active on Render.`);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = "Proceed to Payment Options â†’";
-      }
-    }
-
-    async function handleCardPaySubmit(e) {
-      e.preventDefault();
-      if (!cardInstance) {
-        alert("Direct card processing unavailable. Please use the Square web link below.");
-        return;
-      }
-
-      const payBtn = document.getElementById('card-pay-btn');
-      payBtn.disabled = true;
-      payBtn.innerText = "Processing Payment...";
-
-      try {
-        const result = await cardInstance.tokenize();
-        if (result.status === 'OK') {
-          const response = await fetch('https://rpm-qhrz.onrender.com/api/process-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              sourceId: result.token,
-              basePrice: selectedBasePrice,
-              email: document.getElementById('email').value
-            })
-          });
-
-          const resData = await response.json();
-          if (resData.success) {
-            alert("Payment Successful! Your subscription is active.");
-            closeSquareModal();
-            window.location.href = "dashboard.html";
-          } else {
-            alert("Payment Failed: " + resData.error);
-          }
-        } else {
-          alert("Card Details Error: " + (result.errors?.[0]?.message || "Invalid card credentials"));
-        }
-      } catch (err) {
-        console.error("Card payment error:", err);
-        alert("Transaction failed. Please try again or use the Square link.");
-      } finally {
-        payBtn.disabled = false;
-        payBtn.innerText = `Pay Directly ($${document.getElementById('btn-amount').innerText})`;
-      }
-    }
-
-    function closeSquareModal() {
-      const modal = document.getElementById('square-modal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-
-    function openTermsModal() {
-      const modal = document.getElementById('terms-modal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-
-    function closeTermsModal() {
-      const modal = document.getElementById('terms-modal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-
-    selectTier(5, '1 Active Listing', 'tier-card-5');
   </script>
-<!-- Interactive RPM Support Hub Bubble -->
-<div id="rpm-help-hub" style="position: fixed; bottom: 24px; right: 24px; z-index: 99999; font-family: sans-serif;">
-  <div id="rpm-chat-window" style="display: none; width: 320px; background: #111827; border: 1px solid #374151; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); color: #fff; margin-bottom: 12px; overflow: hidden;">
-    <div style="background: #1f2937; padding: 14px; border-bottom: 1px solid #374151; display: flex; justify-content: space-between; align-items: center;">
-      <span style="font-weight: bold; color: #60a5fa;">💬 RPM Support & Help</span>
-      <button onclick="document.getElementById('rpm-chat-window').style.display='none'" style="background:none; border:none; color:#9ca3af; font-size:16px; cursor:pointer;">✕</button>
-    </div>
-    <div style="padding: 16px; font-size: 14px; line-height: 1.5; max-height: 250px; overflow-y: auto;">
-      <p style="margin: 0 0 10px 0;">👋 Need help with your membership, listings, or B2B directory?</p>
-      <p style="margin: 0 0 12px 0; color: #9ca3af;">Contact our Central Valley support team directly:</p>
-      <a href="mailto:rpm.cen.cal@gmail.com" style="display: block; width: 100%; padding: 8px 0; text-align: center; background: #2563eb; color: #fff; border-radius: 6px; text-decoration: none; font-weight: bold; margin-bottom: 8px;">Email Support</a>
-      <a href="membership.html" style="display: block; width: 100%; padding: 8px 0; text-align: center; background: #374151; color: #e5e7eb; border-radius: 6px; text-decoration: none;">View Membership Plans</a>
-    </div>
-  </div>
-  <button onclick="const w = document.getElementById('rpm-chat-window'); w.style.display = w.style.display === 'none' ? 'block' : 'none';" style="background: #2563eb; color: #fff; border: none; padding: 14px 20px; border-radius: 50px; font-weight: bold; font-size: 15px; cursor: pointer; box-shadow: 0 4px 14px rgba(37,99,235,0.4); display: flex; align-items: center; gap: 8px;">
-    💬 Help & Support
-  </button>
-</div>
 </body>
 </html>
-
-
-

@@ -1,36 +1,34 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RPM Equipment | Client Portal & Inventory Dashboard</title>
+  <title>RPM Equipment | Client Portal Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
+    .help-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+    }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen antialiased">
+<body class="bg-slate-900 text-slate-100 min-h-screen antialiased relative">
 
-  <!-- Payment Enforcement Gate Script -->
+  <!-- Payment Enforcement & Verification Gate -->
   <script>
     const VIP_EMAILS = [
       'rpm.cen.cal@gmail.com',
       'rpm_cen_cal@gmail.com',
       'pezziracen23@gmail.com'
     ];
-
     const urlParams = new URLSearchParams(window.location.search);
     const session = urlParams.get('session');
     const savedSession = localStorage.getItem('rpm_verified_session');
-    let userEmail = (localStorage.getItem('userEmail') || '').toLowerCase().trim();
-
-    if (!userEmail) {
-      userEmail = 'rpm.cen.cal@gmail.com';
-      localStorage.setItem('userEmail', userEmail);
-    }
+    const userEmail = (localStorage.getItem('userEmail') || localStorage.getItem('rpm_user_email') || '').toLowerCase().trim();
 
     const isVIP = VIP_EMAILS.includes(userEmail);
 
@@ -39,8 +37,8 @@
       if (urlParams.get('tier')) {
         localStorage.setItem('rpm_seller_tier', urlParams.get('tier'));
       }
-    } else if (savedSession !== 'active') {
-      alert("Access Denied: Payment required to access Client Portal.");
+    } else if (savedSession !== 'active' && !localStorage.getItem('rpm_paid_client_' + userEmail)) {
+      alert("Access Denied: Payment or active session required to access the Client Portal.");
       window.location.href = 'membership.html';
     }
   </script>
@@ -53,242 +51,107 @@
           <span class="bg-blue-600 text-white px-2 py-0.5 rounded-lg font-mono text-sm">RPM</span>
           <span class="group-hover:text-blue-400 transition-colors">EQUIPMENT</span>
         </div>
-        <span class="text-[10px] sm:text-xs font-semibold text-slate-400 tracking-tight">
-          Client Portal & Management
-        </span>
+        <span class="text-[10px] sm:text-xs font-semibold text-slate-400 tracking-tight">Client Portal & Management</span>
       </a>
 
       <div class="flex items-center space-x-4">
         <span id="active-tier-badge" class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-semibold">
           Active Plan: Verified
         </span>
-        <a href="membership.html" class="text-xs text-slate-400 hover:text-white">Upgrade Plan</a>
+        <a href="membership.html" class="text-xs text-slate-400 hover:text-white underline">Pricing Plans</a>
+        <button onclick="handleSignOut()" class="text-xs bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-lg font-semibold hover:bg-rose-500/30 transition-colors">Sign Out</button>
       </div>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
-    
-    <div class="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xl">
       <div>
-        <h1 class="text-2xl sm:text-3xl font-bold text-white">Client Portal & Equipment Hub</h1>
-        <p class="text-xs sm:text-sm text-slate-400 mt-1">Manage listings, specify details with auto-categorization or manual override, and upload photos directly.</p>
+        <h1 class="text-2xl font-bold text-white">Client Portal & Equipment Hub</h1>
+        <p class="text-xs text-slate-400 mt-1">Manage active listings, specify details with auto-categorization, and manage B2B promotion slots.</p>
       </div>
-      <a href="#add-equipment" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-lg shadow-lg shadow-blue-600/30 transition-all">
-        + Add New Equipment
-      </a>
+      <div class="flex gap-3">
+        <a href="index.html#b2b-section" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2.5 rounded-lg text-xs transition-all shadow-lg shadow-blue-600/30">
+          Manage B2B Directory &rarr;
+        </a>
+      </div>
     </div>
 
-    <div class="grid lg:grid-cols-12 gap-8">
-      
-      <!-- Add Equipment Form -->
-      <div id="add-equipment" class="lg:col-span-7 bg-slate-800/90 border border-slate-700 rounded-2xl p-6 sm:p-8 space-y-6">
-        <div class="border-b border-slate-700 pb-4">
-          <h2 class="text-xl font-bold text-white">Add Equipment Listing</h2>
-          <p class="text-xs text-slate-400">Fill in details. The engine will suggest a category, or you can choose manually below.</p>
+    <!-- Active Listings Section -->
+    <div class="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-6 space-y-4">
+      <h2 class="text-lg font-bold text-white">Active Listings Allocation</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+          <span class="text-slate-400 block mb-1">Account Tier</span>
+          <span class="text-base font-bold text-blue-400">VIP Unlimited Access</span>
         </div>
-
-        <form id="equipment-form" onsubmit="handleAddEquipment(event)" class="space-y-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Equipment Title / Model Name</label>
-            <input type="text" id="equipment-title" oninput="autoCategorize()" required placeholder="e.g. Caterpillar 320 Excavator or 2006 Yamaha YZ450F" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Industry Category</label>
-              <select id="auto-category" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-blue-400 font-semibold focus:outline-none focus:border-blue-500">
-                <option value="General Equipment">General Equipment</option>
-                <option value="Vehicles & Transport">Vehicles & Transport</option>
-                <option value="Heavy Equipment">Heavy Equipment</option>
-                <option value="Agriculture & Farming">Agriculture & Farming</option>
-                <option value="Tools & Industrial">Tools & Industrial</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Asking Price ($)</label>
-              <input type="number" id="equipment-price" required placeholder="25000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
-            </div>
-          </div>
-
-          <div class="grid grid-cols-3 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Year</label>
-              <input type="number" placeholder="2020" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Hours / Mileage</label>
-              <input type="text" placeholder="1,200 hrs" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Condition</label>
-              <select id="equipment-condition" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white">
-                <option>Excellent</option>
-                <option>Good</option>
-                <option>Fair</option>
-                <option>For Parts / Repair</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Image Selection & Drop Zone -->
-          <div class="space-y-3">
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Equipment Images</label>
-            
-            <div class="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl p-4 text-center bg-slate-900/50 transition-colors">
-              <input type="file" id="equipment-file" accept="image/*" multiple onchange="handleFileSelect(event)" class="hidden">
-              <label for="equipment-file" class="cursor-pointer flex flex-col items-center justify-center space-y-2">
-                <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                <span class="text-xs font-medium text-blue-400">Click to choose photos from device or folder</span>
-                <span id="file-count-label" class="text-[11px] text-slate-500">No file selected</span>
-              </label>
-            </div>
-
-            <div class="flex items-center gap-2 my-2">
-              <div class="h-px bg-slate-700 flex-1"></div>
-              <span class="text-[10px] text-slate-500 uppercase font-bold">OR Paste Web Link</span>
-              <div class="h-px bg-slate-700 flex-1"></div>
-            </div>
-
-            <input type="text" id="equipment-image" placeholder="https://example.com/photo.jpg" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Specific Technical Specifications</label>
-            <textarea id="equipment-desc" rows="3" placeholder="Enter attachments, engine specs, hydraulic flow rate, maintenance history..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500"></textarea>
-          </div>
-
-          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg text-sm shadow-lg shadow-blue-600/30 transition-all">
-            Publish Equipment to Marketplace &rarr;
-          </button>
-        </form>
-      </div>
-
-      <!-- Asset Valuation Calculator -->
-      <div class="lg:col-span-5 bg-slate-800/90 border border-slate-700 rounded-2xl p-6 sm:p-8 space-y-6">
-        <div class="border-b border-slate-700 pb-4">
-          <h2 class="text-xl font-bold text-white">Asset Valuation Estimator</h2>
-          <p class="text-xs text-slate-400">Get an instant market estimate before listing your equipment.</p>
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+          <span class="text-slate-400 block mb-1">Active Listings</span>
+          <span class="text-base font-bold text-emerald-400">Unlimited Available</span>
         </div>
-
-        <form onsubmit="calculateValuation(event)" class="space-y-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Original Purchase Price ($)</label>
-            <input type="number" id="val-original" required placeholder="50000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Age (Years)</label>
-              <input type="number" id="val-age" required placeholder="4" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Overall Condition</label>
-              <select id="val-condition" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white">
-                <option value="1.0">Excellent (100% Value)</option>
-                <option value="0.85">Good (85% Value)</option>
-                <option value="0.70">Fair (70% Value)</option>
-              </select>
-            </div>
-          </div>
-
-          <button type="submit" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 rounded-lg text-sm transition-colors">
-            Calculate Valuation
-          </button>
-        </form>
-
-        <div id="valuation-result" class="hidden bg-slate-900/90 border border-blue-500/30 rounded-xl p-4 text-center space-y-1">
-          <div class="text-xs text-slate-400 uppercase font-semibold">Estimated Market Value Range</div>
-          <div id="valuation-amount" class="text-2xl font-black text-emerald-400">$0 - $0</div>
-          <div class="text-[10px] text-slate-500">Based on standard sector depreciation formulas</div>
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+          <span class="text-slate-400 block mb-1">B2B Promotions</span>
+          <span class="text-base font-bold text-purple-400">Enabled</span>
         </div>
       </div>
-
     </div>
   </main>
 
+  <!-- High-Contrast Accessible Help Bubble (Client Portal Path) -->
+  <div class="help-fab">
+    <button onclick="togglePortalHelpModal()" aria-label="Client Portal Help Guide" class="bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-full p-4 shadow-2xl flex items-center justify-center gap-2 font-black text-lg focus:ring-4 focus:ring-amber-200 focus:outline-none transition-transform active:scale-95">
+      <span class="w-8 h-8 bg-slate-950 text-amber-400 rounded-full flex items-center justify-center font-black text-xl">?</span>
+      <span class="text-xs font-bold uppercase tracking-wider pr-1">Portal Help</span>
+    </button>
+  </div>
+
+  <!-- Client Portal Help Modal -->
+  <div id="portalHelpModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[10000] flex items-center justify-center p-4">
+    <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-lg w-full p-6 space-y-6 text-white shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-bold text-amber-400 flex items-center gap-2">
+          <span>⚙️</span> Client Portal Guide
+        </h3>
+        <button onclick="togglePortalHelpModal()" class="text-slate-400 hover:text-white font-bold text-xl px-2">&times;</button>
+      </div>
+
+      <div class="space-y-4 text-xs sm:text-sm text-slate-300">
+        <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700">
+          <p class="font-bold text-white">Step 1: Verify Allocation</p>
+          <p class="mt-1">Review your active listing tiers and promotional slots in the Active Listings Allocation box above.</p>
+        </div>
+
+        <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700">
+          <p class="font-bold text-white">Step 2: Manage Directory Listings</p>
+          <p class="mt-1">Click "Manage B2B Directory" to create, edit, or publish commercial listings across target categories.</p>
+        </div>
+
+        <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700">
+          <p class="font-bold text-white">Step 3: Secure Sign Out</p>
+          <p class="mt-1">When finished managing your inventory, click "Sign Out" at the top right to safeguard your portal session.</p>
+        </div>
+      </div>
+
+      <button onclick="togglePortalHelpModal()" class="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider">Close Help Guide</button>
+    </div>
+  </div>
+
   <script>
-    const savedTier = localStorage.getItem('rpm_seller_tier');
-    if (savedTier) {
-      document.getElementById('active-tier-badge').innerText = `Active Plan: ${savedTier}`;
+    const savedTier = localStorage.getItem('rpm_seller_tier') || 'Verified VIP';
+    const tierBadge = document.getElementById('active-tier-badge');
+    if (tierBadge) {
+      tierBadge.innerText = `Active Plan: ${savedTier}`;
     }
 
-    let loadedFiles = [];
-
-    function handleFileSelect(e) {
-      const files = e.target.files;
-      if (files.length > 0) {
-        loadedFiles = Array.from(files);
-        document.getElementById('file-count-label').innerText = `${files.length} file(s) selected: ${files[0].name}`;
-      }
+    function togglePortalHelpModal() {
+      document.getElementById('portalHelpModal').classList.toggle('hidden');
     }
 
-    function autoCategorize() {
-      const title = document.getElementById('equipment-title').value.toLowerCase();
-      const categorySelect = document.getElementById('auto-category');
-
-      if (title.includes('excavator') || title.includes('dozer') || title.includes('crane') || title.includes('loader')) {
-        categorySelect.value = 'Heavy Equipment';
-      } else if (title.includes('tractor') || title.includes('combine') || title.includes('plow') || title.includes('harvester')) {
-        categorySelect.value = 'Agriculture & Farming';
-      } else if (title.includes('truck') || title.includes('van') || title.includes('trailer') || title.includes('quad') || title.includes('bike') || title.includes('yz') || title.includes('yamaha')) {
-        categorySelect.value = 'Vehicles & Transport';
-      } else if (title.includes('lathe') || title.includes('cnc') || title.includes('generator') || title.includes('compressor')) {
-        categorySelect.value = 'Tools & Industrial';
-      }
-    }
-
-    function calculateValuation(e) {
-      e.preventDefault();
-      const orig = parseFloat(document.getElementById('val-original').value) || 0;
-      const age = parseFloat(document.getElementById('val-age').value) || 0;
-      const cond = parseFloat(document.getElementById('val-condition').value) || 1.0;
-
-      let depreciated = orig * Math.pow(0.90, age) * cond;
-      if (depreciated < orig * 0.15) depreciated = orig * 0.15;
-
-      const minVal = (depreciated * 0.92).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-      const maxVal = (depreciated * 1.08).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-
-      document.getElementById('valuation-amount').innerText = `${minVal} - ${maxVal}`;
-      document.getElementById('valuation-result').classList.remove('hidden');
-    }
-
-    async function handleAddEquipment(e) {
-      e.preventDefault();
-
-      const title = document.getElementById('equipment-title').value;
-      const category = document.getElementById('auto-category').value;
-      const price = document.getElementById('equipment-price').value;
-      const condition = document.getElementById('equipment-condition').value;
-      let imageUrl = document.getElementById('equipment-image').value;
-      const description = document.getElementById('equipment-desc').value;
-      const email = localStorage.getItem('userEmail') || 'rpm.cen.cal@gmail.com';
-
-      // Fallback display path if local file selected
-      if (!imageUrl && loadedFiles.length > 0) {
-        imageUrl = loadedFiles[0].name;
-      }
-
-      try {
-        const response = await fetch('https://rpm-qhrz.onrender.com/api/listings/create', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, description, price, condition, category, imageUrl, email })
-        });
-
-        const result = await response.json();
-        if (result.success) {
-          alert(`Equipment published successfully under ${result.category}!`);
-          document.getElementById('equipment-form').reset();
-          document.getElementById('file-count-label').innerText = 'No file selected';
-        } else {
-          alert(`Submission error: ${result.error}`);
-        }
-      } catch (err) {
-        console.error('Publish error:', err);
-        alert('Failed to connect to backend server. Please try again.');
-      }
+    function handleSignOut() {
+      localStorage.removeItem('rpm_verified_session');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('rpm_user_email');
+      window.location.href = 'login.html';
     }
   </script>
 </body>

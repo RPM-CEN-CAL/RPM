@@ -9,15 +9,29 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>body { font-family: 'Inter', sans-serif; }</style>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .help-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+    }
+  </style>
   <script>
     const supabase = supabase.createClient(
       "https://qfjilrbhbcqwlrrwihcy.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmamlscmJoYmNxd2xycndpaGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNDgyMTcsImV4cCI6MjA4NjkyNDIxN30.SWnM-6ls0nTanHkaCViwQ-LbTFqrKo_qlKnhGTRMKa0"
     );
+
+    const VIP_EMAILS = [
+      'rpm.cen.cal@gmail.com',
+      'rpm_cen_cal@gmail.com',
+      'pezziracen23@gmail.com'
+    ];
   </script>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center py-12 px-4">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center py-12 px-4 relative">
 
   <div class="w-full max-w-md bg-slate-800/90 border border-slate-700/80 rounded-2xl p-8 shadow-2xl space-y-6">
     <div class="text-center space-y-1">
@@ -33,7 +47,7 @@
 
       <div>
         <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Password</label>
-        <input id="password" type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500" required>
+        <input id="password" type="password" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500" required>
       </div>
 
       <button id="submitBtn" type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-lg shadow-lg shadow-blue-600/30 transition-all mt-2">
@@ -46,35 +60,94 @@
     </div>
   </div>
 
+  <!-- High-Contrast Accessible Help Bubble -->
+  <div class="help-fab">
+    <button onclick="toggleLoginHelpModal()" aria-label="Login Help Guide" class="bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-full p-4 shadow-2xl flex items-center justify-center gap-2 font-black text-lg focus:ring-4 focus:ring-amber-200 focus:outline-none transition-transform active:scale-95">
+      <span class="w-8 h-8 bg-slate-950 text-amber-400 rounded-full flex items-center justify-center font-black text-xl">?</span>
+      <span class="text-xs font-bold uppercase tracking-wider pr-1">Need Help?</span>
+    </button>
+  </div>
+
+  <!-- Login Help Modal -->
+  <div id="loginHelpModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[10000] flex items-center justify-center p-4">
+    <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-lg w-full p-6 space-y-6 text-white shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-bold text-amber-400 flex items-center gap-2">
+          <span>🔑</span> Login & Account Assistance
+        </h3>
+        <button onclick="toggleLoginHelpModal()" class="text-slate-400 hover:text-white font-bold text-xl px-2">&times;</button>
+      </div>
+
+      <div class="space-y-4 text-xs sm:text-sm text-slate-300">
+        <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700">
+          <p class="font-bold text-white">Step 1: Registered Sellers</p>
+          <p class="mt-1">Enter your account email and password to log in. The system will verify your active membership status automatically.</p>
+        </div>
+
+        <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700">
+          <p class="font-bold text-white">Step 2: New Sellers & Membership Requirements</p>
+          <p class="mt-1">If you have not selected a membership tier or completed payment, click "Register here" to choose a plan and activate your portal access.</p>
+        </div>
+      </div>
+
+      <button onclick="toggleLoginHelpModal()" class="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider">Close Help</button>
+    </div>
+  </div>
+
   <script>
+    // Ensure inputs start clean without pre-populated text on load
+    document.addEventListener("DOMContentLoaded", () => {
+      const emailInput = document.getElementById("email");
+      if (emailInput) emailInput.value = "";
+    });
+
     document.getElementById("authForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const submitBtn = document.getElementById("submitBtn");
-      const email = document.getElementById("email").value.trim();
+      const email = document.getElementById("email").value.trim().toLowerCase();
       const password = document.getElementById("password").value;
 
       submitBtn.disabled = true;
       submitBtn.innerText = "Signing in...";
 
-      // Save user email to local storage for quick portal session lookup
+      // Save user email to local storage
+      localStorage.setItem("userEmail", email);
       localStorage.setItem("rpm_user_email", email);
 
+      // 1. Supabase Authentication
       let { data, error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
-        // Fallback: create account if it doesn't exist
         let { error: signupError } = await supabase.auth.signUp({ email, password });
         if (signupError) {
           alert("Login error: " + signupError.message);
           submitBtn.disabled = false;
-          submitBtn.innerText = "Continue â†’";
+          submitBtn.innerText = "Continue →";
           return;
         }
       }
 
-      // Redirect directly to the Client Portal / Dashboard
-      window.location.href = "seller-dashboard.html";
+      // 2. VIP Admin Bypass Check
+      if (VIP_EMAILS.includes(email)) {
+        localStorage.setItem("rpm_verified_session", "active");
+        window.location.href = "dashboard.html";
+        return;
+      }
+
+      // 3. Paid Seller Check
+      const activePaidFlag = localStorage.getItem("rpm_paid_client_" + email) || localStorage.getItem("rpm_verified_session");
+
+      if (activePaidFlag === "true" || activePaidFlag === "active") {
+        window.location.href = "dashboard.html";
+      } else {
+        alert("Account verified! Please select a seller membership plan to activate your posting portal.");
+        window.location.href = "membership.html";
+      }
     });
+
+    function toggleLoginHelpModal() {
+      document.getElementById("loginHelpModal").classList.toggle("hidden");
+    }
   </script>
 </body>
 </html>

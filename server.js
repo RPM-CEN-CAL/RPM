@@ -5,6 +5,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+let equipmentListings = [];
+let b2bListings = [];
+
+// VIP & Checkout Route
 app.post('/api/create-square-checkout', async (req, res) => {
   try {
     const { email, tier } = req.body;
@@ -29,6 +33,28 @@ app.post('/api/create-square-checkout', async (req, res) => {
     console.error('Checkout creation error:', err);
     res.status(500).json({ success: false, error: 'Failed to create checkout session' });
   }
+});
+
+// Equipment Marketplace Endpoints
+app.get('/api/listings', (req, res) => {
+  res.status(200).json(equipmentListings);
+});
+
+app.post('/api/listings/create', (req, res) => {
+  const newListing = { id: Date.now().toString(), ...req.body };
+  equipmentListings.push(newListing);
+  res.status(201).json({ success: true, listing: newListing });
+});
+
+// B2B Directory Endpoints
+app.get('/api/b2b-listings', (req, res) => {
+  res.status(200).json(b2bListings);
+});
+
+app.post('/api/b2b-listings/create', (req, res) => {
+  const newB2B = { id: Date.now().toString(), ...req.body };
+  b2bListings.push(newB2B);
+  res.status(201).json({ success: true, listing: newB2B });
 });
 
 const PORT = process.env.PORT || 3000;

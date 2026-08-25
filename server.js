@@ -8,6 +8,11 @@ app.use(express.json());
 let equipmentListings = [];
 let b2bListings = [];
 
+// Root Health Check Route
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'RPM API Server Running' });
+});
+
 // VIP & Checkout Route
 app.post('/api/create-square-checkout', async (req, res) => {
   try {
@@ -41,7 +46,15 @@ app.get('/api/listings', (req, res) => {
 });
 
 const createEquipmentListing = (req, res) => {
-  const newListing = { id: Date.now().toString(), ...req.body };
+  const { title, category, price, description, imageUrl } = req.body;
+  const newListing = {
+    id: Date.now().toString(),
+    title: title || 'Untitled Listing',
+    category: category || 'general',
+    price: price || 0,
+    description: description || '',
+    imageUrl: imageUrl || ''
+  };
   equipmentListings.push(newListing);
   res.status(201).json({ success: true, listing: newListing });
 };

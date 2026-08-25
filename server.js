@@ -3,7 +3,6 @@ const cors = require('cors');
 const app = express();
 
 app.use(cors());
-app.options('*', cors()); // Enable preflight options across all routes
 app.use(express.json());
 
 let equipmentListings = [];
@@ -41,7 +40,6 @@ app.get('/api/listings', (req, res) => {
   res.status(200).json(equipmentListings);
 });
 
-// Primary POST endpoint and backwards-compatible alias
 const createEquipmentListing = (req, res) => {
   const newListing = { id: Date.now().toString(), ...req.body };
   equipmentListings.push(newListing);
@@ -56,7 +54,6 @@ app.get('/api/b2b-listings', (req, res) => {
   res.status(200).json(b2bListings);
 });
 
-// Primary POST endpoint and backwards-compatible alias
 const createB2BListing = (req, res) => {
   const newB2B = { id: Date.now().toString(), ...req.body };
   b2bListings.push(newB2B);

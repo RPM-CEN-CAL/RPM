@@ -22,7 +22,7 @@
         <a href="tools.html" class="hover:text-white">Tools</a>
         <a href="promote-business.html" class="hover:text-white">B2B Solutions</a>
       </nav>
-      <a href="seller-dashboard.html" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors">+ Client Portal</a>
+      <a href="seller-dashboard.html" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors">+ Client Portal Sign In</a>
     </div>
   </header>
 
@@ -33,8 +33,7 @@
       <p class="text-slate-400 text-sm">Browse verified compact track loaders, mini excavators, telehandlers, and utility machinery.</p>
     </div>
 
-    <!-- 1 SINGLE DETAILED EXAMPLE POST CARD -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="mediumGrid">
       <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between">
         <div class="relative h-56 bg-slate-800">
           <img src="MediumEquip.jpg" alt="Bobcat T76" class="w-full h-full object-cover">
@@ -55,12 +54,24 @@
     </div>
   </main>
 
-  <!-- DETAILED MODAL MATCHING DASHBOARD FIELDS -->
   <div id="mediumModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[100000] flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 text-white space-y-5 shadow-2xl">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 text-white space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
         <span class="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase">Verified Listing</span>
         <button onclick="closeModal('mediumModal')" class="text-slate-400 hover:text-white text-2xl font-bold">&times;</button>
+      </div>
+
+      <div class="space-y-2">
+        <div class="relative h-64 bg-slate-950 rounded-xl overflow-hidden border border-slate-800 group">
+          <img id="medCarouselImg" src="MediumEquip.jpg" class="w-full h-full object-cover transition-all duration-300">
+          <button onclick="prevMedGallery()" class="absolute left-2 top-1/2 -translate-y-1/2 bg-slate-950/80 hover:bg-blue-600 text-white p-2 rounded-full border border-slate-700 text-xs font-bold">&larr;</button>
+          <button onclick="nextMedGallery()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-slate-950/80 hover:bg-blue-600 text-white p-2 rounded-full border border-slate-700 text-xs font-bold">&rarr;</button>
+          <span id="medGalleryCounter" class="absolute bottom-2 right-2 bg-slate-950/90 text-slate-300 text-[10px] font-mono px-2 py-0.5 rounded border border-slate-800">Photo 1 of 2</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <img src="MediumEquip.jpg" onclick="setMedGallery(0)" class="h-16 w-full object-cover rounded-lg cursor-pointer border-2 border-blue-500 opacity-100 transition-all med-thumb">
+          <img src="HeavyEquipment.jpg" onclick="setMedGallery(1)" class="h-16 w-full object-cover rounded-lg cursor-pointer border border-slate-800 opacity-60 transition-all med-thumb">
+        </div>
       </div>
 
       <div>
@@ -94,8 +105,20 @@
   </footer>
 
   <script>
+    const medImages = ["MediumEquip.jpg", "HeavyEquipment.jpg"];
+    let medIdx = 0;
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    function updateMedGallery() {
+      document.getElementById('medCarouselImg').src = medImages[medIdx];
+      document.getElementById('medGalleryCounter').innerText = `Photo ${medIdx + 1} of ${medImages.length}`;
+      document.querySelectorAll('.med-thumb').forEach((t, i) => {
+        t.className = i === medIdx ? "h-16 w-full object-cover rounded-lg cursor-pointer border-2 border-blue-500 opacity-100 transition-all med-thumb" : "h-16 w-full object-cover rounded-lg cursor-pointer border border-slate-800 opacity-60 transition-all med-thumb";
+      });
+    }
+    function setMedGallery(i) { medIdx = i; updateMedGallery(); }
+    function nextMedGallery() { medIdx = (medIdx + 1) % medImages.length; updateMedGallery(); }
+    function prevMedGallery() { medIdx = (medIdx - 1 + medImages.length) % medImages.length; updateMedGallery(); }
   </script>
 </body>
 </html>

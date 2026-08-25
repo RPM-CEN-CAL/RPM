@@ -25,3 +25,25 @@ window.location.href = "listing-payment.html";
 
 </body>
 </html>
+<script>
+async function checkAccessAndSubmit(event) {
+  event.preventDefault();
+  const email = document.getElementById('userEmail')?.value || '';
+  
+  // Verify VIP/Payment status with backend
+  const res = await fetch('https://rpm-qhrz.onrender.com/api/create-square-checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email, tier: 'Standard' })
+  });
+  const data = await res.json();
+  
+  if (data.isVip) {
+    alert('VIP Access Verified! Posting listing...');
+    submitListingForm();
+  } else if (data.checkoutUrl) {
+    alert('Listing credit required. Redirecting to Square Checkout...');
+    window.location.href = data.checkoutUrl;
+  }
+}
+</script>

@@ -1,50 +1,72 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Equipment Details | RPM Equipment</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between">
-
-  <header class="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-2">
-        <span class="text-xl font-bold text-white tracking-tight">RPM <span class="text-blue-500">EQUIPMENT</span></span>
-      </a>
-      <a href="post-gateway.html" class="bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm px-4 py-2 rounded-lg transition-all">
-        + Post Listing
-      </a>
-    </div>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+  <header class="border-b border-slate-800 p-4 flex justify-between items-center max-w-6xl mx-auto">
+    <a href="index.html" class="text-xl font-bold text-blue-500">RPM Equipment</a>
+    <a href="index.html" class="text-sm text-slate-400 hover:text-white">? Back to Marketplace</a>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4 py-12 mb-auto w-full">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 space-y-6">
-      <div id="detail-container">
-        <h1 class="text-2xl font-bold text-white mb-2" id="item-title">Equipment Listing Details</h1>
-        <p class="text-slate-400 text-sm" id="item-desc">Loading detailed specifications...</p>
-      </div>
-      <div class="pt-6 border-t border-slate-800 flex gap-4">
-        <a href="seller-dashboard.html" class="bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm px-5 py-2.5 rounded-lg transition-colors">Contact Seller</a>
-        <a href="javascript:history.back()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">← Back to Listings</a>
+  <main class="max-w-4xl mx-auto p-6 space-y-6">
+    <div id="cardDetails" class="bg-slate-800 rounded-xl p-6 border border-slate-700 space-y-4">
+      <img id="detailImg" class="w-full h-80 object-cover rounded-lg" src="" alt="Equipment">
+      <h1 id="detailTitle" class="text-3xl font-extrabold text-white"></h1>
+      <p id="detailCategory" class="text-blue-400 font-semibold uppercase text-xs tracking-wider"></p>
+      <p id="detailPrice" class="text-2xl font-bold text-green-400"></p>
+      <p id="detailDesc" class="text-slate-300 leading-relaxed"></p>
+
+      <div class="border-t border-slate-700 pt-4 mt-4">
+        <h3 class="text-lg font-bold text-white mb-2">Seller Contact</h3>
+        <div id="contactBox">
+          <button onclick="revealContact()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg">
+            Show Phone & Email Contact
+          </button>
+        </div>
       </div>
     </div>
   </main>
 
-  <footer class="border-t border-slate-800 bg-slate-900 py-6 text-center text-xs text-slate-500">
-    &copy; 2026 RPM Equipment. All rights reserved.
-  </footer>
-
   <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const itemId = urlParams.get('id');
-    if (itemId) {
-      document.getElementById('item-title').innerText = "Equipment ID: " + itemId.toUpperCase();
-      document.getElementById('item-desc').innerText = "Displaying detailed specifications for item query parameter: " + itemId;
+    const listingId = urlParams.get('id');
+
+    async function loadDetails() {
+      try {
+        const res = await fetch('https://rpm-qhrz.onrender.com/api/listings');
+        const listings = await res.json();
+        const item = listings.find(l => l.id === listingId) || listings[0];
+
+        if (item) {
+          document.getElementById('detailImg').src = item.imageUrl || 'https://rpm-equipment.netlify.app/HeavyEquipment.jpg';
+          document.getElementById('detailTitle').textContent = item.title || 'Equipment Listing';
+          document.getElementById('detailCategory').textContent = item.category || 'General';
+          document.getElementById('detailPrice').textContent = '$' + (item.price || 0).toLocaleString();
+          document.getElementById('detailDesc').textContent = item.description || 'No detailed description provided.';
+          window.sellerContact = {
+            phone: item.phone || '(555) 019-2831',
+            email: item.email || 'seller@rpm-equipment.com'
+          };
+        }
+      } catch(e) {
+        console.error('Failed to load item:', e);
+      }
     }
+
+    function revealContact() {
+      const box = document.getElementById('contactBox');
+      box.innerHTML = 
+        <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 space-y-2">
+          <p class="text-white"><strong>Phone:</strong> <a href="tel:\" class="text-blue-400 font-mono">\</a></p>
+          <p class="text-white"><strong>Email:</strong> <a href="mailto:\" class="text-blue-400 font-mono">\</a></p>
+        </div>
+      ;
+    }
+
+    loadDetails();
   </script>
 </body>
 </html>

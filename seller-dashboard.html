@@ -2,83 +2,78 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Seller Dashboard | Marketplace</title>
+  <title>Seller Portal | RPM Equipment</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen antialiased">
-
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      <a href="index.html" class="text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
-        <span class="bg-blue-600 text-white p-2 rounded-lg font-mono text-sm">HUB</span>
-        <span>Marketplace</span>
-      </a>
-      <a href="post-gateway.html" class="text-sm font-semibold bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg shadow-blue-600/30 transition-all">+ Post Listing</a>
-    </div>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+  <header class="border-b border-slate-800 p-4 flex justify-between items-center max-w-6xl mx-auto">
+    <a href="index.html" class="text-xl font-bold text-blue-500">RPM Equipment</a>
+    <a href="index.html" class="text-sm text-slate-400 hover:text-white">Back to Site</a>
   </header>
 
-  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
-    <div class="flex items-center justify-between border-b border-slate-800 pb-6">
+  <main class="max-w-5xl mx-auto p-6 space-y-8">
+    <div class="flex justify-between items-center">
       <div>
-        <h1 class="text-3xl font-black text-white">Seller Dashboard</h1>
-        <p class="text-slate-400 text-sm">Manage active equipment and fleet listings.</p>
+        <h1 class="text-3xl font-bold text-white">Seller & Partner Dashboard</h1>
+        <p class="text-slate-400 text-sm">Manage your active listings, credits, and B2B business details.</p>
       </div>
+      <a href="post-gateway.html" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm">+ New Post</a>
     </div>
 
-    <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
-      <div id="listings" class="divide-y divide-slate-700/60"></div>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+        <h2 class="text-lg font-bold text-blue-400 mb-2">My Equipment Listings</h2>
+        <div id="equipmentList" class="space-y-3 text-sm text-slate-300">Loading listings...</div>
+      </div>
+
+      <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+        <h2 class="text-lg font-bold text-blue-400 mb-2">My B2B Business Listing</h2>
+        <div id="b2bList" class="space-y-3 text-sm text-slate-300">Loading business details...</div>
+      </div>
     </div>
   </main>
 
   <script>
-    const sampleListings = [
-      { title: "Skid Steer Loader", price: "$24,500", location: "Visalia, CA" },
-      { title: "Air Compressor", price: "$450", location: "Tulare, CA" },
-      { title: "Work Truck", price: "$18,000", location: "Visalia, CA" }
-    ];
+    async function loadDashboard() {
+      try {
+        const reqE = await fetch('https://rpm-qhrz.onrender.com/api/listings');
+        const equipment = await reqE.json();
+        const eBox = document.getElementById('equipmentList');
+        
+        if (equipment.length === 0) {
+          eBox.innerHTML = '<p class="text-slate-500">No active equipment listings.</p>';
+        } else {
+          eBox.innerHTML = equipment.slice(-3).map(e => 
+            <div class="bg-slate-900 p-3 rounded flex justify-between items-center border border-slate-800">
+              <div>
+                <p class="font-bold text-white">\</p>
+                <p class="text-xs text-slate-400">\$\ • \</p>
+              </div>
+              <a href="post-gateway.html" class="text-xs text-blue-400 hover:underline">Edit</a>
+            </div>
+          ).join('');
+        }
 
-    function loadListings() {
-      const container = document.getElementById('listings');
-      sampleListings.forEach((item) => {
-        const div = document.createElement('div');
-        div.className = "py-4 flex items-center justify-between first:pt-0 last:pb-0";
-        div.innerHTML = `
-          <div>
-            <h3 class="font-bold text-white text-lg">${item.title}</h3>
-            <p class="text-xs text-slate-400">${item.price} â€¢ ${item.location}</p>
-          </div>
-          <div class="space-x-2">
-            <button class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-600 transition-all">Edit</button>
-            <button class="bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs font-semibold px-3 py-1.5 rounded-lg border border-red-500/30 transition-all">Delete</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
+        const reqB = await fetch('https://rpm-qhrz.onrender.com/api/b2b-listings');
+        const b2b = await reqB.json();
+        const bBox = document.getElementById('b2bList');
+
+        if (b2b.length === 0) {
+          bBox.innerHTML = '<p class="text-slate-500">No active B2B business promotion.</p>';
+        } else {
+          bBox.innerHTML = b2b.slice(-1).map(b => 
+            <div class="bg-slate-900 p-3 rounded space-y-2 border border-slate-800">
+              <p class="font-bold text-white">\</p>
+              <p class="text-xs text-slate-400">\</p>
+              <a href="promote-business.html" class="inline-block text-xs bg-blue-600 text-white px-3 py-1 rounded">Update Business Details</a>
+            </div>
+          ).join('');
+        }
+      } catch(err) {
+        console.error(err);
+      }
     }
-    loadListings();
+    loadDashboard();
   </script>
-<!-- Interactive RPM Support Hub Bubble -->
-<div id="rpm-help-hub" style="position: fixed; bottom: 24px; right: 24px; z-index: 99999; font-family: sans-serif;">
-  <div id="rpm-chat-window" style="display: none; width: 320px; background: #111827; border: 1px solid #374151; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); color: #fff; margin-bottom: 12px; overflow: hidden;">
-    <div style="background: #1f2937; padding: 14px; border-bottom: 1px solid #374151; display: flex; justify-content: space-between; align-items: center;">
-      <span style="font-weight: bold; color: #60a5fa;">?? RPM Support & Help</span>
-      <button onclick="document.getElementById('rpm-chat-window').style.display='none'" style="background:none; border:none; color:#9ca3af; font-size:16px; cursor:pointer;">?</button>
-    </div>
-    <div style="padding: 16px; font-size: 14px; line-height: 1.5; max-height: 250px; overflow-y: auto;">
-      <p style="margin: 0 0 10px 0;">?? Need help with your membership, listings, or B2B directory?</p>
-      <p style="margin: 0 0 12px 0; color: #9ca3af;">Contact our Central Valley support team directly:</p>
-      <a href="mailto:rpm.cen.cal@gmail.com" style="display: block; width: 100%; padding: 8px 0; text-align: center; background: #2563eb; color: #fff; border-radius: 6px; text-decoration: none; font-weight: bold; margin-bottom: 8px;">Email Support</a>
-      <a href="membership.html" style="display: block; width: 100%; padding: 8px 0; text-align: center; background: #374151; color: #e5e7eb; border-radius: 6px; text-decoration: none;">View Membership Plans</a>
-    </div>
-  </div>
-  <button onclick="const w = document.getElementById('rpm-chat-window'); w.style.display = w.style.display === 'none' ? 'block' : 'none';" style="background: #2563eb; color: #fff; border: none; padding: 14px 20px; border-radius: 50px; font-weight: bold; font-size: 15px; cursor: pointer; box-shadow: 0 4px 14px rgba(37,99,235,0.4); display: flex; align-items: center; gap: 8px;">
-    ?? Help & Support
-  </button>
-</div>
 </body>
 </html>

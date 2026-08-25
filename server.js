@@ -3,6 +3,7 @@ const cors = require('cors');
 const app = express();
 
 app.use(cors());
+app.options('*', cors()); // Enable preflight options across all routes
 app.use(express.json());
 
 let equipmentListings = [];
@@ -40,22 +41,30 @@ app.get('/api/listings', (req, res) => {
   res.status(200).json(equipmentListings);
 });
 
-app.post('/api/listings/create', (req, res) => {
+// Primary POST endpoint and backwards-compatible alias
+const createEquipmentListing = (req, res) => {
   const newListing = { id: Date.now().toString(), ...req.body };
   equipmentListings.push(newListing);
   res.status(201).json({ success: true, listing: newListing });
-});
+};
+
+app.post('/api/listings', createEquipmentListing);
+app.post('/api/listings/create', createEquipmentListing);
 
 // B2B Directory Endpoints
 app.get('/api/b2b-listings', (req, res) => {
   res.status(200).json(b2bListings);
 });
 
-app.post('/api/b2b-listings/create', (req, res) => {
+// Primary POST endpoint and backwards-compatible alias
+const createB2BListing = (req, res) => {
   const newB2B = { id: Date.now().toString(), ...req.body };
   b2bListings.push(newB2B);
   res.status(201).json({ success: true, listing: newB2B });
-});
+};
+
+app.post('/api/b2b-listings', createB2BListing);
+app.post('/api/b2b-listings/create', createB2BListing);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

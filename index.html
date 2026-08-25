@@ -1,442 +1,81 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RPM Equipment | Commercial Marketplace</title>
+  <title>RPM Commercial & Industrial Equipment</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
-      outline: 3px solid #60a5fa !important;
-      outline-offset: 2px !important;
-    }
-    .help-fab {
-      position: fixed;
-      bottom: 28px;
-      right: 28px;
-      z-index: 99999;
-    }
-  </style>
+  <style> body { font-family: 'Inter', sans-serif; } </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between antialiased relative">
-
-<header class="border-b border-slate-800 bg-slate-900/95 backdrop-blur-md sticky top-0 z-50 py-4 shadow-xl">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-    
-    <!-- Brand Logo & Tagline Expanded -->
-    <a href="index.html" class="flex flex-col group">
-      <div class="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
-        <span class="bg-blue-600 text-white px-3 py-0.5 rounded-xl font-mono text-base shadow-lg shadow-blue-600/30">RPM</span>
-        <span class="group-hover:text-blue-400 transition-colors">EQUIPMENT</span>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between antialiased">
+  <!-- NAVIGATION HEADER -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <a href="index.html" class="flex flex-col group">
+        <div class="text-2xl font-black text-white flex items-center gap-2">
+          <span class="bg-blue-600 text-white px-2 py-0.5 rounded-lg font-mono text-sm">RPM</span>
+          <span>EQUIPMENT</span>
+        </div>
+      </a>
+      <div class="flex items-center gap-6">
+        <!-- PARTNER / CLIENT PORTAL DIRECT LINK -->
+        <a href="promote-business.html" class="text-xs font-semibold text-slate-300 hover:text-white transition-colors">Client Portal / Partners</a>
+        <a href="seller-dashboard.html" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2 rounded-lg font-bold">+ Post Listing</a>
       </div>
-      <span class="text-xs font-semibold text-slate-400 tracking-wider uppercase mt-0.5">Buy & Sell Equipment Across All Industries</span>
-    </a>
+    </div>
+  </header>
 
-    <!-- Client Portal Button -->
-    <a href="login.html" class="bg-blue-600 hover:bg-blue-500 text-white font-extrabold px-5 py-2.5 sm:px-6 sm:py-3 rounded-2xl shadow-lg shadow-blue-600/40 hover:shadow-blue-500/60 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2 text-xs sm:text-sm shrink-0">
-      <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-      </svg>
-      <span>+ Client Portal</span>
-    </a>
+  <!-- MAIN HERO & CATEGORIES SECTION -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12 w-full">
+    <div class="text-center space-y-4 max-w-3xl mx-auto">
+      <h1 class="text-4xl sm:text-5xl font-black text-white tracking-tight">Commercial & Industrial Equipment</h1>
+      <p class="text-slate-400 text-base sm:text-lg">Browse equipment categories or post your commercial listings across Central California.</p>
+    </div>
 
-  </div>
-</header>
+    <!-- CATEGORY GRID LINKS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <a href="heavy-equipment.html" class="bg-slate-800 border border-slate-700 hover:border-blue-500 rounded-xl p-6 transition-all block group">
+        <h2 class="text-xl font-bold text-white group-hover:text-blue-400">Heavy Equipment</h2>
+        <p class="text-slate-400 text-xs mt-2">Excavators, bulldozers, dozers, heavy machinery.</p>
+      </a>
 
-  <main class="flex-grow">
-    <!-- Hero Section -->
-    <section class="py-12 lg:py-16 bg-slate-900 border-b border-slate-800">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        
-        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 sm:p-8 flex flex-col justify-between">
-          <div class="space-y-4 max-w-3xl">
-            <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
-              Buy & Sell Equipment Across <span class="text-blue-400">All Industries</span>
-            </h1>
-            <p class="text-slate-300 text-base sm:text-lg leading-relaxed font-normal">
-              The premier commercial marketplace for heavy machinery, fleet vehicles, industrial tools, and B2B services. Deal directly with verified buyers and sellers nationwide—zero middleman markups, instant listing control, and transparent market valuations.
-            </p>
-          </div>
+      <a href="medium-equipment.html" class="bg-slate-800 border border-slate-700 hover:border-blue-500 rounded-xl p-6 transition-all block group">
+        <h2 class="text-xl font-bold text-white group-hover:text-blue-400">Medium Equipment</h2>
+        <p class="text-slate-400 text-xs mt-2">Skid steers, compact track loaders, mini excavators.</p>
+      </a>
 
-          <div class="grid grid-cols-3 gap-4 pt-6 border-t border-slate-800 mt-6 max-w-2xl">
-            <div>
-              <div class="text-xl sm:text-2xl font-bold text-white">100%</div>
-              <div class="text-[10px] sm:text-xs text-slate-400 uppercase font-semibold">Direct Deals</div>
-            </div>
-            <div>
-              <div class="text-xl sm:text-2xl font-bold text-white">Nationwide</div>
-              <div class="text-[10px] sm:text-xs text-slate-400 uppercase font-semibold">Buyer Network</div>
-            </div>
-            <div>
-              <div class="text-xl sm:text-2xl font-bold text-white">Verified</div>
-              <div class="text-[10px] sm:text-xs text-slate-400 uppercase font-semibold">Listings & Sellers</div>
-            </div>
-          </div>
-        </div>
+      <a href="vehicles.html" class="bg-slate-800 border border-slate-700 hover:border-blue-500 rounded-xl p-6 transition-all block group">
+        <h2 class="text-xl font-bold text-white group-hover:text-blue-400">Commercial Vehicles</h2>
+        <p class="text-slate-400 text-xs mt-2">Work trucks, utility beds, haulers, fleet vehicles.</p>
+      </a>
 
-        <!-- AMPLIFIED 6 FEATURED CATEGORY CARDS (NO DEAD SPACE ON HANDHELD/TABLET/DESKTOP) -->
-        <div class="space-y-4">
-          <h2 class="text-2xl font-black text-white tracking-tight">Explore Categories</h2>
-          
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-            
-            <!-- Card 1: Heavy Equipment -->
-            <a href="heavy-equipment.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl hover:border-blue-500 transition-all transform hover:-translate-y-1 block">
-              <img src="HeavyEquipment.jpg" alt="Heavy Equipment" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-              <div class="absolute bottom-0 left-0 right-0 p-4">
-                <span class="text-sm sm:text-base font-black text-white group-hover:text-blue-400 transition-colors drop-shadow-md block">Heavy Equipment</span>
-                <p class="text-[11px] font-medium text-slate-300 line-clamp-1 mt-0.5">Excavators, Dozers & Cranes</p>
-              </div>
-            </a>
+      <a href="tools.html" class="bg-slate-800 border border-slate-700 hover:border-blue-500 rounded-xl p-6 transition-all block group">
+        <h2 class="text-xl font-bold text-white group-hover:text-blue-400">Commercial Tools</h2>
+        <p class="text-slate-400 text-xs mt-2">Generators, concrete saws, jobsite commercial tools.</p>
+      </a>
+    </div>
 
-            <!-- Card 2: Medium Equipment (NEW) -->
-            <a href="medium-equipment.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl hover:border-blue-500 transition-all transform hover:-translate-y-1 block">
-              <img src="MediumEquip.jpg" alt="Medium Equipment" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-              <div class="absolute bottom-0 left-0 right-0 p-4">
-                <span class="text-sm sm:text-base font-black text-white group-hover:text-blue-400 transition-colors drop-shadow-md block">Medium Equipment</span>
-                <p class="text-[11px] font-medium text-slate-300 line-clamp-1 mt-0.5">Skid Steers, Minis & Lifts</p>
-              </div>
-            </a>
-
-            <!-- Card 3: Vehicles -->
-            <a href="vehicles.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl hover:border-blue-500 transition-all transform hover:-translate-y-1 block">
-              <img src="Vehicles.jpg" alt="Vehicles" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-              <div class="absolute bottom-0 left-0 right-0 p-4">
-                <span class="text-sm sm:text-base font-black text-white group-hover:text-blue-400 transition-colors drop-shadow-md block">Vehicles</span>
-                <p class="text-[11px] font-medium text-slate-300 line-clamp-1 mt-0.5">Commercial Trucks & Fleets</p>
-              </div>
-            </a>
-
-            <!-- Card 4: Tools -->
-            <a href="tools.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl hover:border-blue-500 transition-all transform hover:-translate-y-1 block">
-              <img src="Tools.jpg" alt="Tools" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-              <div class="absolute bottom-0 left-0 right-0 p-4">
-                <span class="text-sm sm:text-base font-black text-white group-hover:text-blue-400 transition-colors drop-shadow-md block">Tools</span>
-                <p class="text-[11px] font-medium text-slate-300 line-clamp-1 mt-0.5">Industrial Equipment & Gear</p>
-              </div>
-            </a>
-
-            <!-- Card 5: B2B Solutions -->
-            <a href="b2b.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl hover:border-blue-500 transition-all transform hover:-translate-y-1 block">
-              <img src="B2B.jpg" alt="B2B Solutions" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-              <div class="absolute bottom-0 left-0 right-0 p-4">
-                <span class="text-sm sm:text-base font-black text-white group-hover:text-blue-400 transition-colors drop-shadow-md block">B2B Solutions</span>
-                <p class="text-[11px] font-medium text-slate-300 line-clamp-1 mt-0.5">Services & Contractors</p>
-              </div>
-            </a>
-
-            <!-- Card 6: Create Account -->
-            <a href="membership.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-amber-500/50 shadow-xl hover:border-amber-400 transition-all transform hover:-translate-y-1 block">
-              <img src="CreateAccount.jpg" alt="Create Account" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent"></div>
-              <div class="absolute bottom-0 left-0 right-0 p-4">
-                <span class="text-sm sm:text-base font-black text-amber-400 group-hover:text-amber-300 transition-colors drop-shadow-md block">Create Account</span>
-                <p class="text-[11px] font-medium text-slate-300 line-clamp-1 mt-0.5">List Equipment & Sell Now</p>
-              </div>
-            </a>
-
-          </div>
-        </div>
-
+    <!-- PROMOTIONAL CALLOUT BANNER -->
+    <div class="bg-gradient-to-r from-blue-900/50 to-slate-800 border border-blue-500/30 rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="space-y-2">
+        <h3 class="text-2xl font-black text-white">Partner with RPM Equipment</h3>
+        <p class="text-slate-300 text-sm max-w-xl">Reach thousands of active industrial equipment buyers across the Central Valley. Access partner perks and direct advertising options.</p>
       </div>
-    </section>
-
-    <!-- EXPOSED VALUATION TOOL SECTION -->
-    <section class="py-16 bg-slate-950">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div>
-          <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-            <span>⚙️</span> Equipment Market Valuation Tool
-          </h2>
-          <p class="text-slate-400 text-sm">Calculate detailed resale estimates using equipment specifications, operating hours, and condition records.</p>
-        </div>
-
-        <div id="valuationDrawer" class="bg-slate-900 border-2 border-blue-500/60 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
-          <form onsubmit="runDetailedValuation(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Equipment Category</label>
-              <select id="vCategory" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
-                <option value="1.0">Heavy Earthmoving (Excavator, Dozer)</option>
-                <option value="0.95">Material Handling (Forklifts, Telehandlers)</option>
-                <option value="0.90">Commercial Transport / Trailers</option>
-                <option value="0.85">Specialized Industrial Tools</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Make / Brand</label>
-              <input type="text" id="vMake" placeholder="e.g. Caterpillar" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Model / Series</label>
-              <input type="text" id="vModel" placeholder="e.g. 320 GC" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Model Year</label>
-              <input type="number" id="vYear" value="2020" min="1980" max="2026" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Original Price ($)</label>
-              <input type="number" id="vPrice" value="120000" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Hours / Mileage</label>
-              <input type="number" id="vHours" value="3200" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Mechanical Condition</label>
-              <select id="vCondition" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
-                <option value="1.05">Like-New / Low Wear</option>
-                <option value="0.95" selected>Good / Work-Ready</option>
-                <option value="0.80">Fair / High Wear</option>
-                <option value="0.65">Needs Major Overhaul</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Maintenance History</label>
-              <select id="vMaint" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
-                <option value="1.08">Full OEM Dealer Service Logs</option>
-                <option value="1.00" selected>Self-Maintained / Basic Records</option>
-                <option value="0.90">No Documentation</option>
-              </select>
-            </div>
-
-            <div class="sm:col-span-2">
-              <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Attachments / Upgrades Value ($)</label>
-              <input type="number" id="vAttachments" value="5000" placeholder="e.g. Extra Buckets, Couplers" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
-            </div>
-
-            <div class="sm:col-span-2 flex items-end">
-              <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-lg text-xs transition-colors shadow-md shadow-blue-600/30">
-                Calculate Market Valuation
-              </button>
-            </div>
-          </form>
-
-          <div id="vResult" class="p-4 bg-slate-800/80 rounded-xl border border-blue-500/40 text-center space-y-2 hidden" aria-live="polite">
-            <div class="text-xs font-semibold uppercase text-slate-400" id="vResultTitle">Valuation Assessment</div>
-            <div class="text-2xl font-black text-emerald-400" id="vResultVal"></div>
-            <div class="text-xs text-slate-300" id="vResultDetails"></div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <section class="py-16 bg-slate-900">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-2xl font-bold text-white">Featured Marketplace Listings</h2>
-            <p class="text-slate-400 text-sm">Active equipment and business cards available nationwide</p>
-          </div>
-          <a href="membership.html" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
-            + Add Listing
-          </a>
-        </div>
-        <div id="featured-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          <div class="col-span-full p-8 bg-slate-800/50 rounded-xl border border-slate-800 text-center text-slate-400 text-sm">
-            Loading active inventory...
-          </div>
-        </div>
-      </div>
-    </section>
+      <!-- FOOTER DIRECT LINK TO PROMOTIONAL PAGE -->
+      <a href="promote-business.html" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm px-6 py-3 rounded-xl transition-all whitespace-nowrap">Access Client Portal &rarr;</a>
+    </div>
   </main>
 
-  <footer class="bg-slate-950 border-t border-slate-800 py-12 text-slate-400 text-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-8">
-      <div class="col-span-2 md:col-span-1 space-y-4">
-        <a href="index.html" class="text-xl font-bold text-white">RPM Equipment</a>
-        <p class="text-xs text-slate-500 leading-relaxed">The commercial marketplace to buy and sell equipment across all industries.</p>
-      </div>
-      <div>
-        <h3 class="font-bold text-white text-xs uppercase tracking-wider mb-3">Marketplace</h3>
-        <ul class="space-y-2">
-          <li><a href="heavy-equipment.html" class="hover:text-white">Heavy Machinery</a></li>
-          <li><a href="medium-equipment.html" class="hover:text-white">Medium Equipment</a></li>
-          <li><a href="vehicles.html" class="hover:text-white">Vehicles</a></li>
-          <li><a href="b2b.html" class="hover:text-white">B2B Solutions</a></li>
-          <li><a href="tools.html" class="hover:text-white">Tools</a></li>
-        </ul>
-      </div>
-      <div>
-        <h3 class="font-bold text-white text-xs uppercase tracking-wider mb-3">Sellers</h3>
-        <ul class="space-y-2">
-          <li><a href="membership.html" class="hover:text-white">Create Account</a></li>
-          <li><a href="login.html" class="hover:text-white">Client Portal Log In</a></li>
-        </ul>
-      </div>
-      <div>
-        <h3 class="font-bold text-white text-xs uppercase tracking-wider mb-3">Account</h3>
-        <ul class="space-y-2">
-          <li><a href="login.html" class="hover:text-white">Log In</a></li>
-          <li><a href="membership.html" class="hover:text-white">Register</a></li>
-        </ul>
+  <!-- FOOTER -->
+  <footer class="bg-slate-950 border-t border-slate-800 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <p>&copy; 2026 RPM Equipment Marketplace. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="promote-business.html" class="hover:text-slate-300">Partner Program</a>
+        <a href="seller-dashboard.html" class="hover:text-slate-300">Seller Dashboard</a>
       </div>
     </div>
   </footer>
-
-  <div class="help-fab">
-    <button onclick="openVisitorHelpModal()" aria-label="Open Visitor Equipment & Account Guided Tour" class="bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-full p-4 shadow-[0_10px_35px_rgba(251,191,36,0.45)] flex items-center justify-center gap-3 font-black ring-4 ring-amber-400/50 hover:ring-amber-300 focus:outline-none focus:ring-4 focus:ring-white transition-all transform hover:scale-105 active:scale-95 cursor-pointer">
-      <span class="w-10 h-10 bg-slate-950 text-amber-400 rounded-full flex items-center justify-center font-black text-2xl shadow-inner">?</span>
-      <span class="text-xs font-black uppercase tracking-widest text-slate-950 pr-2">Need Help? Tour Guide</span>
-    </button>
-  </div>
-
-  <div id="visitorHelpModal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[100000] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="visitorModalTitle">
-    <div class="bg-slate-900 border-4 border-amber-400 rounded-3xl max-w-2xl w-full p-6 sm:p-8 text-white shadow-[0_25px_60px_rgba(0,0,0,0.8)] space-y-6 max-h-[90vh] overflow-y-auto">
-      
-      <div class="flex justify-between items-center border-b-2 border-slate-800 pb-4">
-        <div class="flex items-center gap-3">
-          <span class="w-10 h-10 bg-amber-400 text-slate-950 rounded-xl flex items-center justify-center font-black text-xl">?</span>
-          <div>
-            <h2 id="visitorModalTitle" class="text-xl font-extrabold text-amber-400 tracking-tight">Visitor & Buyer Assistance Guide</h2>
-            <p class="text-xs text-slate-300">Step-by-step directions for equipment buyers and prospective seller accounts.</p>
-          </div>
-        </div>
-        <button onclick="closeVisitorHelpModal()" aria-label="Close Help Modal" class="text-slate-400 hover:text-white font-black text-2xl px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors">&times;</button>
-      </div>
-
-      <div class="space-y-4 text-xs sm:text-sm">
-        <div class="p-4 bg-slate-800/90 rounded-2xl border-l-4 border-amber-400 space-y-1 shadow-md">
-          <div class="flex items-center justify-between">
-            <span class="font-extrabold text-amber-400 uppercase tracking-wider text-xs">Step 1: Equipment Search & Valuation</span>
-            <span class="bg-amber-400/20 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md">Free Visitors</span>
-          </div>
-          <p class="text-slate-200 leading-relaxed">Browse active machinery listings directly from the Home page. Use the integrated Valuation Calculator to compute market estimates based on age, hours, and condition prior to making seller offers.</p>
-        </div>
-
-        <div class="p-4 bg-slate-800/90 rounded-2xl border-l-4 border-blue-500 space-y-1 shadow-md">
-          <div class="flex items-center justify-between">
-            <span class="font-extrabold text-blue-400 uppercase tracking-wider text-xs">Step 2: Selecting a Membership Tier</span>
-            <span class="bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-md">Sellers</span>
-          </div>
-          <p class="text-slate-200 leading-relaxed">Select your desired active listing volume ($5 for 1 listing, $10 for 5, $20 for 15, or $50 for unlimited). Click <strong>"Select Tier"</strong> to highlight your selection.</p>
-        </div>
-
-        <div class="p-4 bg-slate-800/90 rounded-2xl border-l-4 border-emerald-500 space-y-1 shadow-md">
-          <div class="flex items-center justify-between">
-            <span class="font-extrabold text-emerald-400 uppercase tracking-wider text-xs">Step 3: Account Creation & Payment</span>
-            <span class="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-md">Account Setup</span>
-          </div>
-          <p class="text-slate-200 leading-relaxed">Enter your business email and a secure password in the Account Setup section. Click proceed to redirect directly to Square Payment Gateway.</p>
-        </div>
-
-        <div class="p-4 bg-slate-800/90 rounded-2xl border-l-4 border-purple-500 space-y-1 shadow-md">
-          <div class="flex items-center justify-between">
-            <span class="font-extrabold text-purple-400 uppercase tracking-wider text-xs">Step 4: Existing Sellers Login</span>
-            <span class="bg-purple-500/20 text-purple-300 text-[10px] font-bold px-2 py-0.5 rounded-md">Client Portal</span>
-          </div>
-          <p class="text-slate-200 leading-relaxed">If you already possess an active paid seller subscription, click <strong>"Client Portal"</strong> in the top header menu to sign into your seller dashboard.</p>
-        </div>
-      </div>
-
-      <div class="pt-2 border-t border-slate-800 flex justify-end">
-        <button onclick="closeVisitorHelpModal()" class="w-full sm:w-auto bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold px-8 py-3 rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-400/20">
-          Close Tour & Continue
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <script src="app.js"></script>
-
-  <script>
-    function runDetailedValuation(event) {
-      event.preventDefault();
-      const catMult = parseFloat(document.getElementById('vCategory').value);
-      const make = document.getElementById('vMake').value;
-      const model = document.getElementById('vModel').value;
-      const year = parseInt(document.getElementById('vYear').value) || 2020;
-      const origPrice = parseFloat(document.getElementById('vPrice').value) || 100000;
-      const hours = parseFloat(document.getElementById('vHours').value) || 0;
-      const condMult = parseFloat(document.getElementById('vCondition').value);
-      const maintMult = parseFloat(document.getElementById('vMaint').value);
-      const attachVal = parseFloat(document.getElementById('vAttachments').value) || 0;
-
-      const age = Math.max(0, 2026 - year);
-      const ageDepreciation = Math.pow(0.89, age);
-      const usageDepreciation = Math.max(0.40, 1 - (hours * 0.000035));
-
-      let baseValue = (origPrice * ageDepreciation * usageDepreciation * catMult * condMult * maintMult) + attachVal;
-      
-      const lowEst = Math.round(baseValue * 0.92);
-      const highEst = Math.round(baseValue * 1.08);
-
-      const res = document.getElementById('vResult');
-      const resVal = document.getElementById('vResultVal');
-      const resDetails = document.getElementById('vResultDetails');
-      const resTitle = document.getElementById('vResultTitle');
-
-      resTitle.textContent = `${year} ${make} ${model} Market Estimate`;
-      resVal.textContent = `$${lowEst.toLocaleString()} - $${highEst.toLocaleString()}`;
-      resDetails.textContent = `Based on ${hours.toLocaleString()} hours, maintenance condition, and $${attachVal.toLocaleString()} in included accessories.`;
-      
-      res.classList.remove('hidden');
-    }
-
-    function openVisitorHelpModal() {
-      document.getElementById('visitorHelpModal').classList.remove('hidden');
-    }
-    function closeVisitorHelpModal() {
-      document.getElementById('visitorHelpModal').classList.add('hidden');
-    }
-
-    async function loadDirectory() {
-      const container = document.getElementById('featured-container');
-
-      try {
-        const response = await fetch('https://rpm-qhrz.onrender.com/api/listings');
-        const data = await response.json();
-        const listings = Array.isArray(data) ? data : (data.listings || []);
-
-        if (!listings.length) {
-          container.innerHTML = `<div class="col-span-full p-8 bg-slate-800/50 rounded-xl text-center text-slate-400 text-sm">No active listings currently online.</div>`;
-          return;
-        }
-
-        container.innerHTML = listings.map(item => {
-          return `
-            <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden flex flex-col justify-between" id="listing-${item.id}">
-              <div class="p-5 space-y-2">
-                <div class="flex justify-between items-center">
-                  <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">${item.category || 'Equipment'}</span>
-                </div>
-                <h3 class="font-bold text-white text-lg">${item.title || 'Untitled Listing'}</h3>
-                <p class="text-2xl font-black text-emerald-400">${item.price ? '$' + parseFloat(item.price).toLocaleString() : 'Contact for Price'}</p>
-                <p class="text-xs text-slate-400 line-clamp-2">${item.description || ''}</p>
-              </div>
-              <div class="p-5 pt-0 space-y-2">
-                <a href="mailto:${item.email || 'rpm.cen.cal@gmail.com'}" class="w-full block text-center bg-slate-700 hover:bg-blue-600 text-white text-xs font-semibold py-2.5 rounded-lg transition-colors">
-                  Contact Owner &rarr;
-                </a>
-              </div>
-            </div>
-          `;
-        }).join('');
-      } catch (e) {
-        container.innerHTML = `<div class="col-span-full p-8 bg-slate-800/50 rounded-xl text-center text-slate-400 text-sm">Marketplace listings syncing...</div>`;
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      loadDirectory();
-    });
-  </script>
 </body>
 </html>

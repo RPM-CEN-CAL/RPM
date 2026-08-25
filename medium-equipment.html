@@ -28,7 +28,7 @@
       <p class="text-slate-400 text-sm">Skid Steers, Compact Track Loaders & Mini Excavators.</p>
     </div>
 
-    <!-- 1 EXAMPLE POST -->
+    <!-- 1 EXAMPLE POST CARD -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div class="bg-slate-800 border-2 border-amber-500/60 rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between">
         <div class="relative h-48 bg-slate-700">
@@ -36,10 +36,10 @@
           <span class="absolute top-3 left-3 bg-amber-400 text-slate-950 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">EXAMPLE POST</span>
         </div>
         <div class="p-5 space-y-3">
-          <div class="text-xs font-bold text-blue-400 uppercase">Compact Machinery</div>
+          <div class="text-xs font-bold text-blue-400 uppercase">Medium Equipment</div>
           <h3 class="text-xl font-extrabold text-white">2022 Bobcat T76 Compact Track Loader</h3>
           <div class="text-2xl font-black text-emerald-400">$62,500</div>
-          <p class="text-xs text-slate-300">1,150 Hours | Enclosed Cab w/ AC | High Flow Hydraulics</p>
+          <p class="text-xs text-slate-300">Location: Bakersfield, CA | Specs: Hours: 1,150 | HP: 74 | High Flow</p>
         </div>
         <div class="p-5 pt-0">
           <button onclick="openModal('mediumModal')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl text-xs transition-colors">
@@ -50,25 +50,41 @@
     </div>
   </main>
 
-  <!-- DETAIL MODAL -->
+  <!-- FULL SELLER DASHBOARD MATCHING MODAL -->
   <div id="mediumModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100000] flex items-center justify-center p-4">
-    <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-xl w-full p-6 text-white space-y-4">
+    <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-2xl w-full p-6 text-white space-y-5">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <span class="bg-amber-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded uppercase">EXAMPLE POST DETAIL</span>
-        <button onclick="closeModal('mediumModal')" class="text-slate-400 text-2xl font-bold">&times;</button>
+        <span class="bg-amber-400 text-slate-950 text-[10px] font-black px-2.5 py-1 rounded uppercase tracking-wider">EXAMPLE POST DETAIL</span>
+        <button onclick="closeModal('mediumModal')" class="text-slate-400 hover:text-white text-2xl font-bold">&times;</button>
       </div>
-      <h2 class="text-xl font-black text-white">2022 Bobcat T76 Compact Track Loader</h2>
-      <p class="text-2xl font-bold text-emerald-400">$62,500</p>
-      <div class="space-y-2 text-xs text-slate-300 bg-slate-800 p-4 rounded-xl border border-slate-700">
-        <p><strong>Hours:</strong> 1,150</p>
-        <p><strong>Tracks:</strong> 85% Rubber remaining</p>
-        <p><strong>Controls:</strong> Selectable Joystick Controls (SJC)</p>
-        <p><strong>Seller Note:</strong> Fresh fluids, clean cab, ready for jobsite deployment.</p>
+
+      <div>
+        <h2 class="text-2xl font-black text-white">2022 Bobcat T76 Compact Track Loader</h2>
+        <p class="text-3xl font-extrabold text-emerald-400 mt-1">$62,500</p>
       </div>
-      <div class="p-3 bg-amber-400/10 border border-amber-400/30 rounded-xl text-xs text-amber-300">
-        <strong>EXAMPLE POST CONTACT:</strong> Phone: (555) 014-9920 | Email: example-seller@rpm.com
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-800/80 p-4 rounded-xl border border-slate-700">
+        <div><strong class="text-slate-400">CATEGORY:</strong> <span class="text-slate-200">Medium Equipment</span></div>
+        <div><strong class="text-slate-400">LOCATION (CITY, STATE):</strong> <span class="text-slate-200">Bakersfield, CA</span></div>
+        <div><strong class="text-slate-400">SELLER EMAIL (VIP CHECK):</strong> <span class="text-slate-200">rpm.cen.cal@gmail.com</span></div>
+        <div><strong class="text-slate-400">SELLER CONTACT INFO:</strong> <span class="text-slate-200">Phone: (555) 014-9920 | Direct Email</span></div>
       </div>
-      <button onclick="closeModal('mediumModal')" class="w-full bg-slate-800 hover:bg-slate-700 py-2.5 rounded-xl text-xs font-bold">Close Preview</button>
+
+      <div class="space-y-1 bg-slate-800/80 p-4 rounded-xl border border-slate-700 text-xs">
+        <strong class="text-slate-400 uppercase tracking-wider block mb-1">Machine Specifications:</strong>
+        <p class="text-slate-200 font-mono bg-slate-900/60 p-2 rounded border border-slate-800">Hours: 1,150 | HP: 74 | High Flow Hydraulics | Enclosed Cab w/ AC | SJC Controls</p>
+      </div>
+
+      <div class="space-y-1 bg-slate-800/80 p-4 rounded-xl border border-slate-700 text-xs">
+        <strong class="text-slate-400 uppercase tracking-wider block mb-1">Full Description & Condition Details:</strong>
+        <p class="text-slate-300 leading-relaxed">Work-ready unit with 85% rubber tracks remaining. Clean cab, cold AC, and fresh fluid service complete. Includes standard bucket.</p>
+      </div>
+
+      <div class="p-3 bg-amber-400/10 border border-amber-400/30 rounded-xl text-xs text-amber-300 font-semibold text-center">
+        EXAMPLE POST — Matches Live Seller Dashboard Data Scheme
+      </div>
+
+      <button onclick="closeModal('mediumModal')" class="w-full bg-slate-800 hover:bg-slate-700 py-3 rounded-xl text-xs font-bold uppercase tracking-wider">Close Preview</button>
     </div>
   </div>
 

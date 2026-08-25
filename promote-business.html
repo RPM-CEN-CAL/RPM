@@ -3,145 +3,137 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Promote Business | RPM B2B Directory</title>
+  <title>Promote Business | RPM Equipment</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style> body { font-family: 'Inter', sans-serif; } </style>
+  <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between antialiased">
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      <a href="index.html" class="flex flex-col group">
-        <div class="text-2xl font-black text-white flex items-center gap-2">
-          <span class="bg-blue-600 text-white px-2 py-0.5 rounded-lg font-mono text-sm">RPM</span>
-          <span>B2B PROMOTION</span>
-        </div>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between antialiased">
+
+  <header class="border-b border-slate-800 bg-slate-900/90 py-4 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+      <a href="index.html" class="text-2xl font-black text-white flex items-center gap-2">
+        <span class="bg-blue-600 px-2 py-0.5 rounded-lg text-sm">RPM</span>
+        <span>B2B PROMOTION</span>
       </a>
-      <a href="seller-dashboard.html" class="text-sm font-medium text-blue-400 hover:underline">Go to Dashboard &rarr;</a>
+      <a href="seller-dashboard.html" class="text-xs font-bold text-slate-400 hover:text-white transition-colors">Go to Dashboard &rarr;</a>
     </div>
   </header>
 
-  <main class="max-w-3xl mx-auto px-4 py-12 w-full space-y-6">
+  <main class="max-w-3xl mx-auto px-4 py-12 w-full space-y-8">
+    
     <div class="text-center space-y-2">
       <h1 class="text-3xl font-black text-white">Promote Your Business</h1>
       <p class="text-slate-400 text-sm">List your machinery services, rentals, or commercial repair in our verified B2B Directory.</p>
     </div>
 
-    <form id="b2bForm" class="bg-slate-800 border border-slate-700 rounded-xl p-6 space-y-4">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Company Name</label>
-          <input type="text" id="companyName" required placeholder="e.g. Apex Heavy Machinery Rentals" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Contact Email (VIP Check)</label>
-          <input type="email" id="email" required placeholder="rpm.cen.cal@gmail.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Phone Number</label>
-          <input type="text" id="phone" placeholder="e.g. (555) 019-2834" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Services Provided</label>
-          <input type="text" id="services" required placeholder="e.g. Heavy Equipment Hauling, Tractor Repair" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
-        </div>
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Company Logo / Banner Image Upload</label>
-        <div id="b2bDropZone" class="border-2 border-dashed border-slate-700 hover:border-blue-500 bg-slate-900 rounded-xl p-6 text-center cursor-pointer transition-all">
-          <input type="file" id="b2bLogoFile" accept="image/*" class="hidden" onchange="handleB2bFile(event)">
-          <p class="text-xs text-slate-400">Click to Search Files or Drag & Drop Company Logo</p>
-          <div id="b2bPreview" class="mt-2 hidden">
-            <img id="b2bPreviewImg" src="" class="h-20 mx-auto rounded border border-slate-700 object-cover">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5">
+      
+      <form id="b2bForm" onsubmit="event.preventDefault();" class="space-y-4">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Company Name</label>
+            <input type="text" placeholder="e.g. Apex Heavy Machinery Rentals" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Contact Email (VIP Check)</label>
+            <input type="email" value="rpm.cen.cal@gmail.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
           </div>
         </div>
-      </div>
 
-      <div>
-        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Business Overview & Service Coverage</label>
-        <textarea id="description" rows="3" required placeholder="Detailed breakdown of equipment fleet, service radius, rates..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"></textarea>
-      </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Phone Number</label>
+            <input type="text" placeholder="e.g. (555) 019-2834" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Services Provided</label>
+            <input type="text" placeholder="e.g. Heavy Equipment Hauling, Tractor Repair" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+          </div>
+        </div>
 
-      <div id="statusMsg" class="hidden text-xs text-center py-2"></div>
+        <!-- FUNCTIONAL DROP-IN & FILE SEARCH FOR B2B PROMO -->
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Company Logo / Banner Image Upload</label>
+          
+          <div id="b2bDropZone" 
+               onclick="document.getElementById('b2bFileInput').click()" 
+               ondragover="handleB2BDragOver(event)" 
+               ondragleave="handleB2BDragLeave(event)" 
+               ondrop="handleB2BFileDrop(event)" 
+               class="border-2 border-dashed border-slate-700 bg-slate-950/60 hover:bg-slate-950 hover:border-blue-500 transition-all rounded-2xl p-8 text-center cursor-pointer flex flex-col items-center justify-center space-y-3 relative group">
+            
+            <input type="file" id="b2bFileInput" accept="image/*" class="hidden" onchange="handleB2BFileSelect(event)">
+            
+            <div id="b2bUploadPrompt" class="space-y-2">
+              <div class="w-10 h-10 rounded-full bg-blue-600/10 text-blue-400 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              </div>
+              <p class="text-xs font-bold text-slate-300">
+                Click to Search Files <span class="text-slate-500 font-normal">or Drag & Drop Company Logo</span>
+              </p>
+              <p class="text-[10px] text-slate-500 uppercase tracking-wider">Supports PNG, JPG, WEBP</p>
+            </div>
 
-      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg text-sm transition-all">
-        Pay $2 Fee & Submit B2B Promo
-      </button>
-    </form>
+            <div id="b2bImagePreview" class="hidden flex flex-col items-center space-y-2">
+              <img id="b2bPreviewImg" src="#" alt="Preview" class="h-28 object-contain rounded-lg border border-slate-700">
+              <span id="b2bFileName" class="text-xs text-emerald-400 font-mono font-bold"></span>
+              <span class="text-[10px] text-blue-400 hover:underline">Click or drop file to replace</span>
+            </div>
+
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Business Overview & Service Coverage</label>
+          <textarea rows="3" placeholder="Detailed breakdown of equipment fleet, service radius, rates..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-200 focus:outline-none focus:border-blue-500"></textarea>
+        </div>
+
+        <button type="button" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider transition-colors shadow-lg shadow-blue-600/20">
+          Pay $2 Fee & Submit B2B Promo
+        </button>
+
+      </form>
+    </div>
+
   </main>
 
-  <footer class="border-t border-slate-800 bg-slate-950 py-6 text-center text-xs text-slate-500">
+  <footer class="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-600">
     &copy; 2026 RPM Equipment. All rights reserved.
   </footer>
 
   <script>
-    let b2bLogoBase64 = '';
-    const dropZone = document.getElementById('b2bDropZone');
-    const logoFile = document.getElementById('b2bLogoFile');
-
-    dropZone.addEventListener('click', () => logoFile.click());
-
-    function handleB2bFile(e) {
-      if (e.target.files.length) {
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-          b2bLogoBase64 = evt.target.result;
-          document.getElementById('b2bPreviewImg').src = b2bLogoBase64;
-          document.getElementById('b2bPreview').classList.remove('hidden');
-        };
-        reader.readAsDataURL(e.target.files[0]);
-      }
+    function handleB2BDragOver(e) {
+      e.preventDefault(); e.stopPropagation();
+      document.getElementById('b2bDropZone').classList.add('border-blue-500', 'bg-blue-950/20');
     }
-
-    document.getElementById('b2bForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const statusMsg = document.getElementById('statusMsg');
-      statusMsg.className = "text-xs text-center py-2 text-blue-400";
-      statusMsg.textContent = "Checking $2 checkout session...";
-      statusMsg.classList.remove('hidden');
-
-      const companyName = document.getElementById('companyName').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-      const services = document.getElementById('services').value.trim();
-      const description = document.getElementById('description').value.trim();
-
-      try {
-        const checkRes = await fetch('https://rpm-qhrz.onrender.com/api/create-square-checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
-        });
-        const checkData = await checkRes.json();
-
-        const res = await fetch('https://rpm-qhrz.onrender.com/api/b2b-listings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ companyName, email, phone, services, description, logoUrl: b2bLogoBase64 })
-        });
-
-        if (res.ok) {
-          if (checkData.isVip) {
-            statusMsg.className = "text-xs text-center py-2 text-green-400";
-            statusMsg.textContent = "VIP Access Confirmed! Business listed without fee. Redirecting...";
-          } else {
-            statusMsg.className = "text-xs text-center py-2 text-yellow-400";
-            statusMsg.textContent = "Listing created! Opening Square checkout ($2 fee)...";
-            if (checkData.checkoutUrl) window.open(checkData.checkoutUrl, '_blank');
-          }
-          setTimeout(() => { window.location.href = 'seller-dashboard.html'; }, 1500);
-        } else {
-          throw new Error('Failed to post B2B listing');
-        }
-      } catch (err) {
-        statusMsg.className = "text-xs text-center py-2 text-red-400";
-        statusMsg.textContent = "Error submitting B2B listing. Try again.";
-      }
-    });
+    function handleB2BDragLeave(e) {
+      e.preventDefault(); e.stopPropagation();
+      document.getElementById('b2bDropZone').classList.remove('border-blue-500', 'bg-blue-950/20');
+    }
+    function handleB2BFileDrop(e) {
+      e.preventDefault(); e.stopPropagation();
+      document.getElementById('b2bDropZone').classList.remove('border-blue-500', 'bg-blue-950/20');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) displayB2BPreview(files[0]);
+    }
+    function handleB2BFileSelect(e) {
+      const files = e.target.files;
+      if (files.length > 0) displayB2BPreview(files[0]);
+    }
+    function displayB2BPreview(file) {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('b2bPreviewImg').src = e.target.result;
+        document.getElementById('b2bFileName').innerText = 'Selected: ' + file.name;
+        document.getElementById('b2bUploadPrompt').classList.add('hidden');
+        document.getElementById('b2bImagePreview').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
   </script>
+
 </body>
 </html>

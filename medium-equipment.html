@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medium Equipment Marketplace | RPM Equipment</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between">
+
+  <!-- Navigation -->
+  <header class="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-2">
+        <span class="text-xl font-bold text-white tracking-tight">RPM <span class="text-blue-500">EQUIPMENT</span></span>
+      </a>
+      <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
+        <a href="heavy-equipment.html" class="hover:text-white transition-colors">Heavy Equipment</a>
+        <a href="medium-equipment.html" class="text-blue-400 font-semibold">Medium Equipment</a>
+        <a href="vehicles.html" class="hover:text-white transition-colors">Vehicles</a>
+        <a href="tools.html" class="hover:text-white transition-colors">Tools</a>
+        <a href="b2b.html" class="hover:text-white transition-colors">B2B Solutions</a>
+      </nav>
+      <a href="dashboard.html" class="bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm px-4 py-2 rounded-lg transition-all shadow-md shadow-blue-600/20">
+        + Client Portal
+      </a>
+    </div>
+  </header>
+
+  <!-- Page Header -->
+  <main class="mb-auto">
+    <section class="py-12 bg-slate-900 border-b border-slate-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <span class="text-blue-400 text-xs font-semibold uppercase tracking-wider">Inventory Category</span>
+        <h1 class="text-3xl font-extrabold text-white mt-1">Medium Equipment Marketplace</h1>
+        <p class="text-slate-400 text-sm mt-2 max-w-2xl">Browse verified compact track loaders, mini excavators, telehandlers, and utility machinery.</p>
+      </div>
+    </section>
+
+    <!-- Equipment List Container -->
+    <section class="py-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <!-- Bobcat T76 -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-slate-700 transition-all flex flex-col justify-between">
+            <div>
+              <div class="h-48 bg-slate-800 relative">
+                <img src="MediumEquip.jpg" alt="Bobcat T76 Compact Track Loader" class="w-full h-full object-cover">
+                <span class="absolute top-3 right-3 bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">Featured</span>
+              </div>
+              <div class="p-5 space-y-2">
+                <div class="text-xs text-slate-400">Compact Track Loader • Visalia, CA</div>
+                <h3 class="text-lg font-bold text-white">Bobcat T76 Compact Track Loader</h3>
+                <p class="text-xs text-slate-400 line-clamp-2">74 HP Tier 4 engine, enclosed cab with AC, low hours, ready for work.</p>
+              </div>
+            </div>
+            <div class="p-5 pt-0 flex items-center justify-between border-t border-slate-800/60 mt-4">
+              <span class="text-xl font-bold text-blue-400">$62,500</span>
+              <a href="equipment-detail.html?id=bobcat-t76" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-3 py-2 rounded-lg transition-colors">View Details</a>
+            </div>
+          </div>
+
+          <!-- Caterpillar 305.5E2 -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-slate-700 transition-all flex flex-col justify-between">
+            <div>
+              <div class="h-48 bg-slate-800 relative">
+                <img src="MediumEquip.jpg" alt="Caterpillar 305.5E2 Hydraulic Excavator" class="w-full h-full object-cover">
+                <span class="absolute top-3 right-3 bg-slate-800 text-slate-300 text-xs font-bold px-2.5 py-1 rounded-full border border-slate-700">Verified</span>
+              </div>
+              <div class="p-5 space-y-2">
+                <div class="text-xs text-slate-400">Mini Excavator • Fresno, CA</div>
+                <h3 class="text-lg font-bold text-white">Caterpillar 305.5E2 Hydraulic Excavator</h3>
+                <p class="text-xs text-slate-400 line-clamp-2">Includes quick coupler, 24" trenching bucket, rubber tracks at 80%.</p>
+              </div>
+            </div>
+            <div class="p-5 pt-0 flex items-center justify-between border-t border-slate-800/60 mt-4">
+              <span class="text-xl font-bold text-blue-400">$54,000</span>
+              <a href="equipment-detail.html?id=cat-305" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-3 py-2 rounded-lg transition-colors">View Details</a>
+            </div>
+          </div>
+
+          <!-- Kubota SVL75-2 -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-slate-700 transition-all flex flex-col justify-between">
+            <div>
+              <div class="h-48 bg-slate-800 relative">
+                <img src="MediumEquip.jpg" alt="Kubota SVL75-2 Track Loader" class="w-full h-full object-cover">
+                <span class="absolute top-3 right-3 bg-slate-800 text-slate-300 text-xs font-bold px-2.5 py-1 rounded-full border border-slate-700">Verified</span>
+              </div>
+              <div class="p-5 space-y-2">
+                <div class="text-xs text-slate-400">Track Loader • Tulare, CA</div>
+                <h3 class="text-lg font-bold text-white">Kubota SVL75-2 Track Loader</h3>
+                <p class="text-xs text-slate-400 line-clamp-2">High flow hydraulics, 2-speed travel, fully serviced hydraulic system.</p>
+              </div>
+            </div>
+            <div class="p-5 pt-0 flex items-center justify-between border-t border-slate-800/60 mt-4">
+              <span class="text-xl font-bold text-blue-400">$48,900</span>
+              <a href="equipment-detail.html?id=kubota-svl75" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-3 py-2 rounded-lg transition-colors">View Details</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-800 bg-slate-900 py-6 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4">
+      &copy; 2026 RPM Equipment. All rights reserved.
+    </div>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

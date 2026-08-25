@@ -10,15 +10,15 @@
     body { font-family: 'Inter', sans-serif; }
     .help-fab {
       position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 9999;
+      bottom: 28px;
+      right: 28px;
+      z-index: 99999;
     }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen antialiased relative">
+<body class="bg-slate-900 text-slate-100 min-h-screen antialiased relative flex flex-col justify-between">
 
-  <!-- Payment Enforcement & Verification Gate -->
+  <!-- Session Gatekeeper Verification -->
   <script>
     const VIP_EMAILS = [
       'rpm.cen.cal@gmail.com',
@@ -38,12 +38,11 @@
         localStorage.setItem('rpm_seller_tier', urlParams.get('tier'));
       }
     } else if (savedSession !== 'active' && !localStorage.getItem('rpm_paid_client_' + userEmail)) {
-      alert("Access Denied: Payment or active session required to access the Client Portal.");
+      alert("Access Denied: Active paid subscription required to access the Client Portal.");
       window.location.href = 'membership.html';
     }
   </script>
 
-  <!-- Navigation Bar -->
   <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
       <a href="index.html" class="flex flex-col group">
@@ -64,7 +63,7 @@
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 w-full">
     <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xl">
       <div>
         <h1 class="text-2xl font-bold text-white">Client Portal & Equipment Hub</h1>
@@ -77,74 +76,108 @@
       </div>
     </div>
 
-    <!-- Active Listings Section -->
+    <!-- Active Listings Allocation Cards -->
     <div class="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-6 space-y-4">
       <h2 class="text-lg font-bold text-white">Active Listings Allocation</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
         <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
           <span class="text-slate-400 block mb-1">Account Tier</span>
-          <span class="text-base font-bold text-blue-400">VIP Unlimited Access</span>
+          <span id="displayAccountTier" class="text-base font-bold text-blue-400">VIP Unlimited Access</span>
         </div>
         <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
           <span class="text-slate-400 block mb-1">Active Listings</span>
           <span class="text-base font-bold text-emerald-400">Unlimited Available</span>
         </div>
         <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
-          <span class="text-slate-400 block mb-1">B2B Promotions</span>
+          <span class="text-slate-400 block mb-1">B2B Directory Promotions</span>
           <span class="text-base font-bold text-purple-400">Enabled</span>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- High-Contrast Accessible Help Bubble (Client Portal Path) -->
+  <!-- High-Contrast Standout Accessibility Floating Client Portal Bubble -->
   <div class="help-fab">
-    <button onclick="togglePortalHelpModal()" aria-label="Client Portal Help Guide" class="bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-full p-4 shadow-2xl flex items-center justify-center gap-2 font-black text-lg focus:ring-4 focus:ring-amber-200 focus:outline-none transition-transform active:scale-95">
-      <span class="w-8 h-8 bg-slate-950 text-amber-400 rounded-full flex items-center justify-center font-black text-xl">?</span>
-      <span class="text-xs font-bold uppercase tracking-wider pr-1">Portal Help</span>
+    <button onclick="openPortalHelpModal()" aria-label="Open Seller Dashboard Guided Tour" class="bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-full p-4 shadow-[0_10px_35px_rgba(251,191,36,0.45)] flex items-center justify-center gap-3 font-black ring-4 ring-amber-400/50 hover:ring-amber-300 focus:outline-none focus:ring-4 focus:ring-white transition-all transform hover:scale-105 active:scale-95 cursor-pointer">
+      <span class="w-10 h-10 bg-slate-950 text-amber-400 rounded-full flex items-center justify-center font-black text-2xl shadow-inner">?</span>
+      <span class="text-xs font-black uppercase tracking-widest text-slate-950 pr-2">Portal Help Guide</span>
     </button>
   </div>
 
-  <!-- Client Portal Help Modal -->
-  <div id="portalHelpModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[10000] flex items-center justify-center p-4">
-    <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-lg w-full p-6 space-y-6 text-white shadow-2xl">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="text-lg font-bold text-amber-400 flex items-center gap-2">
-          <span>⚙️</span> Client Portal Guide
-        </h3>
-        <button onclick="togglePortalHelpModal()" class="text-slate-400 hover:text-white font-bold text-xl px-2">&times;</button>
+  <!-- Detailed Accessible Multi-Step Client Portal Help Modal -->
+  <div id="portalHelpModal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[100000] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="portalModalTitle">
+    <div class="bg-slate-900 border-4 border-amber-400 rounded-3xl max-w-2xl w-full p-6 sm:p-8 text-white shadow-[0_25px_60px_rgba(0,0,0,0.8)] space-y-6 max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex justify-between items-center border-b-2 border-slate-800 pb-4">
+        <div class="flex items-center gap-3">
+          <span class="w-10 h-10 bg-amber-400 text-slate-950 rounded-xl flex items-center justify-center font-black text-xl">⚙️</span>
+          <div>
+            <h2 id="portalModalTitle" class="text-xl font-extrabold text-amber-400 tracking-tight">Client Portal Management Guide</h2>
+            <p class="text-xs text-slate-300">Walkthrough for managing active inventory, directory slots, and account settings.</p>
+          </div>
+        </div>
+        <button onclick="closePortalHelpModal()" aria-label="Close Portal Help Modal" class="text-slate-400 hover:text-white font-black text-2xl px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors">&times;</button>
       </div>
 
-      <div class="space-y-4 text-xs sm:text-sm text-slate-300">
-        <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700">
-          <p class="font-bold text-white">Step 1: Verify Allocation</p>
-          <p class="mt-1">Review your active listing tiers and promotional slots in the Active Listings Allocation box above.</p>
+      <div class="space-y-4 text-xs sm:text-sm">
+        <div class="p-4 bg-slate-800/90 rounded-2xl border-l-4 border-amber-400 space-y-1 shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="font-extrabold text-amber-400 uppercase tracking-wider text-xs">Step 1: Check Allocation & Tier Status</span>
+            <span class="bg-amber-400/20 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md">Account Metrics</span>
+          </div>
+          <p class="text-slate-200 leading-relaxed">Review your current active subscription tier in the top header badge and middle allocation dashboard. Your account limits specify total allowed active equipment listings and featured B2B promotion slots.</p>
         </div>
 
-        <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700">
-          <p class="font-bold text-white">Step 2: Manage Directory Listings</p>
-          <p class="mt-1">Click "Manage B2B Directory" to create, edit, or publish commercial listings across target categories.</p>
+        <div class="p-4 bg-slate-800/90 rounded-2xl border-l-4 border-blue-500 space-y-1 shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="font-extrabold text-blue-400 uppercase tracking-wider text-xs">Step 2: Publishing & Managing B2B Listings</span>
+            <span class="bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-md">Equipment Manager</span>
+          </div>
+          <p class="text-slate-200 leading-relaxed">Click <strong>"Manage B2B Directory &rarr;"</strong> to create new machinery listings. Upload specifications, operating hours, attachments, and pricing. Our automated tool categorizes equipment dynamically across heavy industries.</p>
         </div>
 
-        <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700">
-          <p class="font-bold text-white">Step 3: Secure Sign Out</p>
-          <p class="mt-1">When finished managing your inventory, click "Sign Out" at the top right to safeguard your portal session.</p>
+        <div class="p-4 bg-slate-800/90 rounded-2xl border-l-4 border-purple-500 space-y-1 shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="font-extrabold text-purple-400 uppercase tracking-wider text-xs">Step 3: Valuation & Pricing Strategy</span>
+            <span class="bg-purple-500/20 text-purple-300 text-[10px] font-bold px-2 py-0.5 rounded-md">Pricing Tools</span>
+          </div>
+          <p class="text-slate-200 leading-relaxed">Utilize our Valuation Tool before publishing to calculate high-accuracy market estimates, quick liquidation targets, and retail dealer pricing based on machine age and meter hours.</p>
+        </div>
+
+        <div class="p-4 bg-slate-800/90 rounded-2xl border-l-4 border-rose-500 space-y-1 shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="font-extrabold text-rose-400 uppercase tracking-wider text-xs">Step 4: Secure Session Sign Out</span>
+            <span class="bg-rose-500/20 text-rose-300 text-[10px] font-bold px-2 py-0.5 rounded-md">Security</span>
+          </div>
+          <p class="text-slate-200 leading-relaxed">Always click the red <strong>"Sign Out"</strong> button in the top navigation header when you are finished managing listings to protect your credentials and active portal session.</p>
         </div>
       </div>
 
-      <button onclick="togglePortalHelpModal()" class="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider">Close Help Guide</button>
+      <div class="pt-2 border-t border-slate-800 flex justify-end">
+        <button onclick="closePortalHelpModal()" class="w-full sm:w-auto bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold px-8 py-3 rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-400/20">
+          Close Portal Guide
+        </button>
+      </div>
     </div>
   </div>
+
+  <footer class="bg-slate-950 border-t border-slate-800 py-6 text-center text-slate-500 text-xs">
+    &copy; RPM Equipment Marketplace. All rights reserved.
+  </footer>
 
   <script>
     const savedTier = localStorage.getItem('rpm_seller_tier') || 'Verified VIP';
     const tierBadge = document.getElementById('active-tier-badge');
-    if (tierBadge) {
-      tierBadge.innerText = `Active Plan: ${savedTier}`;
-    }
+    const displayAccountTier = document.getElementById('displayAccountTier');
 
-    function togglePortalHelpModal() {
-      document.getElementById('portalHelpModal').classList.toggle('hidden');
+    if (tierBadge) tierBadge.innerText = `Active Plan: ${savedTier}`;
+    if (displayAccountTier) displayAccountTier.innerText = savedTier;
+
+    function openPortalHelpModal() {
+      document.getElementById('portalHelpModal').classList.remove('hidden');
+    }
+    function closePortalHelpModal() {
+      document.getElementById('portalHelpModal').classList.add('hidden');
     }
 
     function handleSignOut() {

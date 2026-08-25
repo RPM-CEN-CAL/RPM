@@ -1,5 +1,4 @@
-﻿$promoteBusinessContent = @'
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -15,7 +14,7 @@
       <a href="index.html" class="flex flex-col group">
         <div class="text-2xl font-black text-white flex items-center gap-2">
           <span class="bg-blue-600 text-white px-2 py-0.5 rounded-lg font-mono text-sm">RPM</span>
-          <span>B2B PROMOTION ($2 FEE)</span>
+          <span>B2B PROMOTION</span>
         </div>
       </a>
       <a href="seller-dashboard.html" class="text-sm font-medium text-blue-400 hover:underline">Go to Dashboard &rarr;</a>
@@ -24,7 +23,7 @@
 
   <main class="max-w-3xl mx-auto px-4 py-12 w-full space-y-6">
     <div class="text-center space-y-2">
-      <h1 class="text-3xl font-black text-white">Promote Your Business ($2 Fee)</h1>
+      <h1 class="text-3xl font-black text-white">Promote Your Business</h1>
       <p class="text-slate-400 text-sm">List your machinery services, rentals, or commercial repair in our verified B2B Directory.</p>
     </div>
 
@@ -51,12 +50,11 @@
         </div>
       </div>
 
-      <!-- FILE UPLOAD DROP ZONE FOR LOGO / PROMO BANNER -->
       <div>
         <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Company Logo / Banner Image Upload</label>
         <div id="b2bDropZone" class="border-2 border-dashed border-slate-700 hover:border-blue-500 bg-slate-900 rounded-xl p-6 text-center cursor-pointer transition-all">
           <input type="file" id="b2bLogoFile" accept="image/*" class="hidden" onchange="handleB2bFile(event)">
-          <p class="text-xs text-slate-400">Click or Drag & Drop Company Logo / Banner</p>
+          <p class="text-xs text-slate-400">Click to Search Files or Drag & Drop Company Logo</p>
           <div id="b2bPreview" class="mt-2 hidden">
             <img id="b2bPreviewImg" src="" class="h-20 mx-auto rounded border border-slate-700 object-cover">
           </div>
@@ -71,7 +69,7 @@
       <div id="statusMsg" class="hidden text-xs text-center py-2"></div>
 
       <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg text-sm transition-all">
-        Pay $2 Fee & Submit B2B Promotion
+        Pay $2 Fee & Submit B2B Promo
       </button>
     </form>
   </main>
@@ -147,7 +145,3 @@
   </script>
 </body>
 </html>
-'@
-
-Set-Content -Path .\promote-business.html -Value $promoteBusinessContent -Encoding UTF8
-Write-Host "promote-business.html updated with $2 Square gate and drag-and-drop." -ForegroundColor Green

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -25,14 +25,52 @@
     <h1 class="text-3xl sm:text-5xl font-black text-white">Equipment Search</h1>
     <p class="text-slate-400 text-sm">Search across heavy machinery, ag equipment, and commercial vehicles.</p>
     
-    <div class="flex max-w-md mx-auto gap-2">
-      <input type="text" placeholder="Search tractors, trailers, haulers..." class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-xs text-white focus:outline-none focus:border-blue-500">
-      <a href="index.html" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-3 rounded-lg text-xs flex items-center">Search</a>
-    </div>
+    <form id="searchForm" class="flex max-w-md mx-auto gap-2">
+      <input type="text" id="searchInput" placeholder="Search tractors, trailers, haulers..." class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-xs text-white focus:outline-none focus:border-blue-500">
+      <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-3 rounded-lg text-xs flex items-center">Search</button>
+    </form>
+
+    <div id="results" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left pt-6"></div>
   </main>
 
   <footer class="bg-slate-950 border-t border-slate-800 py-6 text-center text-slate-500 text-xs">
-    &copy; RPM Equipment Marketplace. All rights reserved.
+    &copy; 2026 RPM Equipment Marketplace. All rights reserved.
   </footer>
+
+  <script>
+    document.getElementById('searchForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '<p class="text-slate-400 text-center col-span-2">Searching...</p>';
+
+      try {
+        const res = await fetch('https://rpm-qhrz.onrender.com/api/listings');
+        const items = await res.json();
+        const filtered = items.filter(i => 
+          (i.title && i.title.toLowerCase().includes(query)) ||
+          (i.category && i.category.toLowerCase().includes(query)) ||
+          (i.description && i.description.toLowerCase().includes(query))
+        );
+
+        if (filtered.length === 0) {
+          resultsDiv.innerHTML = '<p class="text-slate-400 text-center col-span-2">No matching listings found.</p>';
+          return;
+        }
+
+        resultsDiv.innerHTML = filtered.map(item => `
+          <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl flex justify-between items-center">
+            <div>
+              <h3 class="font-bold text-white">${item.title}</h3>
+              <p class="text-xs text-slate-400">$${item.price} • ${item.category}</p>
+            </div>
+            <a href="equipment-detail.html?id=${item.id}" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-500">View</a>
+          </div>
+        `).join('');
+      } catch (err) {
+        resultsDiv.innerHTML = '<p class="text-red-400 text-center col-span-2">Error connecting to server.</p>';
+      }
+    });
+  </script>
 </body>
 </html>

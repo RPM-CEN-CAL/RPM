@@ -1,72 +1,91 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Equipment Details | RPM Equipment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Listing Details | RPM Equipment</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen">
-  <header class="border-b border-slate-800 p-4 flex justify-between items-center max-w-6xl mx-auto">
-    <a href="index.html" class="text-xl font-bold text-blue-500">RPM Equipment</a>
-    <a href="index.html" class="text-sm text-slate-400 hover:text-white">? Back to Marketplace</a>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between">
+
+  <header class="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-2">
+        <span class="text-xl font-bold text-white tracking-tight">RPM <span class="text-blue-500">EQUIPMENT</span></span>
+      </a>
+      <a href="javascript:history.back()" class="text-sm text-blue-400 hover:underline">&larr; Back to Listings</a>
+    </div>
   </header>
 
-  <main class="max-w-4xl mx-auto p-6 space-y-6">
-    <div id="cardDetails" class="bg-slate-800 rounded-xl p-6 border border-slate-700 space-y-4">
-      <img id="detailImg" class="w-full h-80 object-cover rounded-lg" src="" alt="Equipment">
-      <h1 id="detailTitle" class="text-3xl font-extrabold text-white"></h1>
-      <p id="detailCategory" class="text-blue-400 font-semibold uppercase text-xs tracking-wider"></p>
-      <p id="detailPrice" class="text-2xl font-bold text-green-400"></p>
-      <p id="detailDesc" class="text-slate-300 leading-relaxed"></p>
+  <main class="max-w-5xl mx-auto px-4 py-12 w-full">
+    <div id="loading" class="text-center py-20 text-slate-400">Loading item details...</div>
+    <div id="errorState" class="hidden text-center py-20 text-red-400">Listing not found or server error.</div>
 
-      <div class="border-t border-slate-700 pt-4 mt-4">
-        <h3 class="text-lg font-bold text-white mb-2">Seller Contact</h3>
-        <div id="contactBox">
-          <button onclick="revealContact()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg">
-            Show Phone & Email Contact
-          </button>
+    <div id="detailContainer" class="hidden grid grid-cols-1 md:grid-cols-2 gap-8 bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+      <div class="space-y-4">
+        <div class="h-72 bg-slate-800 rounded-xl overflow-hidden border border-slate-700/50">
+          <img id="itemImage" src="" alt="Equipment Image" class="w-full h-full object-cover">
+        </div>
+      </div>
+
+      <div class="space-y-6 flex flex-col justify-between">
+        <div class="space-y-3">
+          <span id="itemCategory" class="inline-block bg-blue-600/20 text-blue-400 border border-blue-500/30 text-xs font-bold px-2.5 py-1 rounded-full uppercase"></span>
+          <h1 id="itemTitle" class="text-2xl sm:text-3xl font-black text-white"></h1>
+          <p id="itemPrice" class="text-3xl font-extrabold text-blue-400"></p>
+          <hr class="border-slate-800">
+          <p id="itemDescription" class="text-slate-300 text-sm leading-relaxed"></p>
+        </div>
+
+        <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
+          <h3 class="text-sm font-bold text-white">Interested in this item?</h3>
+          <a id="contactBtn" href="seller-dashboard.html" class="block text-center bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all">
+            Contact Seller / Inquire
+          </a>
         </div>
       </div>
     </div>
   </main>
 
+  <footer class="border-t border-slate-800 bg-slate-900 py-6 text-center text-xs text-slate-500">
+    &copy; 2026 RPM Equipment. All rights reserved.
+  </footer>
+
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const listingId = urlParams.get('id');
+    async function loadItemDetail() {
+      const params = new URLSearchParams(window.location.search);
+      const itemId = params.get('id');
 
-    async function loadDetails() {
+      if (!itemId) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('errorState').classList.remove('hidden');
+        return;
+      }
+
       try {
-        const res = await fetch('https://rpm-qhrz.onrender.com/api/listings');
-        const listings = await res.json();
-        const item = listings.find(l => l.id === listingId) || listings[0];
+        const res = await fetch(`https://rpm-qhrz.onrender.com/api/listings/${itemId}`);
+        if (!res.ok) throw new Error('Not found');
 
-        if (item) {
-          document.getElementById('detailImg').src = item.imageUrl || 'https://rpm-equipment.netlify.app/HeavyEquipment.jpg';
-          document.getElementById('detailTitle').textContent = item.title || 'Equipment Listing';
-          document.getElementById('detailCategory').textContent = item.category || 'General';
-          document.getElementById('detailPrice').textContent = '$' + (item.price || 0).toLocaleString();
-          document.getElementById('detailDesc').textContent = item.description || 'No detailed description provided.';
-          window.sellerContact = {
-            phone: item.phone || '(555) 019-2831',
-            email: item.email || 'seller@rpm-equipment.com'
-          };
-        }
-      } catch(e) {
-        console.error('Failed to load item:', e);
+        const data = await res.json();
+
+        document.getElementById('itemTitle').textContent = data.title || 'Untitled Listing';
+        document.getElementById('itemCategory').textContent = data.category || 'General';
+        document.getElementById('itemPrice').textContent = `$${data.price || 0}`;
+        document.getElementById('itemDescription').textContent = data.description || 'No description provided.';
+        document.getElementById('itemImage').src = data.imageUrl || 'Tools.jpg';
+
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('detailContainer').classList.remove('hidden');
+      } catch (err) {
+        console.error(err);
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('errorState').classList.remove('hidden');
       }
     }
 
-    function revealContact() {
-      const box = document.getElementById('contactBox');
-      box.innerHTML = 
-        <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 space-y-2">
-          <p class="text-white"><strong>Phone:</strong> <a href="tel:\" class="text-blue-400 font-mono">\</a></p>
-          <p class="text-white"><strong>Email:</strong> <a href="mailto:\" class="text-blue-400 font-mono">\</a></p>
-        </div>
-      ;
-    }
-
-    loadDetails();
+    loadItemDetail();
   </script>
 </body>
 </html>

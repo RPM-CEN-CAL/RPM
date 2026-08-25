@@ -51,12 +51,18 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Category (Select or Custom)</label>
-            <select class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+            <select id="categorySelect" onchange="toggleCustomCategory(this)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
               <option value="Heavy Equipment">Heavy Equipment</option>
               <option value="Medium Equipment">Medium Equipment</option>
               <option value="Commercial Vehicles">Commercial Vehicles</option>
               <option value="Commercial Tools">Commercial Tools</option>
+              <option value="Attachments & Implements">Attachments & Implements</option>
+              <option value="Trailers & Transport">Trailers & Transport</option>
+              <option value="Ag & Farm Equipment">Ag & Farm Equipment</option>
+              <option value="Material Handling">Material Handling</option>
+              <option value="Custom Category">-- Enter Custom Category --</option>
             </select>
+            <input type="text" id="customCategoryInput" placeholder="Enter custom category name..." class="hidden mt-2 w-full bg-slate-950 border border-amber-500/50 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-400">
           </div>
           <div>
             <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Price ($USD)</label>
@@ -68,34 +74,37 @@
           </div>
         </div>
 
-        <!-- ENHANCED DROP-IN & FILE SEARCH PHOTO UPLOAD ZONE -->
+        <!-- UP TO 10 PHOTOS UPLOAD ZONE -->
         <div>
-          <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Equipment Photo Upload (Drop File or Search)</label>
+          <div class="flex justify-between items-center mb-1">
+            <label class="block text-xs font-bold uppercase text-slate-400">Equipment Photo Upload (Drop Files or Search)</label>
+            <span class="text-[10px] text-amber-400 font-semibold uppercase">Up to 10 Photos Allowed</span>
+          </div>
           
           <div id="dropZone" 
                onclick="document.getElementById('fileInput').click()" 
                ondragover="handleDragOver(event)" 
                ondragleave="handleDragLeave(event)" 
                ondrop="handleFileDrop(event)" 
-               class="border-2 border-dashed border-slate-700 bg-slate-950/60 hover:bg-slate-950 hover:border-blue-500 transition-all rounded-2xl p-8 text-center cursor-pointer flex flex-col items-center justify-center space-y-3 relative group">
+               class="border-2 border-dashed border-slate-700 bg-slate-950/60 hover:bg-slate-950 hover:border-blue-500 transition-all rounded-2xl p-6 text-center cursor-pointer flex flex-col items-center justify-center space-y-3 relative group">
             
-            <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+            <input type="file" id="fileInput" accept="image/*" multiple class="hidden" onchange="handleFileSelect(event)">
             
             <div id="uploadPrompt" class="space-y-2">
               <div class="w-12 h-12 rounded-full bg-blue-600/10 text-blue-400 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
               </div>
               <p class="text-xs font-bold text-slate-300">
-                Click to Search Files <span class="text-slate-500 font-normal">or Drag & Drop Image Here</span>
+                Click to Search Files <span class="text-slate-500 font-normal">or Drag & Drop Images Here</span>
               </p>
-              <p class="text-[10px] text-slate-500 uppercase tracking-wider">Supports PNG, JPG, WEBP</p>
+              <p class="text-[10px] text-slate-500 uppercase tracking-wider">Supports PNG, JPG, WEBP — Select up to 10 images</p>
             </div>
 
-            <!-- PREVIEW DISPLAY -->
-            <div id="imagePreview" class="hidden flex flex-col items-center space-y-2">
-              <img id="previewImg" src="#" alt="Preview" class="h-32 object-contain rounded-lg border border-slate-700">
-              <span id="fileName" class="text-xs text-emerald-400 font-mono font-bold"></span>
-              <span class="text-[10px] text-blue-400 hover:underline">Click or drop another file to replace</span>
+            <!-- MULTI-IMAGE PREVIEW GRID -->
+            <div id="imagePreviewContainer" class="hidden w-full space-y-2">
+              <div id="imagePreviewGrid" class="grid grid-cols-2 sm:grid-cols-5 gap-3 w-full"></div>
+              <p id="fileCount" class="text-xs text-emerald-400 font-mono font-bold pt-2"></p>
+              <span class="text-[10px] text-blue-400 hover:underline inline-block">Click or drop files to select new set</span>
             </div>
 
           </div>
@@ -147,6 +156,16 @@
   </footer>
 
   <script>
+    function toggleCustomCategory(select) {
+      const customInput = document.getElementById('customCategoryInput');
+      if (select.value === 'Custom Category') {
+        customInput.classList.remove('hidden');
+        customInput.focus();
+      } else {
+        customInput.classList.add('hidden');
+      }
+    }
+
     function handleDragOver(e) {
       e.preventDefault();
       e.stopPropagation();
@@ -164,30 +183,40 @@
       e.stopPropagation();
       document.getElementById('dropZone').classList.remove('border-blue-500', 'bg-blue-950/20');
       
-      const files = e.dataTransfer.files;
+      const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')).slice(0, 10);
       if (files.length > 0) {
-        displayPreview(files[0]);
+        displayPreviews(files);
       }
     }
 
     function handleFileSelect(e) {
-      const files = e.target.files;
+      const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/')).slice(0, 10);
       if (files.length > 0) {
-        displayPreview(files[0]);
+        displayPreviews(files);
       }
     }
 
-    function displayPreview(file) {
-      if (!file.type.startsWith('image/')) return;
-      
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        document.getElementById('previewImg').src = e.target.result;
-        document.getElementById('fileName').innerText = 'Selected: ' + file.name;
-        document.getElementById('uploadPrompt').classList.add('hidden');
-        document.getElementById('imagePreview').classList.remove('hidden');
-      };
-      reader.readAsDataURL(file);
+    function displayPreviews(files) {
+      const grid = document.getElementById('imagePreviewGrid');
+      grid.innerHTML = '';
+
+      files.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const card = document.createElement('div');
+          card.className = 'relative h-20 bg-slate-900 rounded-lg overflow-hidden border border-slate-700';
+          card.innerHTML = `
+            <img src="${e.target.result}" class="w-full h-full object-cover">
+            <span class="absolute top-1 left-1 bg-slate-950/80 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">#${index + 1}</span>
+          `;
+          grid.appendChild(card);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      document.getElementById('fileCount').innerText = `Selected ${files.length} Photo${files.length > 1 ? 's' : ''} (Max 10)`;
+      document.getElementById('uploadPrompt').classList.add('hidden');
+      document.getElementById('imagePreviewContainer').classList.remove('hidden');
     }
   </script>
 

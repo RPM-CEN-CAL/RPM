@@ -6,292 +6,190 @@
   <title>Seller Portal | RPM Equipment</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style> body { font-family: 'Inter', sans-serif; } </style>
+  <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between antialiased">
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      <a href="index.html" class="flex flex-col group">
-        <div class="text-2xl font-black text-white flex items-center gap-2">
-          <span class="bg-blue-600 text-white px-2 py-0.5 rounded-lg font-mono text-sm">RPM</span>
-          <span>EQUIPMENT DASHBOARD</span>
-        </div>
-      </a>
-      <a href="index.html" class="text-sm font-medium text-blue-400 hover:underline">Back to Site</a>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between antialiased">
+
+  <header class="border-b border-slate-800 bg-slate-900/90 py-4 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+      <div class="text-2xl font-black text-white flex items-center gap-2">
+        <span class="bg-blue-600 px-2 py-0.5 rounded-lg text-sm">RPM</span>
+        <span>EQUIPMENT DASHBOARD</span>
+      </div>
+      <a href="index.html" class="text-xs font-bold text-slate-400 hover:text-white transition-colors">Back to Site</a>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 w-full">
+  <main class="max-w-5xl mx-auto px-4 py-10 w-full space-y-8">
+    
     <div>
       <h1 class="text-3xl font-black text-white">Seller & Partner Management Console</h1>
       <p class="text-slate-400 text-sm">Manage active equipment catalog, upload attachments, and control B2B business promotion.</p>
     </div>
 
-    <!-- CREATE LISTING CARD -->
-    <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 space-y-6">
-      <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
-        <h2 class="text-xl font-bold text-white flex items-center gap-2">
-          <span class="bg-blue-600 text-white px-2 py-0.5 rounded text-xs">CREATE</span>
-          Post Equipment Listing
-        </h2>
+    <!-- POST EQUIPMENT FORM CARD -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-6">
+      
+      <div class="flex items-center gap-3">
+        <span class="bg-blue-600 text-white font-black text-xs px-2.5 py-1 rounded-md uppercase">CREATE</span>
+        <h2 class="text-xl font-bold text-white">Post Equipment Listing</h2>
       </div>
 
-      <form id="createListingForm" class="space-y-4">
+      <form id="listingForm" onsubmit="event.preventDefault();" class="space-y-4">
+        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Seller Email (VIP Check)</label>
-            <input type="email" id="email" required placeholder="rpm.cen.cal@gmail.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+            <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Seller Email (VIP Check)</label>
+            <input type="email" value="rpm.cen.cal@gmail.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Listing Title</label>
-            <input type="text" id="title" required placeholder="e.g. Caterpillar 320 Hydraulic Excavator" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+            <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Listing Title</label>
+            <input type="text" placeholder="e.g. Caterpillar 320 Hydraulic Excavator" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Category (Select or Custom)</label>
-            <select id="category" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500" onchange="toggleCustomCategory(this.value)">
+            <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Category (Select or Custom)</label>
+            <select class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
               <option value="Heavy Equipment">Heavy Equipment</option>
               <option value="Medium Equipment">Medium Equipment</option>
-              <option value="Vehicles">Vehicles</option>
-              <option value="Tools">Tools</option>
-              <option value="Agriculture">Agriculture</option>
-              <option value="Attachments & Implements">Attachments & Implements</option>
-              <option value="Hauling & Trailers">Hauling & Trailers</option>
-              <option value="Lifting & Cranes">Lifting & Cranes</option>
-              <option value="Compaction Equipment">Compaction Equipment</option>
-              <option value="Generators & Power">Generators & Power</option>
-              <option value="CUSTOM">-- Custom Entry --</option>
+              <option value="Commercial Vehicles">Commercial Vehicles</option>
+              <option value="Commercial Tools">Commercial Tools</option>
             </select>
           </div>
-
-          <div id="customCategoryDiv" class="hidden">
-            <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Custom Category Entry</label>
-            <input type="text" id="customCategory" placeholder="Enter custom equipment type..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
-          </div>
-
           <div>
-            <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Price ($USD)</label>
-            <input type="number" id="price" required placeholder="25000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+            <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Price ($USD)</label>
+            <input type="number" placeholder="25000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
           </div>
-
           <div>
-            <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Location (City, State)</label>
-            <input type="text" id="location" placeholder="e.g. Fresno, CA" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+            <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Location (City, State)</label>
+            <input type="text" placeholder="e.g. Fresno, CA" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
           </div>
         </div>
 
-        <!-- DROP IN AND SEARCH FILES FOR INSTANT UPLOAD ACCESS -->
+        <!-- ENHANCED DROP-IN & FILE SEARCH PHOTO UPLOAD ZONE -->
         <div>
-          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Equipment Photo Upload (Drop File or Search)</label>
-          <div id="dropZone" class="border-2 border-dashed border-slate-700 hover:border-blue-500 bg-slate-900 rounded-xl p-6 text-center cursor-pointer transition-all">
-            <input type="file" id="imageFile" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
-            <p class="text-xs text-slate-400">Click to Search Files or Drag & Drop Image Here</p>
-            <span class="text-[10px] text-slate-500">Supports PNG, JPG, WEBP</span>
-            <div id="imagePreview" class="mt-2 hidden">
-              <img id="previewImg" src="" class="h-24 mx-auto rounded border border-slate-700 object-cover">
+          <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Equipment Photo Upload (Drop File or Search)</label>
+          
+          <div id="dropZone" 
+               onclick="document.getElementById('fileInput').click()" 
+               ondragover="handleDragOver(event)" 
+               ondragleave="handleDragLeave(event)" 
+               ondrop="handleFileDrop(event)" 
+               class="border-2 border-dashed border-slate-700 bg-slate-950/60 hover:bg-slate-950 hover:border-blue-500 transition-all rounded-2xl p-8 text-center cursor-pointer flex flex-col items-center justify-center space-y-3 relative group">
+            
+            <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+            
+            <div id="uploadPrompt" class="space-y-2">
+              <div class="w-12 h-12 rounded-full bg-blue-600/10 text-blue-400 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              </div>
+              <p class="text-xs font-bold text-slate-300">
+                Click to Search Files <span class="text-slate-500 font-normal">or Drag & Drop Image Here</span>
+              </p>
+              <p class="text-[10px] text-slate-500 uppercase tracking-wider">Supports PNG, JPG, WEBP</p>
             </div>
+
+            <!-- PREVIEW DISPLAY -->
+            <div id="imagePreview" class="hidden flex flex-col items-center space-y-2">
+              <img id="previewImg" src="#" alt="Preview" class="h-32 object-contain rounded-lg border border-slate-700">
+              <span id="fileName" class="text-xs text-emerald-400 font-mono font-bold"></span>
+              <span class="text-[10px] text-blue-400 hover:underline">Click or drop another file to replace</span>
+            </div>
+
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Machine Specifications</label>
-            <input type="text" id="specs" placeholder="e.g. Hours: 2,400 | HP: 175 | Hydraulic Thumb" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+            <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Machine Specifications</label>
+            <input type="text" placeholder="e.g. Hours: 2,400 | HP: 175 | Hydraulic Thumb" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Seller Contact Info</label>
-            <input type="text" id="contactInfo" placeholder="e.g. Phone: 555-0199 or Email" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+            <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Seller Contact Info</label>
+            <input type="text" placeholder="e.g. Phone: 555-0199 or Email" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Full Description & Condition Details</label>
-          <textarea id="description" rows="3" required placeholder="Provide condition notes, specs, and details..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"></textarea>
+          <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Full Description & Condition Details</label>
+          <textarea rows="3" placeholder="Provide condition notes, specs, and details..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-200 focus:outline-none focus:border-blue-500"></textarea>
         </div>
 
-        <div id="statusMsg" class="hidden text-xs text-center py-2"></div>
-
-        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg text-sm transition-all">
+        <button type="button" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider transition-colors shadow-lg shadow-blue-600/20">
           Validate & Post Equipment
         </button>
+
       </form>
     </div>
 
-    <!-- LISTINGS DISPLAY -->
+    <!-- LOWER PANELS -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 space-y-4">
-        <h2 class="text-lg font-bold text-white">Active Equipment Catalog</h2>
-        <div id="equipmentContainer" class="space-y-3">
-          <p class="text-slate-400 text-xs">Loading active listings...</p>
-        </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <h3 class="text-base font-bold text-white mb-2">Active Equipment Catalog</h3>
+        <p class="text-xs text-slate-500">No active equipment listings.</p>
       </div>
 
-      <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 space-y-4">
-        <div class="flex justify-between items-center">
-          <h2 class="text-lg font-bold text-white">B2B Directory Listings</h2>
-          <a href="promote-business.html" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded font-bold">+ Promote B2B</a>
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex justify-between items-center">
+        <div>
+          <h3 class="text-base font-bold text-white mb-1">B2B Directory Listings</h3>
+          <p class="text-xs text-slate-500">No active B2B promotions listed.</p>
         </div>
-        <div id="b2bContainer" class="space-y-3">
-          <p class="text-slate-400 text-xs">Loading B2B profile...</p>
-        </div>
+        <a href="promote-business.html" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors">+ Promote B2B</a>
       </div>
     </div>
+
   </main>
 
-  <footer class="bg-slate-950 border-t border-slate-800 py-6 text-center text-slate-500 text-xs">
+  <footer class="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-600">
     &copy; 2026 RPM Equipment Marketplace. All rights reserved.
   </footer>
 
   <script>
-    let uploadedImageBase64 = '';
-
-    const dropZone = document.getElementById('dropZone');
-    const imageFile = document.getElementById('imageFile');
-
-    dropZone.addEventListener('click', () => imageFile.click());
-
-    dropZone.addEventListener('dragover', (e) => {
+    function handleDragOver(e) {
       e.preventDefault();
-      dropZone.classList.add('border-blue-500');
-    });
-
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-blue-500'));
-
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('border-blue-500');
-      if (e.dataTransfer.files.length) {
-        processFile(e.dataTransfer.files[0]);
-      }
-    });
-
-    function handleFileSelect(e) {
-      if (e.target.files.length) processFile(e.target.files[0]);
+      e.stopPropagation();
+      document.getElementById('dropZone').classList.add('border-blue-500', 'bg-blue-950/20');
     }
 
-    function processFile(file) {
+    function handleDragLeave(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById('dropZone').classList.remove('border-blue-500', 'bg-blue-950/20');
+    }
+
+    function handleFileDrop(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById('dropZone').classList.remove('border-blue-500', 'bg-blue-950/20');
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        displayPreview(files[0]);
+      }
+    }
+
+    function handleFileSelect(e) {
+      const files = e.target.files;
+      if (files.length > 0) {
+        displayPreview(files[0]);
+      }
+    }
+
+    function displayPreview(file) {
+      if (!file.type.startsWith('image/')) return;
+      
       const reader = new FileReader();
-      reader.onload = function(evt) {
-        uploadedImageBase64 = evt.target.result;
-        document.getElementById('previewImg').src = uploadedImageBase64;
+      reader.onload = function(e) {
+        document.getElementById('previewImg').src = e.target.result;
+        document.getElementById('fileName').innerText = 'Selected: ' + file.name;
+        document.getElementById('uploadPrompt').classList.add('hidden');
         document.getElementById('imagePreview').classList.remove('hidden');
       };
       reader.readAsDataURL(file);
     }
-
-    function toggleCustomCategory(val) {
-      const customDiv = document.getElementById('customCategoryDiv');
-      if (val === 'CUSTOM') {
-        customDiv.classList.remove('hidden');
-      } else {
-        customDiv.classList.add('hidden');
-      }
-    }
-
-    async function loadDashboardData() {
-      const eqDiv = document.getElementById('equipmentContainer');
-      const b2bDiv = document.getElementById('b2bContainer');
-
-      try {
-        const [resEq, resB2b] = await Promise.all([
-          fetch('https://rpm-qhrz.onrender.com/api/listings'),
-          fetch('https://rpm-qhrz.onrender.com/api/b2b-listings')
-        ]);
-
-        const eqData = await resEq.json();
-        const b2bData = await resB2b.json();
-
-        if (eqData.length === 0) {
-          eqDiv.innerHTML = '<p class="text-slate-400 text-xs">No active equipment listings.</p>';
-        } else {
-          eqDiv.innerHTML = eqData.map(e => `
-            <div class="bg-slate-900 border border-slate-700 p-3 rounded-lg flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <img src="${e.imageUrl || 'Tools.jpg'}" class="w-12 h-12 object-cover rounded border border-slate-700">
-                <div>
-                  <h4 class="font-bold text-white text-xs">${e.title}</h4>
-                  <p class="text-slate-400 text-[10px]">$${e.price} • ${e.category} ${e.location ? '• ' + e.location : ''}</p>
-                </div>
-              </div>
-              <a href="equipment-detail.html?id=${e.id}" class="text-xs bg-blue-600 text-white px-2.5 py-1 rounded hover:bg-blue-500">View</a>
-            </div>
-          `).join('');
-        }
-
-        if (b2bData.length === 0) {
-          b2bDiv.innerHTML = '<p class="text-slate-400 text-xs">No active B2B promotions listed.</p>';
-        } else {
-          b2bDiv.innerHTML = b2bData.map(b => `
-            <div class="bg-slate-900 border border-slate-700 p-3 rounded-lg">
-              <h4 class="font-bold text-white text-xs">${b.companyName}</h4>
-              <p class="text-blue-400 text-xs">${b.services}</p>
-            </div>
-          `).join('');
-        }
-      } catch (err) {
-        eqDiv.innerHTML = '<p class="text-red-400 text-xs">Error loading dashboard data.</p>';
-      }
-    }
-
-    document.getElementById('createListingForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const statusMsg = document.getElementById('statusMsg');
-      statusMsg.className = "text-xs text-center py-2 text-blue-400";
-      statusMsg.textContent = "Processing listing & checking VIP status...";
-      statusMsg.classList.remove('hidden');
-
-      const email = document.getElementById('email').value.trim();
-      const title = document.getElementById('title').value.trim();
-      let category = document.getElementById('category').value;
-      if (category === 'CUSTOM') {
-        category = document.getElementById('customCategory').value.trim() || 'Custom';
-      }
-      const price = parseFloat(document.getElementById('price').value) || 0;
-      const location = document.getElementById('location').value.trim();
-      const specs = document.getElementById('specs').value.trim();
-      const contactInfo = document.getElementById('contactInfo').value.trim();
-      const description = document.getElementById('description').value.trim();
-      const imageUrl = uploadedImageBase64 || (category === 'Vehicles' ? 'Vehicles.jpg' : 'Tools.jpg');
-
-      try {
-        const checkRes = await fetch('https://rpm-qhrz.onrender.com/api/create-square-checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
-        });
-        const checkData = await checkRes.json();
-
-        const postRes = await fetch('https://rpm-qhrz.onrender.com/api/listings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, category, price, description, imageUrl, specs, location, contactInfo })
-        });
-
-        if (postRes.ok) {
-          if (checkData.isVip) {
-            statusMsg.className = "text-xs text-center py-2 text-green-400";
-            statusMsg.textContent = "VIP Access Confirmed! Item posted directly to dashboard.";
-          } else {
-            statusMsg.className = "text-xs text-center py-2 text-yellow-400";
-            statusMsg.textContent = "Item created! Opening Square checkout to activate...";
-            if (checkData.checkoutUrl) window.open(checkData.checkoutUrl, '_blank');
-          }
-          document.getElementById('createListingForm').reset();
-          uploadedImageBase64 = '';
-          document.getElementById('imagePreview').classList.add('hidden');
-          loadDashboardData();
-        } else {
-          throw new Error('Save failed');
-        }
-      } catch (err) {
-        statusMsg.className = "text-xs text-center py-2 text-red-400";
-        statusMsg.textContent = "Error saving listing. Please try again.";
-      }
-    });
-
-    loadDashboardData();
   </script>
+
 </body>
 </html>

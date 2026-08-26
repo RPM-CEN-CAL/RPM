@@ -27,7 +27,7 @@
 <header class="border-b border-slate-800 bg-slate-900/95 backdrop-blur-md sticky top-0 z-50 py-4 shadow-xl">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
     
-    <!-- Brand Logo & Tagline Expanded -->
+    <!-- Brand Logo & Tagline -->
     <a href="index.html" class="flex flex-col group">
       <div class="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
         <span class="bg-blue-600 text-white px-3 py-0.5 rounded-xl font-mono text-base shadow-lg shadow-blue-600/30">RPM</span>
@@ -50,36 +50,48 @@
   <main class="flex-grow">
     <!-- Hero Section -->
     <section class="py-12 lg:py-16 bg-slate-900 border-b border-slate-800">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         
-        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 sm:p-8 flex flex-col justify-between">
-          <div class="space-y-4 max-w-3xl">
-            <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
-              Buy & Sell Equipment Across <span class="text-blue-400">All Industries</span>
-            </h1>
-            <p class="text-slate-300 text-base sm:text-lg leading-relaxed font-normal">
-              The premier commercial marketplace for heavy machinery, fleet vehicles, industrial tools, and B2B services. Deal directly with verified buyers and sellers nationwide�zero middleman markups, instant listing control, and transparent market valuations.
-            </p>
-          </div>
+        <!-- Main Heading -->
+        <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+          Buy & Sell Equipment Across <span class="text-blue-400">All Industries</span>
+        </h1>
 
-          <div class="grid grid-cols-3 gap-4 pt-6 border-t border-slate-800 mt-6 max-w-2xl">
-            <div>
-              <div class="text-xl sm:text-2xl font-bold text-white">100%</div>
-              <div class="text-[10px] sm:text-xs text-slate-400 uppercase font-semibold">Direct Deals</div>
+        <!-- Split Section: Description Left / 3"x3" Card Right -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-6 py-2">
+          <p class="text-slate-300 text-base sm:text-lg leading-relaxed font-normal max-w-3xl">
+            The premier commercial marketplace for heavy machinery, fleet vehicles, industrial tools, and B2B services. Deal directly with verified buyers and sellers nationwide—zero middleman markups, instant listing control, and transparent market valuations.
+          </p>
+
+          <!-- 3" x 3" (128px x 128px) Image Card -->
+          <a href="membership.html" class="group relative w-32 h-32 min-w-[8rem] min-h-[8rem] rounded-2xl overflow-hidden border border-amber-500/80 shadow-xl hover:border-amber-400 transition-all transform hover:scale-105 shrink-0 block">
+            <img src="CreateAccount.jpg" alt="Create Account" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+            <div class="absolute inset-0 p-2.5 flex flex-col justify-between text-center">
+              <span class="text-xs font-black text-amber-400 group-hover:text-amber-300 drop-shadow-md leading-tight">Create Account</span>
+              <p class="text-[9px] font-medium text-slate-200 line-clamp-2 leading-tight drop-shadow">List & Sell Now</p>
             </div>
-            <div>
-              <div class="text-xl sm:text-2xl font-bold text-white">Nationwide</div>
-              <div class="text-[10px] sm:text-xs text-slate-400 uppercase font-semibold">Buyer Network</div>
-            </div>
-            <div>
-              <div class="text-xl sm:text-2xl font-bold text-white">Verified</div>
-              <div class="text-[10px] sm:text-xs text-slate-400 uppercase font-semibold">Listings & Sellers</div>
-            </div>
+          </a>
+        </div>
+
+        <!-- Metric Badges Below Description Line -->
+        <div class="grid grid-cols-3 gap-4 pt-6 border-t border-slate-800 max-w-2xl">
+          <div>
+            <div class="text-xl sm:text-2xl font-bold text-white">100%</div>
+            <div class="text-[10px] sm:text-xs text-slate-400 uppercase font-semibold">Direct Deals</div>
+          </div>
+          <div>
+            <div class="text-xl sm:text-2xl font-bold text-white">Nationwide</div>
+            <div class="text-[10px] sm:text-xs text-slate-400 uppercase font-semibold">Buyer Network</div>
+          </div>
+          <div>
+            <div class="text-xl sm:text-2xl font-bold text-white">Verified</div>
+            <div class="text-[10px] sm:text-xs text-slate-400 uppercase font-semibold">Listings & Sellers</div>
           </div>
         </div>
 
-        <!-- AMPLIFIED 6 FEATURED CATEGORY CARDS (NO DEAD SPACE ON HANDHELD/TABLET/DESKTOP) -->
-        <div class="space-y-4">
+        <!-- 6 FEATURED CATEGORY CARDS -->
+        <div class="space-y-4 pt-6">
           <h2 class="text-2xl font-black text-white tracking-tight">Explore Categories</h2>
           
           <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -94,7 +106,7 @@
               </div>
             </a>
 
-            <!-- Card 2: Medium Equipment (NEW) -->
+            <!-- Card 2: Medium Equipment -->
             <a href="medium-equipment.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl hover:border-blue-500 transition-all transform hover:-translate-y-1 block">
               <img src="MediumEquip.jpg" alt="Medium Equipment" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
               <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
@@ -104,7 +116,17 @@
               </div>
             </a>
 
-            <!-- Card 3: Vehicles -->
+            <!-- Card 3: Attachments -->
+            <a href="attachments.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl hover:border-blue-500 transition-all transform hover:-translate-y-1 block">
+              <img src="Attachments.jpg" alt="Attachments" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+              <div class="absolute bottom-0 left-0 right-0 p-4">
+                <span class="text-sm sm:text-base font-black text-white group-hover:text-blue-400 transition-colors drop-shadow-md block">Attachments</span>
+                <p class="text-[11px] font-medium text-slate-300 line-clamp-1 mt-0.5">Buckets, Augers & Implements</p>
+              </div>
+            </a>
+
+            <!-- Card 4: Vehicles -->
             <a href="vehicles.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl hover:border-blue-500 transition-all transform hover:-translate-y-1 block">
               <img src="Vehicles.jpg" alt="Vehicles" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
               <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
@@ -114,7 +136,7 @@
               </div>
             </a>
 
-            <!-- Card 4: Tools -->
+            <!-- Card 5: Tools -->
             <a href="tools.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl hover:border-blue-500 transition-all transform hover:-translate-y-1 block">
               <img src="Tools.jpg" alt="Tools" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
               <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
@@ -124,23 +146,13 @@
               </div>
             </a>
 
-            <!-- Card 5: B2B Solutions -->
+            <!-- Card 6: B2B Solutions -->
             <a href="b2b.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl hover:border-blue-500 transition-all transform hover:-translate-y-1 block">
               <img src="B2B.jpg" alt="B2B Solutions" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
               <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
               <div class="absolute bottom-0 left-0 right-0 p-4">
                 <span class="text-sm sm:text-base font-black text-white group-hover:text-blue-400 transition-colors drop-shadow-md block">B2B Solutions</span>
                 <p class="text-[11px] font-medium text-slate-300 line-clamp-1 mt-0.5">Services & Contractors</p>
-              </div>
-            </a>
-
-            <!-- Card 6: Create Account -->
-            <a href="membership.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-amber-500/50 shadow-xl hover:border-amber-400 transition-all transform hover:-translate-y-1 block">
-              <img src="CreateAccount.jpg" alt="Create Account" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent"></div>
-              <div class="absolute bottom-0 left-0 right-0 p-4">
-                <span class="text-sm sm:text-base font-black text-amber-400 group-hover:text-amber-300 transition-colors drop-shadow-md block">Create Account</span>
-                <p class="text-[11px] font-medium text-slate-300 line-clamp-1 mt-0.5">List Equipment & Sell Now</p>
               </div>
             </a>
 
@@ -155,7 +167,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div>
           <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-            <span>??</span> Equipment Market Valuation Tool
+            <span>⚙️</span> Equipment Market Valuation Tool
           </h2>
           <p class="text-slate-400 text-sm">Calculate detailed resale estimates using equipment specifications, operating hours, and condition records.</p>
         </div>
@@ -238,24 +250,6 @@
       </div>
     </section>
 
-    <section class="py-16 bg-slate-900">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-2xl font-bold text-white">Featured Marketplace Listings</h2>
-            <p class="text-slate-400 text-sm">Active equipment and business cards available nationwide</p>
-          </div>
-          <a href="membership.html" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
-            + Add Listing
-          </a>
-        </div>
-        <div id="featured-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          <div class="col-span-full p-8 bg-slate-800/50 rounded-xl border border-slate-800 text-center text-slate-400 text-sm">
-            Loading active inventory...
-          </div>
-        </div>
-      </div>
-    </section>
   </main>
 
   <footer class="bg-slate-950 border-t border-slate-800 py-12 text-slate-400 text-sm">
@@ -269,6 +263,7 @@
         <ul class="space-y-2">
           <li><a href="heavy-equipment.html" class="hover:text-white">Heavy Machinery</a></li>
           <li><a href="medium-equipment.html" class="hover:text-white">Medium Equipment</a></li>
+          <li><a href="attachments.html" class="hover:text-white">Attachments</a></li>
           <li><a href="vehicles.html" class="hover:text-white">Vehicles</a></li>
           <li><a href="b2b.html" class="hover:text-white">B2B Solutions</a></li>
           <li><a href="tools.html" class="hover:text-white">Tools</a></li>
@@ -411,19 +406,43 @@
         }
 
         container.innerHTML = listings.map(item => {
+          const img1 = item.image1 || item.image || 'HeavyEquipment.jpg';
+          const img2 = item.image2 || 'MediumEquip.jpg';
+          const img3 = item.image3 || 'Attachments.jpg';
+
           return `
-            <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden flex flex-col justify-between" id="listing-${item.id}">
-              <div class="p-5 space-y-2">
-                <div class="flex justify-between items-center">
-                  <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">${item.category || 'Equipment'}</span>
+            <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden flex flex-col justify-between shadow-lg" id="listing-${item.id}">
+              <div class="p-5 space-y-3">
+                
+                <!-- 3 Example Images Gallery -->
+                <div class="grid grid-cols-3 gap-2 h-24 rounded-lg overflow-hidden border border-slate-700">
+                  <img src="${img1}" alt="${item.title || 'Item'}" class="w-full h-full object-cover">
+                  <img src="${img2}" alt="${item.title || 'Item'}" class="w-full h-full object-cover">
+                  <img src="${img3}" alt="${item.title || 'Item'}" class="w-full h-full object-cover">
                 </div>
+
+                <div class="flex justify-between items-center pt-1">
+                  <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">${item.category || 'Equipment'}</span>
+                  <span class="text-[10px] font-semibold text-slate-400">${item.location || 'Nationwide'}</span>
+                </div>
+
                 <h3 class="font-bold text-white text-lg">${item.title || 'Untitled Listing'}</h3>
+                
+                <!-- Expanded Item Specifications -->
+                <div class="grid grid-cols-2 gap-2 text-[11px] bg-slate-900/60 p-2.5 rounded-lg border border-slate-700/50 text-slate-300">
+                  <div><span class="text-slate-400 font-semibold">Year:</span> ${item.year || 'N/A'}</div>
+                  <div><span class="text-slate-400 font-semibold">Hours/Mi:</span> ${item.hours || 'N/A'}</div>
+                  <div><span class="text-slate-400 font-semibold">Condition:</span> ${item.condition || 'Work-Ready'}</div>
+                  <div><span class="text-slate-400 font-semibold">Serial/VIN:</span> ${item.vin || 'Verified'}</div>
+                </div>
+
                 <p class="text-2xl font-black text-emerald-400">${item.price ? '$' + parseFloat(item.price).toLocaleString() : 'Contact for Price'}</p>
                 <p class="text-xs text-slate-400 line-clamp-2">${item.description || ''}</p>
               </div>
+
               <div class="p-5 pt-0 space-y-2">
-                <a href="mailto:${item.email || 'rpm.cen.cal@gmail.com'}" class="w-full block text-center bg-slate-700 hover:bg-blue-600 text-white text-xs font-semibold py-2.5 rounded-lg transition-colors">
-                  Contact Owner &rarr;
+                <a href="mailto:${item.email || ''}" class="w-full block text-center bg-slate-700 hover:bg-blue-600 text-white text-xs font-semibold py-2.5 rounded-lg transition-colors">
+                  Contact Seller Directly &rarr;
                 </a>
               </div>
             </div>
@@ -440,4 +459,3 @@
   </script>
 </body>
 </html>
-

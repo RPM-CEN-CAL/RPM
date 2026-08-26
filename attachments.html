@@ -5,114 +5,162 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Equipment Attachments | RPM Equipment</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen antialiased flex flex-col justify-between">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between antialiased">
 
-  <div>
-    <!-- Header -->
-    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        <a href="index.html" class="flex flex-col group">
-          <div class="text-2xl font-black tracking-tight text-white flex items-center gap-2">
-            <span class="bg-blue-600 text-white px-2 py-0.5 rounded-lg font-mono text-sm">RPM</span>
-            <span class="group-hover:text-blue-400 transition-colors">EQUIPMENT</span>
-          </div>
-          <span class="text-[10px] sm:text-xs font-semibold text-slate-400 tracking-tight">
-            Attachments & Implements Marketplace
-          </span>
+  <header class="border-b border-slate-800 bg-slate-900/95 sticky top-0 z-50 py-4 shadow-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3">
+        <span class="bg-blue-600 text-white px-3 py-0.5 rounded-xl font-mono text-base font-black shadow-lg">RPM</span>
+        <div class="flex flex-col">
+          <span class="text-xl font-extrabold text-white leading-none">EQUIPMENT</span>
+          <span class="text-[10px] text-slate-400 font-semibold tracking-wide">Attachments & Implements Marketplace</span>
+        </div>
+      </a>
+      <div class="flex items-center gap-4">
+        <a href="index.html" class="text-xs font-semibold text-slate-400 hover:text-white">← Back to Home</a>
+        <a href="login.html" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-lg">
+          + Client Portal
         </a>
+      </div>
+    </div>
+  </header>
 
-        <div class="flex items-center space-x-4">
-          <a href="index.html" class="text-xs text-slate-400 hover:text-white">&larr; Back to Home</a>
-          <a href="seller-dashboard.html" class="text-xs bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2 rounded-lg transition-all">
-            + Client Portal
+  <main class="flex-grow py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 w-full">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <h1 class="text-3xl font-black text-white">Equipment Attachments</h1>
+        <p class="text-xs sm:text-sm text-slate-400 mt-1">Buckets, augers, pallet forks, blades, and machinery implements.</p>
+      </div>
+      <a href="dashboard.html" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all shadow-lg">
+        + Post Attachment
+      </a>
+    </div>
+
+    <!-- SINGLE ATTACHMENT LISTING GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl overflow-hidden flex flex-col justify-between shadow-xl">
+        <div class="relative h-52 w-full bg-slate-950">
+          <img src="Attachments.jpg" alt="24 Inch HD Excavator Backhoe Bucket" class="w-full h-full object-cover">
+          <span class="absolute top-3 right-3 bg-blue-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow-md">$1,850</span>
+        </div>
+        <div class="p-5 space-y-3">
+          <h3 class="text-base font-bold text-white">24" Heavy Duty Excavator Backhoe Bucket</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">Reinforced side cutters with 4 removable tiger teeth. Compatible with 15-20 ton excavators.</p>
+          <div class="text-xs text-slate-400">
+            <span>Location:</span> <span class="text-slate-200 font-semibold">Fresno, CA</span> | 
+            <span>Condition:</span> <span class="text-slate-200 font-semibold">Excellent</span>
+          </div>
+        </div>
+        <div class="p-5 pt-0 space-y-2">
+          <button onclick="openModal({
+            title: '24\'\' Heavy Duty Excavator Backhoe Bucket',
+            price: '$1,850',
+            location: 'Fresno, CA',
+            condition: 'Excellent / Work-Ready',
+            category: 'Excavator Attachments',
+            mount: 'Pin-On / 80mm Pins',
+            compat: 'CAT 315/320, Komatsu PC160/200',
+            vin: 'BB-2024-88A',
+            email: 'sales@rpmmachinery.com',
+            images: ['Attachments.jpg', 'MediumEquip.jpg', 'HeavyEquipment.jpg'],
+            desc: 'Heavy-duty trenching bucket featuring AR400 steel wear strips, 4 high-abrasion tiger teeth, and dual side cutters. Zero crack welds, fully prepped for heavy site digging.'
+          })" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs py-2.5 rounded-xl transition-colors">
+            View Full Details
+          </button>
+          <a href="mailto:sales@rpmmachinery.com" class="w-full block text-center bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs py-2.5 rounded-xl transition-colors shadow-lg shadow-blue-600/30">
+            Contact Seller →
           </a>
         </div>
       </div>
-    </header>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      <div class="border-b border-slate-800 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 class="text-3xl font-bold text-white">Equipment Attachments</h1>
-          <p class="text-sm text-slate-400 mt-1">Buckets, augers, pallet forks, blades, and machinery implements.</p>
+    </div>
+  </main>
+
+  <!-- POPUP DETAILS MODAL WITH 3 IMAGES -->
+  <div id="detailsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-xl w-full p-6 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg font-bold z-10">✕</button>
+      
+      <div>
+        <span id="mCategory" class="text-[10px] font-extrabold text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2.5 py-1 rounded-md border border-blue-500/20"></span>
+        <h2 id="mTitle" class="text-2xl font-black text-white mt-2"></h2>
+        <div id="mPrice" class="text-xl font-bold text-emerald-400 mt-1"></div>
+      </div>
+
+      <!-- 3-IMAGE GALLERY DISPLAY -->
+      <div class="space-y-2">
+        <div class="h-56 w-full rounded-xl overflow-hidden bg-slate-950 border border-slate-700">
+          <img id="mMainImg" src="" class="w-full h-full object-cover">
         </div>
-        <a href="seller-dashboard.html" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow">
-          + Post Attachment
+        <div id="mThumbnails" class="grid grid-cols-3 gap-2"></div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-xs bg-slate-900 p-4 rounded-xl border border-slate-700/80">
+        <div><span class="text-slate-400">Location:</span> <span id="mLoc" class="font-semibold text-white"></span></div>
+        <div><span class="text-slate-400">Condition:</span> <span id="mCond" class="font-semibold text-white"></span></div>
+        <div><span class="text-slate-400">Mount Type:</span> <span id="mMount" class="font-semibold text-white"></span></div>
+        <div><span class="text-slate-400">Serial/VIN:</span> <span id="mVin" class="font-semibold text-white"></span></div>
+        <div class="col-span-2"><span class="text-slate-400">Compatibility:</span> <span id="mCompat" class="font-semibold text-white"></span></div>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-[11px] font-bold text-slate-400 uppercase">Description & Specifications</label>
+        <p id="mDesc" class="text-xs text-slate-300 leading-relaxed bg-slate-900/50 p-3 rounded-lg border border-slate-800"></p>
+      </div>
+
+      <div class="pt-2 flex gap-3">
+        <a id="mMail" href="#" class="w-full text-center bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs py-3 rounded-xl transition-colors shadow-lg">
+          Email Seller
         </a>
+        <button onclick="closeModal()" class="px-5 bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs rounded-xl">
+          Close
+        </button>
       </div>
-
-      <!-- Attachment Cards Grid (Enforced Single Example Card) -->
-      <div id="attachments-container" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- 1 Example Card -->
-        <div class="bg-slate-800/90 border border-slate-700 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all flex flex-col justify-between shadow-xl">
-          <div>
-            <div class="h-48 bg-slate-900 overflow-hidden relative">
-              <img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover">
-              <span class="absolute top-3 right-3 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
-                $2,450
-              </span>
-            </div>
-            <div class="p-5 space-y-2">
-              <h3 class="font-bold text-white text-lg line-clamp-1">Heavy Duty Skid Steer Hydraulic Auger</h3>
-              <p class="text-xs text-slate-400 line-clamp-2">Commercial heavy-duty auger drive unit with 12-inch bit. Universal quick-attach mount.</p>
-              <div class="text-xs text-slate-500 pt-2 border-t border-slate-700/50">
-                Location: <span class="text-slate-300">Fresno, CA</span> | Condition: <span class="text-slate-300">Excellent</span>
-              </div>
-            </div>
-          </div>
-          <div class="p-5 pt-0 space-y-2">
-            <button onclick="openDetailModal('Heavy Duty Skid Steer Hydraulic Auger', '$2,450', 'Fresno, CA', 'Excellent', 'Commercial heavy-duty auger drive unit with 12-inch bit. Universal quick-attach mount for skid steers and mini excavators.', 'rpm_cen_cal@gmail.com')" class="w-full block text-center bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold py-2.5 rounded-lg transition-colors">
-              View Full Details
-            </button>
-            <a href="mailto:rpm_cen_cal@gmail.com?subject=Inquiry: Skid Steer Auger" class="w-full block text-center bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold py-2.5 rounded-lg transition-colors">
-              Contact Seller &rarr;
-            </a>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
-
-  <!-- Detail Pop-Up Modal -->
-  <div id="detail-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl relative">
-      <button onclick="closeDetailModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold text-lg">&times;</button>
-      <h2 id="modal-title" class="text-xl font-bold text-white"></h2>
-      <div class="text-sm font-semibold text-blue-400" id="modal-price"></div>
-      <div class="text-xs text-slate-400 space-y-1">
-        <div>Location: <span id="modal-location" class="text-slate-200"></span></div>
-        <div>Condition: <span id="modal-condition" class="text-slate-200"></span></div>
-      </div>
-      <p id="modal-desc" class="text-xs text-slate-300 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 leading-relaxed"></p>
-      <a id="modal-email-btn" href="#" class="w-full block text-center bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold py-3 rounded-lg transition-colors">
-        Contact Seller Direct
-      </a>
     </div>
   </div>
 
-  <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500">
-    &copy; 2026 RPM Equipment. All rights reserved.
+  <footer class="bg-slate-950 border-t border-slate-800 py-6 text-center text-xs text-slate-500">
+    © 2026 RPM Equipment. All rights reserved.
   </footer>
 
   <script>
-    function openDetailModal(title, price, location, condition, desc, email) {
-      document.getElementById('modal-title').innerText = title;
-      document.getElementById('modal-price').innerText = price;
-      document.getElementById('modal-location').innerText = location;
-      document.getElementById('modal-condition').innerText = condition;
-      document.getElementById('modal-desc').innerText = desc;
-      document.getElementById('modal-email-btn').href = 'mailto:' + email + '?subject=Inquiry: ' + encodeURIComponent(title);
-      document.getElementById('detail-modal').classList.remove('hidden');
-      document.getElementById('detail-modal').classList.add('flex');
+    function setMainImage(src) {
+      document.getElementById('mMainImg').src = src;
     }
 
-    function closeDetailModal() {
-      document.getElementById('detail-modal').classList.add('hidden');
-      document.getElementById('detail-modal').classList.remove('flex');
+    function openModal(data) {
+      document.getElementById('mTitle').innerText = data.title;
+      document.getElementById('mPrice').innerText = data.price;
+      document.getElementById('mLoc').innerText = data.location;
+      document.getElementById('mCond').innerText = data.condition;
+      document.getElementById('mCategory').innerText = data.category;
+      document.getElementById('mMount').innerText = data.mount;
+      document.getElementById('mCompat').innerText = data.compat;
+      document.getElementById('mVin').innerText = data.vin;
+      document.getElementById('mDesc').innerText = data.desc;
+      document.getElementById('mMail').href = "mailto:" + data.email;
+
+      if (data.images && data.images.length > 0) {
+        setMainImage(data.images[0]);
+        const thumbs = document.getElementById('mThumbnails');
+        thumbs.innerHTML = data.images.map(imgSrc => `
+          <div onclick="setMainImage('${imgSrc}')" class="h-16 rounded-lg overflow-hidden border border-slate-700 bg-slate-950 cursor-pointer hover:border-blue-500 transition-colors">
+            <img src="${imgSrc}" class="w-full h-full object-cover">
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('detailsModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('detailsModal').classList.add('hidden');
     }
   </script>
 </body>

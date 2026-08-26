@@ -247,7 +247,7 @@
       };
 
       try {
-        const res = await fetch('https://rpm-qhrz.onrender.com/api/listings', {
+        const res = await fetch('/api/listings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -258,10 +258,10 @@
           uploadedImages = [];
           renderPreviews();
         } else {
-          alert('Listing saved locally.');
+          alert('Error publishing listing: ' + (e.message || 'Server offline'));
         }
       } catch(e) {
-        alert('Listing saved locally.');
+        alert('Error publishing listing: ' + (e.message || 'Server offline'));
       }
     }
   </script>

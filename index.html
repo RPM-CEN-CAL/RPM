@@ -37,7 +37,7 @@
     </a>
 
     <!-- Client Portal Button -->
-    <a href="promote-business.html" class="bg-blue-600 hover:bg-blue-500 text-white font-extrabold px-5 py-2.5 sm:px-6 sm:py-3 rounded-2xl shadow-lg shadow-blue-600/40 hover:shadow-blue-500/60 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2 text-xs sm:text-sm shrink-0">
+    <a href="login.html" class="bg-blue-600 hover:bg-blue-500 text-white font-extrabold px-5 py-2.5 sm:px-6 sm:py-3 rounded-2xl shadow-lg shadow-blue-600/40 hover:shadow-blue-500/60 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2 text-xs sm:text-sm shrink-0">
       <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
       </svg>
@@ -57,22 +57,62 @@
           Buy & Sell Equipment Across <span class="text-blue-400">All Industries</span>
         </h1>
 
-        <!-- Split Section: Description Left / 3"x3" Card Right -->
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-6 py-2">
-          <p class="text-slate-300 text-base sm:text-lg leading-relaxed font-normal max-w-3xl">
-            The premier commercial marketplace for heavy machinery, fleet vehicles, industrial tools, and B2B services. Deal directly with verified buyers and sellers nationwide—zero middleman markups, instant listing control, and transparent market valuations.
-          </p>
+       <!-- SIDE-BY-SIDE 4" x 4" CARDS SECTION -->
+<div class="flex flex-col md:flex-row items-center justify-center gap-8 py-8 w-full max-w-6xl mx-auto">
 
-          <!-- 3" x 3" (128px x 128px) Image Card -->
-          <a href="membership.html" class="group relative w-32 h-32 min-w-[8rem] min-h-[8rem] rounded-2xl overflow-hidden border border-amber-500/80 shadow-xl hover:border-amber-400 transition-all transform hover:scale-105 shrink-0 block">
-            <img src="CreateAccount.jpg" alt="Create Account" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-            <div class="absolute inset-0 p-2.5 flex flex-col justify-between text-center">
-              <span class="text-xs font-black text-amber-400 group-hover:text-amber-300 drop-shadow-md leading-tight">Create Account</span>
-              <p class="text-[9px] font-medium text-slate-200 line-clamp-2 leading-tight drop-shadow">List & Sell Now</p>
-            </div>
-          </a>
-        </div>
+<!-- LEFT CARD: 4" x 4" (384px x 384px) VISION & DESCRIPTION CARD -->
+<div class="w-[384px] h-[384px] min-w-[384px] min-h-[384px] flex-shrink-0 bg-slate-900/90 border-2 border-slate-700/80 rounded-2xl p-6 shadow-2xl flex flex-col justify-between relative overflow-hidden">
+  
+  <!-- Top Badge & Attention-Grabbing Headline -->
+  <div class="space-y-2">
+    <div class="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-full">
+      <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+      <span class="text-[10px] font-extrabold uppercase tracking-widest text-amber-400">The Next Era</span>
+    </div>
+    <h2 class="text-xl font-black text-white leading-tight">
+      Stop Paying Dealer Fees. <span class="bg-gradient-to-r from-amber-400 via-orange-400 to-amber-200 bg-clip-text text-transparent">Keep 100% Profit.</span>
+    </h2>
+  </div>
+
+ <!-- High-Impact Description Paragraph Replacement -->
+<p class="text-slate-100 text-sm sm:text-base font-medium leading-relaxed my-2">
+  <span class="text-amber-400 font-black uppercase tracking-wide">The Next-Gen Equipment Exchange:</span> Built for contractors and fleet owners who demand real results. Buy and sell heavy machinery with <span class="text-white font-bold underline decoration-amber-500 underline-offset-4">zero broker commissions</span>, direct buyer access, and instant market valuations.
+</p>
+
+  <!-- Bottom Badges: Evenly Spaced Pill Grid -->
+  <div class="grid grid-cols-3 gap-2 pt-3 border-t border-slate-800 text-center w-full">
+    <div class="bg-slate-800/60 p-2 rounded-xl border border-slate-700/50 flex flex-col justify-center items-center">
+      <p class="text-xs font-black text-amber-400">0% Fees</p>
+      <p class="text-[9px] text-slate-400 uppercase font-bold">100% Profit</p>
+    </div>
+    <div class="bg-slate-800/60 p-2 rounded-xl border border-slate-700/50 flex flex-col justify-center items-center">
+      <p class="text-xs font-black text-white">Direct</p>
+      <p class="text-[9px] text-slate-400 uppercase font-bold">Peer Deals</p>
+    </div>
+    <div class="bg-slate-800/60 p-2 rounded-xl border border-slate-700/50 flex flex-col justify-center items-center">
+      <p class="text-xs font-black text-amber-400">Instant</p>
+      <p class="text-[9px] text-slate-400 uppercase font-bold">Live Portal</p>
+    </div>
+  </div>
+
+</div>
+
+  <!-- RIGHT CARD: 4" x 4" (384px x 384px) CREATE ACCOUNT IMAGE CARD -->
+  <a href="membership.html" class="group relative w-[384px] h-[384px] min-w-[384px] min-h-[384px] flex-shrink-0 rounded-2xl overflow-hidden border-2 border-amber-500/80 shadow-2xl hover:border-amber-400 transition-all block">
+    <img src="CreateAccount.jpg" alt="Create Account" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+    <div class="absolute inset-0 p-6 flex flex-col justify-between text-center z-10">
+      <div class="space-y-1">
+        <span class="text-2xl font-black text-amber-400 group-hover:text-amber-300 drop-shadow-lg leading-tight uppercase tracking-wider block">Create Account</span>
+        <p class="text-xs font-medium text-slate-200 drop-shadow">Join to list inventory & access direct buyer leads.</p>
+      </div>
+      <div class="w-full bg-slate-900/90 hover:bg-slate-800 text-white font-bold text-sm py-3 px-4 rounded-xl border border-amber-500/50 backdrop-blur-sm shadow-xl transition-all block">
+        List & Sell Now →
+      </div>
+    </div>
+  </a>
+
+</div>
 
         <!-- Metric Badges Below Description Line -->
         <div class="grid grid-cols-3 gap-4 pt-6 border-t border-slate-800 max-w-2xl">

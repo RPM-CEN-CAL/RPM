@@ -1,164 +1,264 @@
-﻿$serverContent = @'
+﻿require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
+
 const app = express();
 
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
+// Enable CORS for all incoming connections
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
-const LISTINGS_FILE = path.join(__dirname, 'listings.json');
-const B2B_FILE = path.join(__dirname, 'b2b.json');
+app.use(express.json({ limit: '10mb' }));
+app.use(express.static(__dirname));
 
-const defaultListings = [
+// Pre-loaded B2B Listings (Permanent Seed Data)
+let b2bListings = [
   {
-    id: 'concrete-saw',
-    title: '[EXEMPLARY DEMO] Commercial Heavy-Duty Concrete Saw',
-    category: 'Medium Equipment',
-    price: 650,
-    description: 'FOR DEMO / EXEMPLARY PURPOSES ONLY - Will be removed once live client listings start coming in. Gas-powered, high torque motor with water attachment hookup.',
-    imageUrl: 'Tools.jpg',
-    specs: 'Engine: 2-Stroke Gas | Blade Capacity: 14 in | Cutting Depth: 5 in'
+    id: "seed-rpm-property",
+    companyName: "RPM",
+    email: "rpm.cen.cal@gmail.com",
+    phone: "",
+    category: "RESIDENTIAL INSPECTIONS",
+    website: "",
+    location: "Tulare County",
+    imageUrl: "https://6a88f734b14d3a8201574315--rpm-equipment.netlify.app/assets/rpm-property-logo.png",
+    description: "Professional home assessments across the Central Valley. We provide comprehensive pre-purchase, pre-listing, and routine structural evaluations to ensure safety, structural integrity, and confidence in your property investments.",
+    createdAt: new Date().toISOString()
   },
   {
-    id: 'ford-f350',
-    title: '[EXEMPLARY DEMO] Ford F-350 Utility Body Work Truck',
-    category: 'Vehicles',
-    price: 18900,
-    description: 'FOR DEMO / EXEMPLARY PURPOSES ONLY - 6.7L PowerStroke V8 Turbo Diesel, dual rear wheels, locking tool storage bed.',
-    imageUrl: 'Vehicles.jpg',
-    specs: 'Year: 2018 | Mileage: 112,000 | Transmission: Automatic 6-Speed'
-  },
-  {
-    id: 'cat-excavator-320',
-    title: '[EXEMPLARY DEMO] Caterpillar 320 Hydraulic Excavator',
-    category: 'Heavy Equipment',
-    price: 85000,
-    description: 'FOR DEMO / EXEMPLARY PURPOSES ONLY - Full hydraulic thumb attachment, quick coupler, enclosed cab with AC.',
-    imageUrl: 'Vehicles.jpg',
-    specs: 'Operating Weight: 49,600 lbs | Max Dig Depth: 22 ft | Horsepower: 172 HP'
-  },
-  {
-    id: 'bobcat-t770',
-    title: '[EXEMPLARY DEMO] Bobcat T770 Compact Track Loader',
-    category: 'Medium Equipment',
-    price: 34500,
-    description: 'FOR DEMO / EXEMPLARY PURPOSES ONLY - High-flow hydraulics, 2-speed travel, enclosed cab, selectable joystick controls.',
-    imageUrl: 'Tools.jpg',
-    specs: 'Operating Capacity: 3,475 lbs | Engine: 92 HP Diesel | Tracks: 18 in Rubber'
+    id: "seed-rpm-media",
+    companyName: "RPM-Media",
+    email: "pezziracen23@gmail.com",
+    phone: "",
+    category: "FULL STACK DEVELOPMENT",
+    website: "https://creatorflow.ai",
+    location: "U.S.",
+    imageUrl: "https://6a88f734b14d3a8201574315--rpm-equipment.netlify.app/assets/creatorflow-infinity.png",
+    description: "RPM-Media & Creator Flow AI combine full-service commercial video and visual production with an advanced AI content-orchestration engine tailored for B2B brands, real estate pros, and high-growth operations.",
+    createdAt: new Date().toISOString()
   }
 ];
 
-function loadData(filePath, fallback) {
-  try {
-    if (fs.existsSync(filePath)) {
-      const raw = fs.readFileSync(filePath, 'utf8');
-      const parsed = JSON.parse(raw);
-      return parsed.length > 0 ? parsed : fallback;
-    }
-  } catch (err) {
-    console.error(`Error reading ${filePath}:`, err);
-  }
-  return fallback;
+let equipmentListings = [];
+
+const VIP_EMAILS = [
+  'rpm_cen_cal@gmail.com',
+  'rpm.cen.cal@gmail.com',
+  'pezziracen23@gmail.com'
+];
+
+function isVIP(email) {
+  if (!email) return false;
+  return VIP_EMAILS.includes(email.toLowerCase().trim());
 }
 
-function saveData(filePath, data) {
-  try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-  } catch (err) {
-    console.error(`Error writing ${filePath}:`, err);
-  }
-}
-
-let equipmentListings = loadData(LISTINGS_FILE, defaultListings);
-let b2bListings = loadData(B2B_FILE, []);
-
+// Root Health Check
 app.get('/', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'RPM API Server Running' });
+  res.send('RPM Backend API Live.');
 });
 
+// Config Endpoint for Square Web SDK
+app.get('/api/square-config', (req, res) => {
+  res.json({
+    appId: process.env.SQUARE_APPLICATION_ID || process.env.SQUARE_APP_ID || '',
+    locationId: process.env.SQUARE_LOCATION_ID || ''
+  });
+});
+
+// Direct User Registration Endpoint
+app.post('/api/register-direct', (req, res) => {
+  try {
+    const { email, password, name } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+    
+    const cleanEmail = email.toLowerCase().trim();
+    const user = { 
+      id: Date.now().toString(), 
+      email: cleanEmail, 
+      name: name || '',
+      isVip: isVIP(cleanEmail)
+    };
+
+    return res.status(201).json({ success: true, message: 'Account registered successfully', user });
+  } catch (err) {
+    console.error('Registration error:', err);
+    return res.status(500).json({ success: false, error: 'Registration failed' });
+  }
+});
+
+// B2B Directory Endpoints
+app.get('/api/b2b-listings', (req, res) => res.status(200).json(b2bListings));
+
+// Equipment Listings Endpoint
+app.get('/api/listings', (req, res) => res.status(200).json(equipmentListings));
+
+// Lookup existing listing by email for returning business owners
+app.get('/api/b2b-listings/lookup', (req, res) => {
+  const email = req.query.email ? req.query.email.toLowerCase().trim() : '';
+  if (!email) return res.status(400).json({ error: 'Email required' });
+
+  const existing = b2bListings.find(item => item.email.toLowerCase() === email);
+  if (existing) {
+    return res.status(200).json({ found: true, listing: existing });
+  }
+  return res.status(200).json({ found: false });
+});
+
+// Create or Update B2B Listing
+app.post('/api/b2b-listings/create', (req, res) => {
+  try {
+    const { companyName, email, phone, category, customCategory, website, location, imageUrl, description, isUpdate } = req.body;
+    if (!companyName || !email) return res.status(400).json({ error: 'Missing required fields' });
+
+    const formattedCategory = category === 'OTHER' ? (customCategory || 'COMMERCIAL SERVICE') : (category || 'COMMERCIAL SERVICE').toUpperCase();
+    const cleanEmail = email.toLowerCase().trim();
+
+    const existingIndex = b2bListings.findIndex(item => item.email.toLowerCase() === cleanEmail);
+
+    if (existingIndex !== -1 || isUpdate) {
+      b2bListings[existingIndex] = {
+        ...b2bListings[existingIndex],
+        companyName,
+        phone: phone || '',
+        category: formattedCategory,
+        website: website || '',
+        location: location || 'Central Valley',
+        imageUrl: imageUrl || b2bListings[existingIndex].imageUrl,
+        description: description || '',
+        updatedAt: new Date().toISOString()
+      };
+      return res.status(200).json({ success: true, updated: true, listing: b2bListings[existingIndex] });
+    }
+
+    const newListing = {
+      id: `b2b-${Date.now()}`,
+      companyName,
+      email: cleanEmail,
+      phone: phone || '',
+      category: formattedCategory,
+      website: website || '',
+      location: location || 'Central Valley',
+      imageUrl: imageUrl || 'https://via.placeholder.com/150',
+      description: description || '',
+      createdAt: new Date().toISOString()
+    };
+
+    b2bListings.push(newListing);
+    return res.status(201).json({ success: true, updated: false, listing: newListing });
+  } catch (err) {
+    console.error('B2B Listing Error:', err);
+    return res.status(500).json({ error: 'Failed to process B2B listing' });
+  }
+});
+
+// Direct On-Page Card Payment Endpoint
+app.post('/api/process-payment', async (req, res) => {
+  try {
+    const { sourceId, basePrice, email } = req.body;
+    const price = parseFloat(basePrice) || 5;
+    const totalCents = Math.round((price + (price * 0.03)) * 100);
+
+    const { SquareClient, SquareEnvironment } = require('square');
+    const squareClient = new SquareClient({
+      token: process.env.SQUARE_ACCESS_TOKEN,
+      environment: process.env.SQUARE_ENVIRONMENT === 'production' 
+        ? SquareEnvironment.Production 
+        : SquareEnvironment.Sandbox,
+    });
+
+    const paymentsApi = squareClient.paymentsApi || squareClient.payments;
+    
+    if (!paymentsApi) {
+      throw new Error('Square Payments API is unavailable.');
+    }
+
+    const response = await paymentsApi.createPayment({
+      sourceId: sourceId,
+      idempotencyKey: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
+      amountMoney: {
+        amount: BigInt(totalCents),
+        currency: 'USD'
+      },
+      buyerEmailAddress: email
+    });
+
+    const payment = response.result?.payment || response.payment;
+    return res.json({ success: true, payment: payment });
+
+  } catch (error) {
+    console.error('Direct Payment Processing Error:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Checkout Endpoint (Square Link Handler)
 app.post('/api/create-square-checkout', async (req, res) => {
   try {
-    const { email } = req.body;
+    const { basePrice, tierName, email } = req.body;
     const cleanEmail = (email || '').toLowerCase().trim();
 
-    const VIP_EMAILS = [
-      'rpm.cen.cal@gmail.com', 
-      'rpm_cen_cal@gmail.com', 
-      'pezziracen23@gmail.com',
-      'ricky@example.com'
-    ];
-
-    if (VIP_EMAILS.includes(cleanEmail)) {
+    if (isVIP(cleanEmail)) {
       return res.json({ success: true, isVip: true, message: 'VIP Access Granted' });
     }
 
-    const checkoutUrl = process.env.SQUARE_CHECKOUT_URL || 'https://square.link/u/8GfS8D3F';
-    const qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(checkoutUrl);
+    const price = parseFloat(basePrice) || 5;
+    const total = price + (price * 0.03);
+
+    let squareUrl = `https://square.link/u/9OGHfW18`;
+    
+    try {
+      const { SquareClient, SquareEnvironment } = require('square');
+      const squareClient = new SquareClient({
+        token: process.env.SQUARE_ACCESS_TOKEN,
+        environment: process.env.SQUARE_ENVIRONMENT === 'production' 
+          ? SquareEnvironment.Production 
+          : SquareEnvironment.Sandbox,
+      });
+
+      const checkoutApi = squareClient.checkoutApi || squareClient.checkout;
+      if (checkoutApi && checkoutApi.createPaymentLink) {
+        const response = await checkoutApi.createPaymentLink({
+          idempotencyKey: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
+          order: {
+            locationId: process.env.SQUARE_LOCATION_ID,
+            lineItems: [{
+              name: `RPM Membership: ${tierName}`,
+              quantity: '1',
+              basePriceMoney: {
+                amount: BigInt(Math.round(total * 100)),
+                currency: 'USD'
+              }
+            }]
+          },
+          prePopulateBuyerEmail: email
+        });
+
+        const link = response.result?.paymentLink?.url || response.paymentLink?.url;
+        if (link) squareUrl = link;
+      }
+    } catch (squareErr) {
+      console.warn('Square API Fallback mode triggered:', squareErr.message);
+    }
 
     return res.json({
       success: true,
-      isVip: false,
-      checkoutUrl: checkoutUrl,
-      url: checkoutUrl,
-      qrCode: qrCodeUrl
+      url: squareUrl,
+      totalFormatted: total.toFixed(2),
+      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(squareUrl)}`
     });
-  } catch (err) {
-    console.error('Checkout creation error:', err);
-    res.status(500).json({ success: false, error: 'Failed to create checkout session' });
+
+  } catch (error) {
+    console.error('Checkout Endpoint Error:', error);
+    return res.status(500).json({ success: false, error: error.message });
   }
 });
 
-app.get('/api/listings', (req, res) => {
-  res.status(200).json(equipmentListings);
-});
-
-app.get('/api/listings/:id', (req, res) => {
-  const item = equipmentListings.find(l => String(l.id) === String(req.params.id));
-  if (!item) return res.status(404).json({ success: false, message: 'Listing not found' });
-  res.status(200).json(item);
-});
-
-app.post('/api/listings', (req, res) => {
-  const { title, category, price, description, imageUrl, specs, location, contactInfo } = req.body;
-  const newListing = {
-    id: Date.now().toString(),
-    title: title || 'Untitled Listing',
-    category: category || 'General',
-    price: price || 0,
-    description: description || '',
-    imageUrl: imageUrl || 'Tools.jpg',
-    specs: specs || '',
-    location: location || '',
-    contactInfo: contactInfo || ''
-  };
-  equipmentListings.push(newListing);
-  saveData(LISTINGS_FILE, equipmentListings);
-  res.status(201).json({ success: true, listing: newListing });
-});
-
-app.get('/api/b2b-listings', (req, res) => {
-  res.status(200).json(b2bListings);
-});
-
-app.get('/api/b2b-listings/:id', (req, res) => {
-  const item = b2bListings.find(b => String(b.id) === String(req.params.id));
-  if (!item) return res.status(404).json({ success: false, message: 'B2B listing not found' });
-  res.status(200).json(item);
-});
-
-app.post('/api/b2b-listings', (req, res) => {
-  const newB2B = { id: Date.now().toString(), ...req.body };
-  b2bListings.push(newB2B);
-  saveData(B2B_FILE, b2bListings);
-  res.status(201).json({ success: true, listing: newB2B });
-});
-
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log('Server running on port ' + PORT);
+  console.log(`RPM Server active on port ${PORT}`);
 });
-'@
-
-Set-Content -Path .\server.js -Value $serverContent -Encoding UTF8

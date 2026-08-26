@@ -157,113 +157,112 @@
   </footer>
 
   <script>
-    let uploadedImages = [];
+  let uploadedImages = [];
 
-    function handleFileSelect(e) {
-      processFiles(e.target.files);
+  const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000'
+    : 'https://rpm-qhrz.onrender.com';
+
+  function handleFileSelect(e) { processFiles(e.target.files); }
+  function handleDragOver(e) { e.preventDefault(); }
+  function handleDragLeave(e) { e.preventDefault(); }
+  function handleDrop(e) {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(e.dataTransfer.files);
     }
+  }
 
-    function handleDragOver(e) {
-      e.preventDefault();
-      e.currentTarget.classList.add('border-blue-500', 'bg-slate-900');
+  function processFiles(files) {
+    const remainingSlots = 10 - uploadedImages.length;
+    if (remainingSlots <= 0) {
+      alert('Maximum limit of 10 images reached.');
+      return;
     }
-
-    function handleDragLeave(e) {
-      e.preventDefault();
-      e.currentTarget.classList.remove('border-blue-500', 'bg-slate-900');
-    }
-
-    function handleDrop(e) {
-      e.preventDefault();
-      e.currentTarget.classList.remove('border-blue-500', 'bg-slate-900');
-      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        processFiles(e.dataTransfer.files);
-      }
-    }
-
-    function processFiles(files) {
-      const remainingSlots = 10 - uploadedImages.length;
-      if (remainingSlots <= 0) {
-        alert('Maximum limit of 10 images reached.');
-        return;
-      }
-
-      const filesToProcess = Array.from(files).slice(0, remainingSlots);
-
-      filesToProcess.forEach(file => {
-        if (!file.type.startsWith('image/')) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          uploadedImages.push(e.target.result);
-          renderPreviews();
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function removeImage(index) {
-      uploadedImages.splice(index, 1);
-      renderPreviews();
-    }
-
-    function renderPreviews() {
-      const container = document.getElementById('imagePreviewContainer');
-      if (uploadedImages.length === 0) {
-        container.classList.add('hidden');
-        container.innerHTML = '';
-        return;
-      }
-
-      container.classList.remove('hidden');
-      container.innerHTML = uploadedImages.map((src, index) => `
-        <div class="relative group h-24 rounded-lg overflow-hidden border border-slate-700 bg-slate-900">
-          <img src="${src}" class="w-full h-full object-cover">
-          <button 
-            type="button" 
-            onclick="removeImage(${index})" 
-            class="absolute top-1 right-1 bg-red-600 hover:bg-red-500 text-white rounded-full p-1 text-xs shadow-md transition-all"
-            title="Remove Image"
-          >
-            ✕
-          </button>
-        </div>
-      `).join('');
-    }
-
-    async function handleEquipmentSubmit(event) {
-      event.preventDefault();
-      const payload = {
-        title: document.getElementById('pTitle').value,
-        category: document.getElementById('pCategory').value,
-        price: document.getElementById('pPrice').value,
-        year: document.getElementById('pYear').value,
-        hours: document.getElementById('pHours').value,
-        condition: document.getElementById('pCondition').value,
-        location: document.getElementById('pLocation').value,
-        vin: document.getElementById('pVin').value,
-        email: document.getElementById('pEmail').value,
-        images: uploadedImages,
-        description: document.getElementById('pDesc').value
+    const filesToProcess = Array.from(files).slice(0, remainingSlots);
+    filesToProcess.forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        uploadedImages.push(e.target.result);
+        renderPreviews();
       };
+      reader.readAsDataURL(file);
+    });
+  }
 
-      try {
-        const res = await fetch('/api/listings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (res.ok) {
-          alert('Equipment listing published successfully!');
-          document.getElementById('equipmentListingForm').reset();
-          uploadedImages = [];
-          renderPreviews();
-        } else {
-          alert('Error publishing listing: ' + (e.message || 'Server offline'));
-        }
-      } catch(e) {
-        alert('Error publishing listing: ' + (e.message || 'Server offline'));
-      }
+  function removeImage(index) {
+    uploadedImages.splice(index, 1);
+    renderPreviews();
+  }
+
+  function renderPreviews() {
+    const container = document.getElementById('imagePreviewContainer');
+    if (!container) return;
+
+    if (uploadedImages.length === 0) {
+      container.classList.add('hidden');
+      container.innerHTML = '';
+      return;
     }
-  </script>
+
+    container.classList.remove('hidden');
+    container.innerHTML = uploadedImages.map((src, index) => 
+      <div class="relative group h-24 rounded-lg overflow-hidden border border-slate-700 bg-slate-900">
+        <img src="\" class="w-full h-full object-cover" alt="Preview \">
+        <button
+          type="button"
+          onclick="removeImage(\)"
+          class="absolute top-1 right-1 bg-red-600 hover:bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-md transition-all"
+          title="Remove Image"
+        >
+          &times;
+        </button>
+      </div>
+    ).join('');
+  }
+
+  async function handleEquipmentSubmit(event) {
+    event.preventDefault();
+
+    const payload = {
+      title: document.getElementById('pTitle')?.value || '',
+      category: document.getElementById('pCategory')?.value || '',
+      price: document.getElementById('pPrice')?.value || '',
+      year: document.getElementById('pYear')?.value || '',
+      hours: document.getElementById('pHours')?.value || '',
+      condition: document.getElementById('pCondition')?.value || '',
+      location: document.getElementById('pLocation')?.value || '',
+      vin: document.getElementById('pVin')?.value || '',
+      email: document.getElementById('pEmail')?.value || '',
+      images: uploadedImages,
+      description: document.getElementById('pDesc')?.value || ''
+    };
+
+    try {
+      const res = await fetch(\\/api/listings\, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        alert('Equipment listing published successfully!');
+        document.getElementById('equipmentListingForm')?.reset();
+        uploadedImages = [];
+        renderPreviews();
+        window.location.href = '/marketplace.html';
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        alert('Server error: ' + (errData.error || 'Failed to publish listing.'));
+      }
+    } catch(e) {
+      alert('Network error connecting to backend server at ' + API_BASE_URL);
+    }
+  }
+
+  document.getElementById('equipmentListingForm')?.addEventListener('submit', handleEquipmentSubmit);
+</script>
 </body>
 </html>
+

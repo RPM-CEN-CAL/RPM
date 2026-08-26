@@ -159,6 +159,7 @@
   <script>
   let uploadedImages = [];
 
+  // 1. Target local server during testing, or Render in live production
   const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3000'
     : 'https://rpm-qhrz.onrender.com';
@@ -168,19 +169,17 @@
   function handleDragLeave(e) { e.preventDefault(); }
   function handleDrop(e) {
     e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+    if (e.dataTransfer && e.dataTransfer.files) {
       processFiles(e.dataTransfer.files);
     }
   }
 
+  // 2. Read JPG/PNG files into viewable Base64 strings
   function processFiles(files) {
     const remainingSlots = 10 - uploadedImages.length;
-    if (remainingSlots <= 0) {
-      alert('Maximum limit of 10 images reached.');
-      return;
-    }
-    const filesToProcess = Array.from(files).slice(0, remainingSlots);
-    filesToProcess.forEach(file => {
+    if (remainingSlots <= 0) return alert('Maximum limit of 10 images reached.');
+
+    Array.from(files).slice(0, remainingSlots).forEach(file => {
       if (!file.type.startsWith('image/')) return;
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -196,6 +195,7 @@
     renderPreviews();
   }
 
+  // 3. Display uploaded thumbnails in the DOM
   function renderPreviews() {
     const container = document.getElementById('imagePreviewContainer');
     if (!container) return;
@@ -207,61 +207,58 @@
     }
 
     container.classList.remove('hidden');
-    container.innerHTML = uploadedImages.map((src, index) => 
+    container.innerHTML = uploadedImages.map((src, index) => `
       <div class="relative group h-24 rounded-lg overflow-hidden border border-slate-700 bg-slate-900">
-        <img src="\" class="w-full h-full object-cover" alt="Preview \">
-        <button
-          type="button"
-          onclick="removeImage(\)"
-          class="absolute top-1 right-1 bg-red-600 hover:bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-md transition-all"
-          title="Remove Image"
-        >
-          &times;
-        </button>
+        <img src="${src}" class="w-full h-full object-cover">
+        <button type="button" onclick="removeImage(${index})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-red-700">&times;</button>
       </div>
-    ).join('');
+    `).join('');
   }
 
-  async function handleEquipmentSubmit(event) {
-    event.preventDefault();
+  // 4. Send the payload to Express server on submit
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('equipmentListingForm') || document.querySelector('form');
+    if (!form) return;
 
-    const payload = {
-      title: document.getElementById('pTitle')?.value || '',
-      category: document.getElementById('pCategory')?.value || '',
-      price: document.getElementById('pPrice')?.value || '',
-      year: document.getElementById('pYear')?.value || '',
-      hours: document.getElementById('pHours')?.value || '',
-      condition: document.getElementById('pCondition')?.value || '',
-      location: document.getElementById('pLocation')?.value || '',
-      vin: document.getElementById('pVin')?.value || '',
-      email: document.getElementById('pEmail')?.value || '',
-      images: uploadedImages,
-      description: document.getElementById('pDesc')?.value || ''
-    };
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-    try {
-      const res = await fetch(\\/api/listings\, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const payload = {
+        title: document.getElementById('pTitle')?.value || '',
+        category: document.getElementById('pCategory')?.value || '',
+        price: document.getElementById('pPrice')?.value || 0,
+        year: document.getElementById('pYear')?.value || '',
+        hours: document.getElementById('pHours')?.value || '',
+        condition: document.getElementById('pCondition')?.value || '',
+        location: document.getElementById('pLocation')?.value || '',
+        vin: document.getElementById('pVin')?.value || '',
+        email: document.getElementById('pEmail')?.value || '',
+        description: document.getElementById('pDesc')?.value || '',
+        images: uploadedImages
+      };
 
-      if (res.ok) {
-        alert('Equipment listing published successfully!');
-        document.getElementById('equipmentListingForm')?.reset();
-        uploadedImages = [];
-        renderPreviews();
-        window.location.href = '/marketplace.html';
-      } else {
-        const errData = await res.json().catch(() => ({}));
-        alert('Server error: ' + (errData.error || 'Failed to publish listing.'));
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/listings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          alert('Equipment listing published successfully!');
+          form.reset();
+          uploadedImages = [];
+          renderPreviews();
+          window.location.href = '/marketplace.html';
+        } else {
+          const err = await res.json().catch(() => ({}));
+          alert('Server error: ' + (err.error || 'Failed to publish listing.'));
+        }
+      } catch(err) {
+        alert('Network error connecting to server at ' + API_BASE_URL);
       }
-    } catch(e) {
-      alert('Network error connecting to backend server at ' + API_BASE_URL);
-    }
-  }
-
-  document.getElementById('equipmentListingForm')?.addEventListener('submit', handleEquipmentSubmit);
+    });
+  });
 </script>
 </body>
 </html>

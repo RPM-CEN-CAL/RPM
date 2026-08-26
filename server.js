@@ -1,6 +1,7 @@
 ﻿require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 
@@ -43,6 +44,7 @@ let b2bListings = [
 ];
 
 let equipmentListings = [];
+let users = [];
 
 const VIP_EMAILS = [
   'rpm_cen_cal@gmail.com',
@@ -68,7 +70,64 @@ app.get('/api/square-config', (req, res) => {
   });
 });
 
-// Direct User Registration Endpoint
+// Secure Password Registration
+app.post('/api/register', async (req, res) => {
+  try {
+    const { email, password, companyName } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password required' });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const existing = users.find(u => u.email === cleanEmail);
+    if (existing) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = {
+      id: Date.now().toString(),
+      email: cleanEmail,
+      password: hashedPassword,
+      companyName: companyName || '',
+      isVip: isVIP(cleanEmail)
+    };
+
+    users.push(newUser);
+    return res.status(201).json({ success: true, message: 'Account created successfully', user: { id: newUser.id, email: newUser.email } });
+  } catch (err) {
+    console.error('Registration error:', err);
+    return res.status(500).json({ error: 'Failed to create account' });
+  }
+});
+
+// Secure Password Verification Login
+app.post('/api/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password required' });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const user = users.find(u => u.email === cleanEmail);
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    return res.status(200).json({ success: true, user: { id: user.id, email: user.email, name: user.companyName } });
+  } catch (err) {
+    console.error('Login error:', err);
+    return res.status(500).json({ error: 'Failed to authenticate user' });
+  }
+});
+
+// Direct User Registration Endpoint (Legacy)
 app.post('/api/register-direct', (req, res) => {
   try {
     const { email, password, name } = req.body;
@@ -94,8 +153,41 @@ app.post('/api/register-direct', (req, res) => {
 // B2B Directory Endpoints
 app.get('/api/b2b-listings', (req, res) => res.status(200).json(b2bListings));
 
-// Equipment Listings Endpoint
+// Equipment Listings Endpoint (Get All)
 app.get('/api/listings', (req, res) => res.status(200).json(equipmentListings));
+
+// Equipment Listings Endpoint (Create New Listing)
+app.post('/api/listings', (req, res) => {
+  try {
+    const { title, category, price, year, hours, condition, location, vin, email, images, description } = req.body;
+
+    if (!title || !price || !email) {
+      return res.status(400).json({ error: 'Title, price, and email are required.' });
+    }
+
+    const newListing = {
+      id: `equip-${Date.now()}`,
+      title,
+      category: category || 'General',
+      price: parseFloat(price) || 0,
+      year: year || '',
+      hours: hours || '',
+      condition: condition || 'Used',
+      location: location || '',
+      vin: vin || '',
+      email: email.toLowerCase().trim(),
+      images: Array.isArray(images) ? images : [],
+      description: description || '',
+      createdAt: new Date().toISOString()
+    };
+
+    equipmentListings.push(newListing);
+    return res.status(201).json({ success: true, listing: newListing });
+  } catch (err) {
+    console.error('Create Listing Error:', err);
+    return res.status(500).json({ error: 'Failed to publish equipment listing' });
+  }
+});
 
 // Lookup existing listing by email for returning business owners
 app.get('/api/b2b-listings/lookup', (req, res) => {

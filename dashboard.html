@@ -45,7 +45,7 @@
         <p class="text-xs text-slate-400">Fill in all specs below to push your equipment live on the RPM Marketplace.</p>
       </div>
 
-      <form id="equipmentListingForm" onsubmit="handleEquipmentSubmit(event)" class="space-y-6">
+      <form id="equipmentListingForm" class="space-y-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           
           <div>
@@ -144,7 +144,7 @@
           <textarea id="pDesc" rows="4" placeholder="Detail attachments included, maintenance history, service records, track/tire condition..." required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs text-white focus:outline-none focus:border-blue-500"></textarea>
         </div>
 
-        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-emerald-600/30">
+        <button type="submit" id="submitBtn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-emerald-600/30">
           Publish Equipment Listing to Marketplace &rarr;
         </button>
       </form>
@@ -159,7 +159,6 @@
   <script>
   let uploadedImages = [];
 
-  // 1. Target local server during testing, or Render in live production
   const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3000'
     : 'https://rpm-qhrz.onrender.com';
@@ -174,7 +173,6 @@
     }
   }
 
-  // 2. Read JPG/PNG files into viewable Base64 strings
   function processFiles(files) {
     const remainingSlots = 10 - uploadedImages.length;
     if (remainingSlots <= 0) return alert('Maximum limit of 10 images reached.');
@@ -195,7 +193,6 @@
     renderPreviews();
   }
 
-  // 3. Display uploaded thumbnails in the DOM
   function renderPreviews() {
     const container = document.getElementById('imagePreviewContainer');
     if (!container) return;
@@ -209,19 +206,24 @@
     container.classList.remove('hidden');
     container.innerHTML = uploadedImages.map((src, index) => `
       <div class="relative group h-24 rounded-lg overflow-hidden border border-slate-700 bg-slate-900">
-        <img src="${src}" class="w-full h-full object-cover">
-        <button type="button" onclick="removeImage(${index})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-red-700">&times;</button>
+        <img src="${src}" class="w-full h-full object-cover" alt="Upload Preview ${index + 1}">
+        <button type="button" onclick="removeImage(${index})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-red-700 z-10">&times;</button>
       </div>
     `).join('');
   }
 
-  // 4. Send the payload to Express server on submit
   document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('equipmentListingForm') || document.querySelector('form');
     if (!form) return;
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      const btn = document.getElementById('submitBtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Publishing Equipment Listing...';
+      }
 
       const payload = {
         title: document.getElementById('pTitle')?.value || '',
@@ -249,17 +251,21 @@
           form.reset();
           uploadedImages = [];
           renderPreviews();
-          window.location.href = '/marketplace.html';
+          window.location.href = 'index.html';
         } else {
           const err = await res.json().catch(() => ({}));
           alert('Server error: ' + (err.error || 'Failed to publish listing.'));
         }
       } catch(err) {
         alert('Network error connecting to server at ' + API_BASE_URL);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = 'Publish Equipment Listing to Marketplace →';
+        }
       }
     });
   });
 </script>
 </body>
 </html>
-

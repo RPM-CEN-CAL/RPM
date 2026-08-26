@@ -19,7 +19,7 @@
     }
   </style>
   <script>
-    const supabase = supabase.createClient(
+    const supabaseClient = supabase.createClient(
       "https://qfjilrbhbcqwlrrwihcy.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmamlscmJoYmNxd2xycndpaGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNDgyMTcsImV4cCI6MjA4NjkyNDIxN30.SWnM-6ls0nTanHkaCViwQ-LbTFqrKo_qlKnhGTRMKa0"
     );
@@ -47,7 +47,7 @@
 
       <div>
         <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Password</label>
-        <input id="password" type="password" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500" required>
+        <input id="password" type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500" required>
       </div>
 
       <button id="submitBtn" type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-lg shadow-lg shadow-blue-600/30 transition-all mt-2">
@@ -73,7 +73,7 @@
     <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-lg w-full p-6 space-y-6 text-white shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
         <h3 class="text-lg font-bold text-amber-400 flex items-center gap-2">
-          <span>??</span> Login & Account Assistance
+          <span>ðŸ’¡</span> Login & Account Assistance
         </h3>
         <button onclick="toggleLoginHelpModal()" class="text-slate-400 hover:text-white font-bold text-xl px-2">&times;</button>
       </div>
@@ -114,27 +114,38 @@
       localStorage.setItem("userEmail", email);
       localStorage.setItem("rpm_user_email", email);
 
-      // 1. Supabase Authentication
-      let { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      
-      if (error) {
-        let { error: signupError } = await supabase.auth.signUp({ email, password });
-        if (signupError) {
-          alert("Login error: " + signupError.message);
-          submitBtn.disabled = false;
-          submitBtn.innerText = "Continue ?";
-          return;
-        }
-      }
-
-      // 2. VIP Admin Bypass Check
+      // 1. VIP Admin Bypass Check
       if (VIP_EMAILS.includes(email)) {
         localStorage.setItem("rpm_verified_session", "active");
         window.location.href = "dashboard.html";
         return;
       }
 
-      // 3. Paid Seller Check
+      // 2. Local File Protocol Fallback (For local desktop testing)
+      if (window.location.protocol === 'file:') {
+        localStorage.setItem("rpm_verified_session", "active");
+        window.location.href = "dashboard.html";
+        return;
+      }
+
+      // 3. Supabase Authentication
+      try {
+        let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        
+        if (error) {
+          let { error: signupError } = await supabaseClient.auth.signUp({ email, password });
+          if (signupError) {
+            alert("Login error: " + signupError.message);
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Continue â†’";
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Supabase network request failed, checking paid status...", err);
+      }
+
+      // 4. Paid Seller Check
       const activePaidFlag = localStorage.getItem("rpm_paid_client_" + email) || localStorage.getItem("rpm_verified_session");
 
       if (activePaidFlag === "true" || activePaidFlag === "active") {

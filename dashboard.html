@@ -8,7 +8,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>body { font-family: 'Inter', sans-serif; }</style>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .drag-active {
+      border-color: #3b82f6 !important;
+      background-color: rgba(59, 130, 246, 0.1) !important;
+    }
+  </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between antialiased">
 
@@ -109,6 +115,7 @@
         <div>
           <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Equipment Photos (Up to 10 Images)</label>
           
+          <!-- Restored Drag and Drop Box -->
           <div 
             id="dropZone"
             onclick="document.getElementById('pImages').click()"
@@ -125,7 +132,7 @@
               class="hidden" 
               onchange="handleFileSelect(event)"
             >
-            <div class="space-y-2">
+            <div class="space-y-2 pointer-events-none">
               <svg class="mx-auto h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
@@ -163,11 +170,28 @@
     ? 'http://localhost:3000'
     : 'https://rpm-qhrz.onrender.com';
 
-  function handleFileSelect(e) { processFiles(e.target.files); }
-  function handleDragOver(e) { e.preventDefault(); }
-  function handleDragLeave(e) { e.preventDefault(); }
+  function handleFileSelect(e) { 
+    if (e.target.files) processFiles(e.target.files); 
+  }
+  
+  function handleDragOver(e) { 
+    e.preventDefault(); 
+    e.stopPropagation();
+    document.getElementById('dropZone').classList.add('drag-active');
+  }
+  
+  function handleDragLeave(e) { 
+    e.preventDefault(); 
+    e.stopPropagation();
+    document.getElementById('dropZone').classList.remove('drag-active');
+  }
+  
   function handleDrop(e) {
     e.preventDefault();
+    e.stopPropagation();
+    const dropZone = document.getElementById('dropZone');
+    dropZone.classList.remove('drag-active');
+    
     if (e.dataTransfer && e.dataTransfer.files) {
       processFiles(e.dataTransfer.files);
     }

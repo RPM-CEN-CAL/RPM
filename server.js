@@ -71,10 +71,6 @@ app.get('/api/square-config', (req, res) => {
 });
 
 // Secure Password Registration
-// 1. Add this require statement at the VERY TOP of server.js with your other dependencies:
-const bcrypt = require('bcryptjs');
-
-// 2. Add or update your registration endpoint inside server.js:
 app.post('/api/register', async (req, res) => {
   try {
     const { email, password, fullName, plan } = req.body;
@@ -83,40 +79,67 @@ app.post('/api/register', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email and password are required.' });
     }
 
+    const cleanEmail = email.toLowerCase().trim();
+    const existing = users.find(u => u.email === cleanEmail);
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'User already exists.' });
+    }
+
     // Hash the raw password before saving
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Save user object with hashedPassword into your DB/store
-    // const newUser = { email, password: hashedPassword, fullName, plan };
+    const newUser = {
+      id: Date.now().toString(),
+      email: cleanEmail,
+      password: hashedPassword,
+      fullName: fullName || '',
+      plan: plan || 'standard',
+      isVip: isVIP(cleanEmail),
+      createdAt: new Date().toISOString()
+    };
 
-    return res.status(201).json({ success: true, message: 'Account registered successfully!' });
+    users.push(newUser);
+
+    return res.status(201).json({ 
+      success: true, 
+      message: 'Account registered successfully!', 
+      user: { id: newUser.id, email: newUser.email, fullName: newUser.fullName } 
+    });
   } catch (err) {
     console.error('Registration Error:', err);
     return res.status(500).json({ success: false, message: 'Server error during registration.' });
   }
 });
 
-// 3. Add or update your login verification endpoint inside server.js:
+// Secure Password Verification Login
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // TODO: Retrieve user record from database by email
-    // const user = await findUserByEmail(email);
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Email and password are required.' });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const user = users.find(u => u.email === cleanEmail);
 
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
 
-    // Compare entered plaintext password with the stored hashed password
+    // Compare entered plaintext password with stored hashed password
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
 
-    return res.status(200).json({ success: true, message: 'Login successful!' });
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Login successful!', 
+      user: { id: user.id, email: user.email, fullName: user.fullName, isVip: user.isVip } 
+    });
   } catch (err) {
     console.error('Login Error:', err);
     return res.status(500).json({ success: false, message: 'Server error during login.' });

@@ -345,7 +345,7 @@ app.post('/api/process-payment', async (req, res) => {
       throw new Error('Square Payments API is unavailable.');
     }
 
-    const response = await payments.create({
+    const response = await squareClient.paymentsApi.createPayment({
       sourceId: sourceId,
       idempotencyKey: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
       amountMoney: {

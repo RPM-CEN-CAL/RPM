@@ -12,8 +12,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.static(__dirname));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Pre-loaded B2B Listings (Permanent Seed Data)
 let b2bListings = [
@@ -156,7 +156,7 @@ app.get('/api/b2b-listings', (req, res) => res.status(200).json(b2bListings));
 // Equipment Listings Endpoint (Get All)
 app.get('/api/listings', (req, res) => res.status(200).json(equipmentListings));
 
-// Equipment Listings Endpoint (Create New Listing)
+// Equipment Listings Endpoint (Create New Listing - Repaired)
 app.post('/api/listings', (req, res) => {
   try {
     const { title, category, price, year, hours, condition, location, vin, email, images, description } = req.body;
@@ -165,9 +165,11 @@ app.post('/api/listings', (req, res) => {
       return res.status(400).json({ error: 'Title, price, and email are required.' });
     }
 
+    const cleanEmail = String(email).toLowerCase().trim();
+
     const newListing = {
       id: `equip-${Date.now()}`,
-      title,
+      title: String(title),
       category: category || 'General',
       price: parseFloat(price) || 0,
       year: year || '',
@@ -175,17 +177,17 @@ app.post('/api/listings', (req, res) => {
       condition: condition || 'Used',
       location: location || '',
       vin: vin || '',
-      email: email.toLowerCase().trim(),
+      email: cleanEmail,
       images: Array.isArray(images) ? images : [],
       description: description || '',
       createdAt: new Date().toISOString()
     };
 
-    equipmentListings.push(newListing);
+    equipmentListings.unshift(newListing);
     return res.status(201).json({ success: true, listing: newListing });
   } catch (err) {
     console.error('Create Listing Error:', err);
-    return res.status(500).json({ error: 'Failed to publish equipment listing' });
+    return res.status(500).json({ error: 'Server error: ' + err.message });
   }
 });
 

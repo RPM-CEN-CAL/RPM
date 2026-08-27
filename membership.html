@@ -45,7 +45,7 @@
     
     <div class="text-center space-y-3">
       <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight">Seller Membership & Plans</h1>
-      <p class="text-slate-400 text-sm max-w-xl mx-auto">Select a subscription plan, enter your credentials, and pay directly on this card or scan the dynamic QR code.</p>
+      <p class="text-slate-400 text-sm max-w-xl mx-auto">Select a subscription plan, enter your credentials, and scan the dynamic QR code to pay.</p>
     </div>
 
     <!-- Membership Tiers Grid -->
@@ -79,7 +79,7 @@
       </div>
     </div>
 
-    <!-- Integrated Account Credentials & Direct Card/QR Payment Box -->
+    <!-- Integrated Account Credentials & Direct QR Payment Box -->
     <div class="max-w-xl mx-auto bg-slate-800/90 border border-slate-700 rounded-2xl p-8 space-y-6 shadow-2xl">
       <div class="text-center space-y-1">
         <h2 class="text-2xl font-bold text-white">Create Account & Pay</h2>
@@ -97,54 +97,33 @@
           <input type="password" id="signupPassword" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
         </div>
 
-        <!-- Consolidated Card & Dynamic QR Section -->
-        <div class="border-t border-slate-700/80 pt-4 space-y-4">
+        <!-- NEW PAYMENT METHOD LAYOUT: Side-by-Side Cards -->
+        <div class="border-t border-slate-700/80 pt-4 space-y-2">
           <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Payment Method</label>
           
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="md:col-span-2 space-y-3">
-              <div>
-                <label class="block text-[10px] text-slate-400 mb-1">CARD NUMBER</label>
-                <input type="text" id="cardNumber" placeholder="4532 •••• •••• 8890" maxlength="19" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+            <!-- Left Card: Cost Breakdown -->
+            <div class="bg-slate-900 border border-slate-700 rounded-xl p-5 flex flex-col justify-center space-y-3">
+              <div class="flex justify-between items-center text-xs text-slate-400">
+                <span>Base Subscription Tier:</span>
+                <span id="summary-base" class="font-mono text-slate-200">$5.00</span>
               </div>
-              <div class="grid grid-cols-3 gap-2">
-                <div>
-                  <label class="block text-[10px] text-slate-400 mb-1">MM/YY</label>
-                  <input type="text" id="cardExpiry" placeholder="08/28" maxlength="5" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500">
-                </div>
-                <div>
-                  <label class="block text-[10px] text-slate-400 mb-1">CVV</label>
-                  <input type="text" id="cardCvv" placeholder="123" maxlength="4" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500">
-                </div>
-                <div>
-                  <label class="block text-[10px] text-slate-400 mb-1">ZIP</label>
-                  <input type="text" id="cardZip" placeholder="93286" maxlength="5" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500">
-                </div>
+              <div class="flex justify-between items-center text-xs text-slate-400">
+                <span>Processing Fee (3%):</span>
+                <span id="summary-fee" class="font-mono text-slate-200">$0.15</span>
+              </div>
+              <div class="border-t border-slate-800 pt-3 flex justify-between items-center">
+                <span class="text-sm font-bold text-white">Total Due Now:</span>
+                <span id="summary-total" class="text-base font-extrabold text-blue-400 font-mono">$5.15</span>
               </div>
             </div>
 
-            <!-- Single Dynamic QR Code Area -->
-            <div class="flex flex-col items-center justify-center bg-slate-900 border border-slate-700 rounded-xl p-3 text-center">
-              <span class="text-[10px] font-semibold text-slate-400 mb-1.5 uppercase">Mobile Pay QR</span>
-              <div id="qrcode" class="p-1.5 bg-white rounded-lg shadow"></div>
-              <span id="qrAmountDisplay" class="text-[11px] text-blue-400 font-bold mt-2">$5.15</span>
+            <!-- Right Card: 3"x3" Dynamic Mobile Pay QR -->
+            <div class="bg-slate-900 border border-slate-700 rounded-xl p-5 flex flex-col items-center justify-center text-center space-y-2">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mobile Pay QR</span>
+              <div id="qrcode" class="p-2 bg-white rounded-lg shadow-md flex items-center justify-center"></div>
+              <span id="qrAmountDisplay" class="text-xs font-bold text-blue-400 font-mono">$5.15</span>
             </div>
-          </div>
-        </div>
-
-        <!-- Breakdown Summary -->
-        <div class="bg-slate-900/80 rounded-xl p-4 border border-slate-700/60 space-y-2 text-xs">
-          <div class="flex justify-between text-slate-400">
-            <span>Base Subscription Tier:</span>
-            <span id="summary-base">$5.00</span>
-          </div>
-          <div class="flex justify-between text-slate-400">
-            <span>Processing Fee (3%):</span>
-            <span id="summary-fee">$0.15</span>
-          </div>
-          <div class="flex justify-between text-white font-bold text-sm pt-2 border-t border-slate-800">
-            <span>Total Due Now:</span>
-            <span id="summary-total" class="text-blue-400">$5.15</span>
           </div>
         </div>
 
@@ -218,7 +197,7 @@
             <span class="font-extrabold text-emerald-400 uppercase tracking-wider text-xs">Step 3: Account Creation & Payment</span>
             <span class="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-md">Account Setup</span>
           </div>
-          <p class="text-slate-200 leading-relaxed">Enter your business email, password, and credit card information or scan the dynamic mobile QR code directly to submit payment without leaving the card.</p>
+          <p class="text-slate-200 leading-relaxed">Enter your business email and password, then scan the dynamic mobile QR code directly to submit payment without leaving the card.</p>
         </div>
 
         <div class="p-4 bg-slate-800/90 rounded-2xl border-l-4 border-purple-500 space-y-1 shadow-md">
@@ -294,8 +273,8 @@
       qrContainer.innerHTML = ''; 
       qrCodeInstance = new QRCode(qrContainer, {
         text: payloadUrl,
-        width: 75,
-        height: 75,
+        width: 100,
+        height: 100,
         colorDark: "#000000",
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.H
@@ -323,13 +302,7 @@
         email: email,
         password: password,
         tier: selectedTierName,
-        amountPaid: (selectedBasePrice * 1.03).toFixed(2),
-        payment: {
-          number: document.getElementById('cardNumber').value,
-          expiry: document.getElementById('cardExpiry').value,
-          cvv: document.getElementById('cardCvv').value,
-          zip: document.getElementById('cardZip').value
-        }
+        amountPaid: (selectedBasePrice * 1.03).toFixed(2)
       };
 
       try {

@@ -12,7 +12,7 @@
     body { font-family: 'Inter', sans-serif; }
     .drag-active {
       border-color: #3b82f6 !important;
-      background-color: rgba(59, 130, 246, 0.1) !important;
+      background-color: rgba(59, 130, 246, 0.15) !important;
     }
   </style>
 </head>
@@ -115,13 +115,9 @@
         <div>
           <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Equipment Photos (Up to 10 Images)</label>
           
-          <!-- Restored Drag and Drop Box -->
           <div 
             id="dropZone"
             onclick="document.getElementById('pImages').click()"
-            ondragover="handleDragOver(event)"
-            ondragleave="handleDragLeave(event)"
-            ondrop="handleDrop(event)"
             class="w-full border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl p-6 bg-slate-900/50 text-center cursor-pointer transition-colors"
           >
             <input 
@@ -173,29 +169,6 @@
   function handleFileSelect(e) { 
     if (e.target.files) processFiles(e.target.files); 
   }
-  
-  function handleDragOver(e) { 
-    e.preventDefault(); 
-    e.stopPropagation();
-    document.getElementById('dropZone').classList.add('drag-active');
-  }
-  
-  function handleDragLeave(e) { 
-    e.preventDefault(); 
-    e.stopPropagation();
-    document.getElementById('dropZone').classList.remove('drag-active');
-  }
-  
-  function handleDrop(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    const dropZone = document.getElementById('dropZone');
-    dropZone.classList.remove('drag-active');
-    
-    if (e.dataTransfer && e.dataTransfer.files) {
-      processFiles(e.dataTransfer.files);
-    }
-  }
 
   function compressImage(file, maxWidth, maxHeight, quality, callback) {
     const reader = new FileReader();
@@ -235,14 +208,50 @@
     const remainingSlots = 10 - uploadedImages.length;
     if (remainingSlots <= 0) return alert('Maximum limit of 10 images reached.');
 
+    const maxSizeBytes = 5 * 1024 * 1024; // 5 MB Limit
+
     Array.from(files).slice(0, remainingSlots).forEach(file => {
       if (!file.type.startsWith('image/')) return;
-      compressImage(file, 1024, 1024, 0.7, (compressedBase64) => {
+
+      if (file.size > maxSizeBytes) {
+        alert(`File "${file.name}" exceeds the 5MB size limit.`);
+        return;
+      }
+
+      compressImage(file, 2400, 2400, 0.75, (compressedBase64) => {
         uploadedImages.push(compressedBase64);
         renderPreviews();
       });
     });
   }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const dropZone = document.getElementById('dropZone');
+    
+    if (dropZone) {
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }, false);
+      });
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-active'), false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-active'), false);
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        if (dt && dt.files && dt.files.length > 0) {
+          processFiles(dt.files);
+        }
+      }, false);
+    }
+  });
 
   function removeImage(index) {
     uploadedImages.splice(index, 1);
@@ -269,6 +278,32 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    const dropZone = document.getElementById('dropZone');
+    
+    if (dropZone) {
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }, false);
+      });
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-active'), false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-active'), false);
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        if (dt && dt.files) {
+          processFiles(dt.files);
+        }
+      }, false);
+    }
+
     const form = document.getElementById('equipmentListingForm');
     if (!form) return;
 
@@ -302,6 +337,8 @@
           body: JSON.stringify(payload)
         });
 
+        const data = await res.json().catch(() => ({}));
+
         if (res.ok) {
           alert('Equipment listing published successfully!');
           form.reset();
@@ -309,8 +346,7 @@
           renderPreviews();
           window.location.href = 'index.html';
         } else {
-          const err = await res.json().catch(() => ({}));
-          alert('Server error: ' + (err.error || 'Failed to publish listing.'));
+          alert('Server error: ' + (data.error || 'Failed to publish listing.'));
         }
       } catch(err) {
         console.error('Network Error:', err);

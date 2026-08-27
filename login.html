@@ -29,6 +29,10 @@
       'rpm_cen_cal@gmail.com',
       'pezziracen23@gmail.com'
     ];
+
+    const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3000'
+      : 'https://rpm-qhrz.onrender.com';
   </script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center py-12 px-4 relative">
@@ -95,7 +99,6 @@
   </div>
 
   <script>
-    // Ensure inputs start clean without pre-populated text on load
     document.addEventListener("DOMContentLoaded", () => {
       const emailInput = document.getElementById("email");
       if (emailInput) emailInput.value = "";
@@ -108,51 +111,61 @@
       const password = document.getElementById("password").value;
 
       submitBtn.disabled = true;
-      submitBtn.innerText = "Signing in...";
+      submitBtn.innerText = "Verifying Credentials...";
 
-      // Save user email to local storage
-      localStorage.setItem("userEmail", email);
-      localStorage.setItem("rpm_user_email", email);
-
-      // 1. VIP Admin Bypass Check
-      if (VIP_EMAILS.includes(email)) {
-        localStorage.setItem("rpm_verified_session", "active");
-        window.location.href = "dashboard.html";
-        return;
-      }
-
-      // 2. Local File Protocol Fallback (For local desktop testing)
-      if (window.location.protocol === 'file:') {
-        localStorage.setItem("rpm_verified_session", "active");
-        window.location.href = "dashboard.html";
-        return;
-      }
-
-      // 3. Supabase Authentication
       try {
-        let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        
-        if (error) {
-          let { error: signupError } = await supabaseClient.auth.signUp({ email, password });
-          if (signupError) {
-            alert("Login error: " + signupError.message);
-            submitBtn.disabled = false;
-            submitBtn.innerText = "Continue →";
-            return;
+        // 1. Backend Server Authentication Check
+        const response = await fetch(`${API_BASE_URL}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          // Authentication Succeeded
+          localStorage.setItem("userEmail", result.user.email);
+          localStorage.setItem("rpm_user_email", result.user.email);
+          localStorage.setItem("rpm_verified_session", "active");
+
+          if (result.user.isPaid || VIP_EMAILS.includes(email)) {
+            localStorage.setItem(`rpm_paid_client_${email}`, "true");
+            window.location.href = "dashboard.html";
+          } else {
+            alert("Account authenticated! Please select a seller plan to complete setup.");
+            window.location.href = "membership.html";
           }
+          return;
         }
+
+        // 2. Direct Supabase Auth Verification (Fallback)
+        const { data: sbData, error: sbError } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+        if (!sbError && sbData?.user) {
+          localStorage.setItem("userEmail", email);
+          localStorage.setItem("rpm_user_email", email);
+          localStorage.setItem("rpm_verified_session", "active");
+
+          const isPaid = localStorage.getItem(`rpm_paid_client_${email}`) === "true" || VIP_EMAILS.includes(email);
+          if (isPaid) {
+            window.location.href = "dashboard.html";
+          } else {
+            alert("Account verified! Please select a membership plan to activate your dashboard.");
+            window.location.href = "membership.html";
+          }
+          return;
+        }
+
+        // Access Denied on Invalid Passwords
+        alert(result.error || sbError?.message || "Invalid email or password. Access denied.");
+
       } catch (err) {
-        console.warn("Supabase network request failed, checking paid status...", err);
-      }
-
-      // 4. Paid Seller Check
-      const activePaidFlag = localStorage.getItem("rpm_paid_client_" + email) || localStorage.getItem("rpm_verified_session");
-
-      if (activePaidFlag === "true" || activePaidFlag === "active") {
-        window.location.href = "dashboard.html";
-      } else {
-        alert("Account verified! Please select a seller membership plan to activate your posting portal.");
-        window.location.href = "membership.html";
+        console.error("Auth error:", err);
+        alert("Authentication server unreachable. Please verify your connection.");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Continue →";
       }
     });
 

@@ -71,59 +71,55 @@ app.get('/api/square-config', (req, res) => {
 });
 
 // Secure Password Registration
+// 1. Add this require statement at the VERY TOP of server.js with your other dependencies:
+const bcrypt = require('bcryptjs');
+
+// 2. Add or update your registration endpoint inside server.js:
 app.post('/api/register', async (req, res) => {
   try {
-    const { email, password, companyName } = req.body;
+    const { email, password, fullName, plan } = req.body;
+
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password required' });
+      return res.status(400).json({ success: false, message: 'Email and password are required.' });
     }
 
-    const cleanEmail = email.toLowerCase().trim();
-    const existing = users.find(u => u.email === cleanEmail);
-    if (existing) {
-      return res.status(400).json({ error: 'User already exists' });
-    }
+    // Hash the raw password before saving
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = {
-      id: Date.now().toString(),
-      email: cleanEmail,
-      password: hashedPassword,
-      companyName: companyName || '',
-      isVip: isVIP(cleanEmail)
-    };
+    // Save user object with hashedPassword into your DB/store
+    // const newUser = { email, password: hashedPassword, fullName, plan };
 
-    users.push(newUser);
-    return res.status(201).json({ success: true, message: 'Account created successfully', user: { id: newUser.id, email: newUser.email } });
+    return res.status(201).json({ success: true, message: 'Account registered successfully!' });
   } catch (err) {
-    console.error('Registration error:', err);
-    return res.status(500).json({ error: 'Failed to create account' });
+    console.error('Registration Error:', err);
+    return res.status(500).json({ success: false, message: 'Server error during registration.' });
   }
 });
 
-// Secure Password Verification Login
+// 3. Add or update your login verification endpoint inside server.js:
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password required' });
-    }
 
-    const cleanEmail = email.toLowerCase().trim();
-    const user = users.find(u => u.email === cleanEmail);
+    // TODO: Retrieve user record from database by email
+    // const user = await findUserByEmail(email);
+
     if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+    // Compare entered plaintext password with the stored hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
 
-    return res.status(200).json({ success: true, user: { id: user.id, email: user.email, name: user.companyName } });
+    return res.status(200).json({ success: true, message: 'Login successful!' });
   } catch (err) {
-    console.error('Login error:', err);
-    return res.status(500).json({ error: 'Failed to authenticate user' });
+    console.error('Login Error:', err);
+    return res.status(500).json({ success: false, message: 'Server error during login.' });
   }
 });
 

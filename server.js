@@ -4,8 +4,14 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const multer = require('multer');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
+
+// Initialize Supabase Client
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Enable CORS for all incoming connections
 app.use(cors({
@@ -29,37 +35,6 @@ const s3 = new S3Client({
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Pre-loaded B2B Listings (Permanent Seed Data)
-let b2bListings = [
-  {
-    id: "seed-rpm-property",
-    companyName: "RPM",
-    email: "rpm.cen.cal@gmail.com",
-    phone: "",
-    category: "RESIDENTIAL INSPECTIONS",
-    website: "",
-    location: "Tulare County",
-    imageUrl: "https://6a88f734b14d3a8201574315--rpm-equipment.netlify.app/assets/rpm-property-logo.png",
-    description: "Professional home assessments across the Central Valley. We provide comprehensive pre-purchase, pre-listing, and routine structural evaluations to ensure safety, structural integrity, and confidence in your property investments.",
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: "seed-rpm-media",
-    companyName: "RPM-Media",
-    email: "pezziracen23@gmail.com",
-    phone: "",
-    category: "FULL STACK DEVELOPMENT",
-    website: "https://creatorflow.ai",
-    location: "U.S.",
-    imageUrl: "https://6a88f734b14d3a8201574315--rpm-equipment.netlify.app/assets/creatorflow-infinity.png",
-    description: "RPM-Media & Creator Flow AI combine full-service commercial video and visual production with an advanced AI content-orchestration engine tailored for B2B brands, real estate pros, and high-growth operations.",
-    createdAt: new Date().toISOString()
-  }
-];
-
-let equipmentListings = [];
-let users = [];
-
 const VIP_EMAILS = [
   'rpm_cen_cal@gmail.com',
   'rpm.cen.cal@gmail.com',
@@ -73,7 +48,7 @@ function isVIP(email) {
 
 // Root Health Check
 app.get('/', (req, res) => {
-  res.send('RPM Backend API Live.');
+  res.send('RPM Backend API Live (Supabase Connected).');
 });
 
 // Config Endpoint for Square Web SDK
@@ -85,7 +60,7 @@ app.get('/api/square-config', (req, res) => {
 });
 
 // Image Upload Endpoint -> Cloudflare R2
-app.post('/api/upload', upload.array('photos', 5), async (req, res) => {
+app.post('/api/upload', upload.array('photos', 10), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ success: false, message: 'No image files provided.' });
@@ -114,7 +89,7 @@ app.post('/api/upload', upload.array('photos', 5), async (req, res) => {
   }
 });
 
-// Secure Password Registration
+// Secure Password Registration (Supabase Database)
 app.post('/api/register', async (req, res) => {
   try {
     const { email, password, fullName, plan } = req.body;
@@ -124,39 +99,46 @@ app.post('/api/register', async (req, res) => {
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const existing = users.find(u => u.email === cleanEmail);
-    if (existing) {
-      return res.status(400).json({ success: false, message: 'User already exists.' });
+
+    // Check existing user
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', cleanEmail)
+      .maybeSingle();
+
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'User account already exists.' });
     }
 
-    // Hash the raw password before saving
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    // Hash raw password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = {
-      id: Date.now().toString(),
-      email: cleanEmail,
-      password: hashedPassword,
-      fullName: fullName || '',
-      plan: plan || 'standard',
-      isVip: isVIP(cleanEmail),
-      createdAt: new Date().toISOString()
-    };
+    const { data, error } = await supabase
+      .from('users')
+      .insert([{
+        email: cleanEmail,
+        password: hashedPassword,
+        full_name: fullName || '',
+        plan: plan || 'standard',
+        is_vip: isVIP(cleanEmail)
+      }])
+      .select();
 
-    users.push(newUser);
+    if (error) throw error;
 
     return res.status(201).json({ 
       success: true, 
-      message: 'Account registered successfully!', 
-      user: { id: newUser.id, email: newUser.email, fullName: newUser.fullName } 
+      message: 'Account created and saved permanently!', 
+      user: { id: data[0].id, email: data[0].email, fullName: data[0].full_name } 
     });
   } catch (err) {
     console.error('Registration Error:', err);
-    return res.status(500).json({ success: false, message: 'Server error during registration.' });
+    return res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// Secure Password Verification Login
+// Secure Password Login (Supabase Verification)
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -166,13 +148,17 @@ app.post('/api/login', async (req, res) => {
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const user = users.find(u => u.email === cleanEmail);
 
-    if (!user) {
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', cleanEmail)
+      .maybeSingle();
+
+    if (error || !user) {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
 
-    // Compare entered plaintext password with stored hashed password
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -182,7 +168,7 @@ app.post('/api/login', async (req, res) => {
     return res.status(200).json({ 
       success: true, 
       message: 'Login successful!', 
-      user: { id: user.id, email: user.email, fullName: user.fullName, isVip: user.isVip } 
+      user: { id: user.id, email: user.email, fullName: user.full_name, isVip: user.is_vip } 
     });
   } catch (err) {
     console.error('Login Error:', err);
@@ -190,37 +176,24 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Direct User Registration Endpoint (Legacy)
-app.post('/api/register-direct', (req, res) => {
+// Equipment Listings Endpoint (Get All - Supabase)
+app.get('/api/listings', async (req, res) => {
   try {
-    const { email, password, name } = req.body;
-    if (!email) {
-      return res.status(400).json({ success: false, message: 'Email is required' });
-    }
-    
-    const cleanEmail = email.toLowerCase().trim();
-    const user = { 
-      id: Date.now().toString(), 
-      email: cleanEmail, 
-      name: name || '',
-      isVip: isVIP(cleanEmail)
-    };
+    const { data, error } = await supabase
+      .from('listings')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-    return res.status(201).json({ success: true, message: 'Account registered successfully', user });
+    if (error) throw error;
+    return res.status(200).json(data || []);
   } catch (err) {
-    console.error('Registration error:', err);
-    return res.status(500).json({ success: false, error: 'Registration failed' });
+    console.error('Fetch Listings Error:', err);
+    return res.status(500).json({ error: err.message });
   }
 });
 
-// B2B Directory Endpoints
-app.get('/api/b2b-listings', (req, res) => res.status(200).json(b2bListings));
-
-// Equipment Listings Endpoint (Get All)
-app.get('/api/listings', (req, res) => res.status(200).json(equipmentListings));
-
-// Equipment Listings Endpoint (Create New Listing - Repaired)
-app.post('/api/listings', (req, res) => {
+// Equipment Listings Endpoint (Create New Listing - Supabase)
+app.post('/api/listings', async (req, res) => {
   try {
     const { title, category, price, year, hours, condition, location, vin, email, images, description } = req.body;
 
@@ -230,86 +203,123 @@ app.post('/api/listings', (req, res) => {
 
     const cleanEmail = String(email).toLowerCase().trim();
 
-    const newListing = {
-      id: `equip-${Date.now()}`,
-      title: String(title),
-      category: category || 'General',
-      price: parseFloat(price) || 0,
-      year: year || '',
-      hours: hours || '',
-      condition: condition || 'Used',
-      location: location || '',
-      vin: vin || '',
-      email: cleanEmail,
-      images: Array.isArray(images) ? images : [],
-      description: description || '',
-      createdAt: new Date().toISOString()
-    };
+    const { data, error } = await supabase
+      .from('listings')
+      .insert([{
+        title: String(title),
+        category: category || 'General',
+        price: parseFloat(price) || 0,
+        year: year || '',
+        hours: hours || '',
+        condition: condition || 'Used',
+        location: location || '',
+        vin: vin || '',
+        email: cleanEmail,
+        images: Array.isArray(images) ? images : [],
+        description: description || ''
+      }])
+      .select();
 
-    equipmentListings.unshift(newListing);
-    return res.status(201).json({ success: true, listing: newListing });
+    if (error) throw error;
+    return res.status(201).json({ success: true, listing: data[0] });
   } catch (err) {
     console.error('Create Listing Error:', err);
     return res.status(500).json({ error: 'Server error: ' + err.message });
   }
 });
 
-// Lookup existing listing by email for returning business owners
-app.get('/api/b2b-listings/lookup', (req, res) => {
-  const email = req.query.email ? req.query.email.toLowerCase().trim() : '';
-  if (!email) return res.status(400).json({ error: 'Email required' });
+// B2B Directory Endpoint (Get All - Supabase)
+app.get('/api/b2b-listings', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('b2b_listings')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-  const existing = b2bListings.find(item => item.email.toLowerCase() === email);
-  if (existing) {
-    return res.status(200).json({ found: true, listing: existing });
+    if (error) throw error;
+    return res.status(200).json(data || []);
+  } catch (err) {
+    console.error('Fetch B2B Error:', err);
+    return res.status(500).json({ error: err.message });
   }
-  return res.status(200).json({ found: false });
 });
 
-// Create or Update B2B Listing
-app.post('/api/b2b-listings/create', (req, res) => {
+// Lookup existing B2B listing by email (Supabase)
+app.get('/api/b2b-listings/lookup', async (req, res) => {
   try {
-    const { companyName, email, phone, category, customCategory, website, location, imageUrl, description, isUpdate } = req.body;
+    const email = req.query.email ? req.query.email.toLowerCase().trim() : '';
+    if (!email) return res.status(400).json({ error: 'Email required' });
+
+    const { data, error } = await supabase
+      .from('b2b_listings')
+      .select('*')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (data) {
+      return res.status(200).json({ found: true, listing: data });
+    }
+    return res.status(200).json({ found: false });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// Create or Update B2B Promo Listing (Supabase)
+app.post('/api/b2b-listings/create', async (req, res) => {
+  try {
+    const { companyName, email, phone, category, customCategory, website, location, imageUrl, description } = req.body;
     if (!companyName || !email) return res.status(400).json({ error: 'Missing required fields' });
 
     const formattedCategory = category === 'OTHER' ? (customCategory || 'COMMERCIAL SERVICE') : (category || 'COMMERCIAL SERVICE').toUpperCase();
     const cleanEmail = email.toLowerCase().trim();
 
-    const existingIndex = b2bListings.findIndex(item => item.email.toLowerCase() === cleanEmail);
+    const { data: existing } = await supabase
+      .from('b2b_listings')
+      .select('id')
+      .eq('email', cleanEmail)
+      .maybeSingle();
 
-    if (existingIndex !== -1 || isUpdate) {
-      b2bListings[existingIndex] = {
-        ...b2bListings[existingIndex],
-        companyName,
+    if (existing) {
+      const { data, error } = await supabase
+        .from('b2b_listings')
+        .update({
+          company_name: companyName,
+          phone: phone || '',
+          category: formattedCategory,
+          website: website || '',
+          location: location || 'Central Valley',
+          image_url: imageUrl || '',
+          description: description || '',
+          updated_at: new Date().toISOString()
+        })
+        .eq('email', cleanEmail)
+        .select();
+
+      if (error) throw error;
+      return res.status(200).json({ success: true, updated: true, listing: data[0] });
+    }
+
+    const { data, error } = await supabase
+      .from('b2b_listings')
+      .insert([{
+        company_name: companyName,
+        email: cleanEmail,
         phone: phone || '',
         category: formattedCategory,
         website: website || '',
         location: location || 'Central Valley',
-        imageUrl: imageUrl || b2bListings[existingIndex].imageUrl,
-        description: description || '',
-        updatedAt: new Date().toISOString()
-      };
-      return res.status(200).json({ success: true, updated: true, listing: b2bListings[existingIndex] });
-    }
+        image_url: imageUrl || 'https://via.placeholder.com/150',
+        description: description || ''
+      }])
+      .select();
 
-    const newListing = {
-      id: `b2b-${Date.now()}`,
-      companyName,
-      email: cleanEmail,
-      phone: phone || '',
-      category: formattedCategory,
-      website: website || '',
-      location: location || 'Central Valley',
-      imageUrl: imageUrl || 'https://via.placeholder.com/150',
-      description: description || '',
-      createdAt: new Date().toISOString()
-    };
-
-    b2bListings.push(newListing);
-    return res.status(201).json({ success: true, updated: false, listing: newListing });
+    if (error) throw error;
+    return res.status(201).json({ success: true, updated: false, listing: data[0] });
   } catch (err) {
     console.error('B2B Listing Error:', err);
-    return res.status(500).json({ error: 'Failed to process B2B listing' });
+    return res.status(500).json({ error: 'Failed to process B2B listing: ' + err.message });
   }
 });
 

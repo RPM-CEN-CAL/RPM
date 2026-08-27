@@ -1,4 +1,4 @@
-﻿require('dotenv').config();
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
@@ -345,7 +345,7 @@ app.post('/api/process-payment', async (req, res) => {
       throw new Error('Square Payments API is unavailable.');
     }
 
-    const response = await paymentsApi.createPayment({
+    const response = await payments.create({
       sourceId: sourceId,
       idempotencyKey: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
       amountMoney: {

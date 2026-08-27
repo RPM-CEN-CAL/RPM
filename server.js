@@ -2,6 +2,8 @@
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const multer = require('multer');
 
 const app = express();
 
@@ -14,6 +16,18 @@ app.use(cors({
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Configure Cloudflare R2 Client (S3 Compatible API)
+const s3 = new S3Client({
+  region: 'auto',
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+  },
+});
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Pre-loaded B2B Listings (Permanent Seed Data)
 let b2bListings = [
@@ -68,6 +82,36 @@ app.get('/api/square-config', (req, res) => {
     appId: process.env.SQUARE_APPLICATION_ID || process.env.SQUARE_APP_ID || '',
     locationId: process.env.SQUARE_LOCATION_ID || ''
   });
+});
+
+// Image Upload Endpoint -> Cloudflare R2
+app.post('/api/upload', upload.array('photos', 5), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ success: false, message: 'No image files provided.' });
+    }
+
+    const uploadedUrls = [];
+
+    for (const file of req.files) {
+      const fileKey = `equipment/${Date.now()}-${Math.random().toString(36).substring(7)}-${file.originalname}`;
+      
+      await s3.send(new PutObjectCommand({
+        Bucket: process.env.R2_BUCKET_NAME,
+        Key: fileKey,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      }));
+
+      const publicUrl = `${process.env.R2_PUBLIC_URL}/${fileKey}`;
+      uploadedUrls.push(publicUrl);
+    }
+
+    return res.status(200).json({ success: true, urls: uploadedUrls });
+  } catch (err) {
+    console.error('R2 Upload Error:', err);
+    return res.status(500).json({ success: false, error: 'Failed to upload image to R2: ' + err.message });
+  }
 });
 
 // Secure Password Registration

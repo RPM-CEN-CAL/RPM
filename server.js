@@ -79,7 +79,7 @@ app.post('/api/upload', upload.array('photos', 10), async (req, res) => {
         ContentType: file.mimetype,
       }));
 
-      const publicUrl = `${process.env.R2_PUBLIC_URL}/${fileKey}`;
+      const publicUrl = `${(process.env.R2_PUBLIC_URL || 'https://pub-r2.rpm-equipment.com')}/${fileKey}`;
       uploadedUrls.push(publicUrl);
     }
 
@@ -345,7 +345,7 @@ app.post('/api/process-payment', async (req, res) => {
       throw new Error('Square Payments API is unavailable.');
     }
 
-    const response = await squareClient.paymentsApi.createPayment({
+    const response = await paymentsApi.createPayment({
       sourceId: sourceId,
       idempotencyKey: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
       amountMoney: {

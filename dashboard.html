@@ -159,8 +159,8 @@
     © 2026 RPM Equipment Marketplace. All rights reserved.
   </footer>
 
- <script>
-  let uploadedImages = [];
+<script>
+  let uploadedImages = []; // Stores { base64, blob, fileName }
 
   const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3000'
@@ -203,7 +203,9 @@
         ctx.drawImage(img, 0, 0, width, height);
 
         const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        callback(dataUrl);
+        canvas.toBlob((blob) => {
+          callback(dataUrl, blob);
+        }, 'image/jpeg', quality);
       };
       img.src = event.target.result;
     };
@@ -216,8 +218,12 @@
 
     Array.from(files).slice(0, remainingSlots).forEach(file => {
       if (!file.type.startsWith('image/')) return;
-      compressImage(file, 1024, 1024, 0.7, (compressedBase64) => {
-        uploadedImages.push(compressedBase64);
+      compressImage(file, 1024, 1024, 0.7, (compressedBase64, blob) => {
+        uploadedImages.push({
+          base64: compressedBase64,
+          blob: blob,
+          fileName: file.name
+        });
         renderPreviews();
       });
     });
@@ -239,12 +245,34 @@
     }
 
     container.classList.remove('hidden');
-    container.innerHTML = uploadedImages.map((src, index) => `
+    container.innerHTML = uploadedImages.map((imgObj, index) => `
       <div class="relative group h-24 rounded-lg overflow-hidden border border-slate-700 bg-slate-900">
-        <img src="${src}" class="w-full h-full object-cover block" alt="Upload Preview ${index + 1}">
+        <img src="${imgObj.base64}" class="w-full h-full object-cover block" alt="Upload Preview ${index + 1}">
         <button type="button" onclick="removeImage(${index})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold hover:bg-red-700 z-10 shadow-md">&times;</button>
       </div>
     `).join('');
+  }
+
+  async function uploadImagesToR2() {
+    if (uploadedImages.length === 0) return [];
+
+    const formData = new FormData();
+    uploadedImages.forEach((imgObj, idx) => {
+      const fileName = imgObj.fileName || `image-${idx}.jpg`;
+      formData.append('photos', imgObj.blob, fileName);
+    });
+
+    const res = await fetch(`${API_BASE_URL}/api/upload`, {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await res.json();
+    if (res.ok && data.success) {
+      return data.urls;
+    } else {
+      throw new Error(data.error || 'Cloudflare R2 image upload failed');
+    }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -257,24 +285,31 @@
       const btn = document.getElementById('submitBtn');
       if (btn) {
         btn.disabled = true;
-        btn.innerText = 'Publishing Equipment Listing...';
+        btn.innerText = 'Uploading images to R2 storage...';
       }
 
-      const payload = {
-        title: document.getElementById('pTitle')?.value || '',
-        category: document.getElementById('pCategory')?.value || '',
-        price: document.getElementById('pPrice')?.value || 0,
-        year: document.getElementById('pYear')?.value || '',
-        hours: document.getElementById('pHours')?.value || '',
-        condition: document.getElementById('pCondition')?.value || '',
-        location: document.getElementById('pLocation')?.value || '',
-        vin: document.getElementById('pVin')?.value || '',
-        email: document.getElementById('pEmail')?.value || '',
-        description: document.getElementById('pDesc')?.value || '',
-        images: uploadedImages
-      };
-
       try {
+        let imageUrls = [];
+        if (uploadedImages.length > 0) {
+          imageUrls = await uploadImagesToR2();
+        }
+
+        if (btn) btn.innerText = 'Publishing Equipment Listing...';
+
+        const payload = {
+          title: document.getElementById('pTitle')?.value || '',
+          category: document.getElementById('pCategory')?.value || '',
+          price: document.getElementById('pPrice')?.value || 0,
+          year: document.getElementById('pYear')?.value || '',
+          hours: document.getElementById('pHours')?.value || '',
+          condition: document.getElementById('pCondition')?.value || '',
+          location: document.getElementById('pLocation')?.value || '',
+          vin: document.getElementById('pVin')?.value || '',
+          email: document.getElementById('pEmail')?.value || '',
+          description: document.getElementById('pDesc')?.value || '',
+          images: imageUrls
+        };
+
         const res = await fetch(`${API_BASE_URL}/api/listings`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -282,7 +317,7 @@
         });
 
         if (res.ok) {
-          alert('Equipment listing published successfully!');
+          alert('Equipment listing published successfully with Cloudflare R2 images!');
           form.reset();
           uploadedImages = [];
           renderPreviews();
@@ -292,8 +327,8 @@
           alert('Server error: ' + (err.error || 'Failed to publish listing.'));
         }
       } catch(err) {
-        console.error('Network Error:', err);
-        alert('Network error connecting to server at ' + API_BASE_URL);
+        console.error('Submission Error:', err);
+        alert('Error publishing listing: ' + err.message);
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -303,3 +338,5 @@
     });
   });
 </script>
+</body>
+</html>

@@ -13,11 +13,12 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Enable CORS for all incoming connections
+// Enable CORS for all incoming connections with Credentials Support
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 app.use(express.json({ limit: '50mb' }));
@@ -354,7 +355,12 @@ app.post('/api/process-payment', async (req, res) => {
       buyerEmailAddress: email
     });
 
-    const payment = response.result?.payment || response.payment;
+    const rawPayment = response.result?.payment || response.payment;
+    // Convert BigInt values to string before returning JSON to prevent serialization crashes
+    const payment = JSON.parse(JSON.stringify(rawPayment, (key, value) =>
+      typeof value === 'bigint' ? value.toString() : value
+    ));
+
     return res.json({ success: true, payment: payment });
 
   } catch (error) {

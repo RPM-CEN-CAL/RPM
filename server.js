@@ -345,7 +345,7 @@ app.post('/api/process-payment', async (req, res) => {
       throw new Error('Square Payments API is unavailable.');
     }
 
-    const response = await paymentsApi.createPayment({
+    const createFn = (paymentsApi.createPayment || paymentsApi.create).bind(paymentsApi); const response = await createFn({
       sourceId: sourceId,
       idempotencyKey: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
       amountMoney: {
@@ -435,3 +435,4 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`RPM Server active on port ${PORT}`);
 });
+

@@ -1,4 +1,4 @@
-require('dotenv').config();
+﻿require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
@@ -71,7 +71,7 @@ app.post('/api/upload', upload.array('photos', 10), async (req, res) => {
 
     for (const file of req.files) {
       const fileKey = `equipment/${Date.now()}-${Math.random().toString(36).substring(7)}-${file.originalname}`;
-      
+
       await s3.send(new PutObjectCommand({
         Bucket: process.env.R2_BUCKET_NAME,
         Key: fileKey,
@@ -93,7 +93,7 @@ app.post('/api/upload', upload.array('photos', 10), async (req, res) => {
 // Secure Password Registration (Supabase Database)
 app.post('/api/register', async (req, res) => {
   try {
-    const { email, password, fullName, plan } = req.body;
+    const { email, password, fullName, plan, membershipTier, listingLimit } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ success: false, message: 'Email and password are required.' });
@@ -121,17 +121,24 @@ app.post('/api/register', async (req, res) => {
         email: cleanEmail,
         password: hashedPassword,
         full_name: fullName || '',
-        plan: plan || 'standard',
-        is_vip: isVIP(cleanEmail)
+        plan: plan || membershipTier || 'Starter Seller',
+        membership_tier: membershipTier || plan || 'Starter Seller',
+        listing_limit: isVIP(cleanEmail)
+          ? null
+          : (Number.isInteger(Number(listingLimit)) && Number(listingLimit) > 0
+              ? Number(listingLimit)
+              : 1),
+        is_vip: isVIP(cleanEmail),
+        payment_status: isVIP(cleanEmail) ? 'active' : 'pending'
       }])
       .select();
 
     if (error) throw error;
 
-    return res.status(201).json({ 
-      success: true, 
-      message: 'Account created and saved permanently!', 
-      user: { id: data[0].id, email: data[0].email, fullName: data[0].full_name } 
+    return res.status(201).json({
+      success: true,
+      message: 'Account created and saved permanently!',
+      user: { id: data[0].id, email: data[0].email, fullName: data[0].full_name }
     });
   } catch (err) {
     console.error('Registration Error:', err);
@@ -166,10 +173,23 @@ app.post('/api/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
 
-    return res.status(200).json({ 
-      success: true, 
-      message: 'Login successful!', 
-      user: { id: user.id, email: user.email, fullName: user.full_name, isVip: user.is_vip } 
+    if (!user.is_vip && user.payment_status !== 'active') {
+      return res.status(403).json({
+        success: false,
+        message: 'Payment required before account access is granted.'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Login successful!',
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.full_name,
+        isVip: user.is_vip,
+        paymentStatus: user.payment_status
+      }
     });
   } catch (err) {
     console.error('Login Error:', err);
@@ -193,6 +213,32 @@ app.get('/api/listings', async (req, res) => {
   }
 });
 
+
+// Equipment Listing Endpoint (Get One - Supabase)
+app.get('/api/listings/:id', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('listings')
+      .select('*')
+      .eq('id', req.params.id)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!data) {
+      return res.status(404).json({
+        error: 'Equipment listing not found.'
+      });
+    }
+
+    return res.status(200).json(data);
+  } catch (err) {
+    console.error('Fetch Listing Detail Error:', err);
+    return res.status(500).json({
+      error: err.message
+    });
+  }
+});
 // Equipment Listings Endpoint (Create New Listing - Supabase)
 app.post('/api/listings', async (req, res) => {
   try {
@@ -203,6 +249,55 @@ app.post('/api/listings', async (req, res) => {
     }
 
     const cleanEmail = String(email).toLowerCase().trim();
+
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('id, is_vip, payment_status, listing_limit, membership_tier, plan')
+      .eq('email', cleanEmail)
+      .maybeSingle();
+
+    if (userError) throw userError;
+
+    if (!user) {
+      return res.status(403).json({
+        success: false,
+        error: 'A registered client account is required before publishing listings.'
+      });
+    }
+
+    if (!user.is_vip && user.payment_status !== 'active') {
+      return res.status(403).json({
+        success: false,
+        error: 'Payment activation is required before publishing listings.'
+      });
+    }
+
+    if (!user.is_vip) {
+      const listingLimit = Number(user.listing_limit);
+
+      if (!Number.isInteger(listingLimit) || listingLimit < 1) {
+        return res.status(403).json({
+          success: false,
+          error: 'No valid listing limit is assigned to this account.'
+        });
+      }
+
+      const { count, error: countError } = await supabase
+        .from('listings')
+        .select('id', { count: 'exact', head: true })
+        .eq('email', cleanEmail);
+
+      if (countError) throw countError;
+
+      if ((count || 0) >= listingLimit) {
+        return res.status(403).json({
+          success: false,
+          error: `Listing limit reached. Your ${user.membership_tier || user.plan || 'seller'} package allows ${listingLimit} active listing${listingLimit === 1 ? '' : 's'}.`,
+          listingLimit,
+          listingsUsed: count || 0
+        });
+      }
+    }
 
     const { data, error } = await supabase
       .from('listings')
@@ -334,18 +429,19 @@ app.post('/api/process-payment', async (req, res) => {
     const { SquareClient, SquareEnvironment } = require('square');
     const squareClient = new SquareClient({
       token: process.env.SQUARE_ACCESS_TOKEN,
-      environment: process.env.SQUARE_ENVIRONMENT === 'production' 
-        ? SquareEnvironment.Production 
+      environment: process.env.SQUARE_ENVIRONMENT === 'production'
+        ? SquareEnvironment.Production
         : SquareEnvironment.Sandbox,
     });
 
     const paymentsApi = squareClient.paymentsApi || squareClient.payments;
-    
+
     if (!paymentsApi) {
       throw new Error('Square Payments API is unavailable.');
     }
 
-    const createFn = (paymentsApi.createPayment || paymentsApi.create).bind(paymentsApi); const response = await createFn({
+    const createFn = (paymentsApi.createPayment || paymentsApi.create).bind(paymentsApi);
+    const response = await createFn({
       sourceId: sourceId,
       idempotencyKey: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
       amountMoney: {
@@ -362,7 +458,6 @@ app.post('/api/process-payment', async (req, res) => {
     ));
 
     return res.json({ success: true, payment: payment });
-
   } catch (error) {
     console.error('Direct Payment Processing Error:', error);
     return res.status(500).json({ success: false, error: error.message });
@@ -382,14 +477,14 @@ app.post('/api/create-square-checkout', async (req, res) => {
     const price = parseFloat(basePrice) || 5;
     const total = price + (price * 0.03);
 
-    let squareUrl = `https://square.link/u/9OGHfW18`;
-    
+    let squareUrl = 'https://square.link/u/9OGHfW18';
+
     try {
       const { SquareClient, SquareEnvironment } = require('square');
       const squareClient = new SquareClient({
         token: process.env.SQUARE_ACCESS_TOKEN,
-        environment: process.env.SQUARE_ENVIRONMENT === 'production' 
-          ? SquareEnvironment.Production 
+        environment: process.env.SQUARE_ENVIRONMENT === 'production'
+          ? SquareEnvironment.Production
           : SquareEnvironment.Sandbox,
       });
 
@@ -420,17 +515,55 @@ app.post('/api/create-square-checkout', async (req, res) => {
 
     return res.json({
       success: true,
+      isVip: false,
+      checkoutUrl: squareUrl,
       url: squareUrl,
       totalFormatted: total.toFixed(2),
       qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(squareUrl)}`
     });
-
   } catch (error) {
     console.error('Checkout Endpoint Error:', error);
     return res.status(500).json({ success: false, error: error.message });
   }
 });
+// Admin Account Activation Endpoint
+app.post('/api/activate-account', async (req, res) => {
+  try {
+    const { email } = req.body;
 
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email required.'
+      });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+
+    const { error } = await supabase
+      .from('users')
+      .update({
+        payment_status: 'active'
+      })
+      .eq('email', cleanEmail);
+
+    if (error) throw error;
+
+    return res.status(200).json({
+      success: true,
+      message: 'Account activated successfully.',
+      email: cleanEmail
+    });
+
+  } catch (err) {
+    console.error('Activation Error:', err);
+
+    return res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
+});
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`RPM Server active on port ${PORT}`);

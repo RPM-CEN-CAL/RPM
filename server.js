@@ -2,6 +2,8 @@
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const multer = require('multer');
 const { createClient } = require('@supabase/supabase-js');
@@ -37,7 +39,6 @@ const s3 = new S3Client({
 const upload = multer({ storage: multer.memoryStorage() });
 
 const VIP_EMAILS = [
-  'rpm_cen_cal@gmail.com',
   'rpm.cen.cal@gmail.com',
   'pezziracen23@gmail.com'
 ];
@@ -45,6 +46,87 @@ const VIP_EMAILS = [
 function isVIP(email) {
   if (!email) return false;
   return VIP_EMAILS.includes(email.toLowerCase().trim());
+}
+
+const SESSION_COOKIE = 'rpm_session';
+const SESSION_DAYS = 7;
+
+function getCookie(req, name) {
+  const cookies = (req.headers.cookie || '').split(';');
+  for (const cookie of cookies) {
+    const separator = cookie.indexOf('=');
+    if (separator === -1) continue;
+    const key = cookie.slice(0, separator).trim();
+    if (key === name) return decodeURIComponent(cookie.slice(separator + 1).trim());
+  }
+  return null;
+}
+
+function hashSessionToken(token) {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+function sessionCookieOptions() {
+  const production = process.env.NODE_ENV === 'production';
+  return {
+    httpOnly: true,
+    secure: production,
+    sameSite: production ? 'none' : 'lax',
+    path: '/',
+    maxAge: SESSION_DAYS * 24 * 60 * 60
+  };
+}
+
+function setSessionCookie(res, token) {
+  const options = sessionCookieOptions();
+  res.setHeader('Set-Cookie', [
+    `${SESSION_COOKIE}=${encodeURIComponent(token)}`,
+    'HttpOnly',
+    `Max-Age=${options.maxAge}`,
+    `Path=${options.path}`,
+    `SameSite=${options.sameSite}`,
+    options.secure ? 'Secure' : ''
+  ].filter(Boolean).join('; '));
+}
+
+function clearSessionCookie(res) {
+  const options = sessionCookieOptions();
+  res.setHeader('Set-Cookie', [
+    `${SESSION_COOKIE}=`,
+    'HttpOnly',
+    'Max-Age=0',
+    `Path=${options.path}`,
+    `SameSite=${options.sameSite}`,
+    options.secure ? 'Secure' : ''
+  ].filter(Boolean).join('; '));
+}
+
+async function requireSession(req, res, next) {
+  try {
+    const token = getCookie(req, SESSION_COOKIE);
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'Authentication required.' });
+    }
+
+    const { data: session, error } = await supabase
+      .from('auth_sessions')
+      .select('id, user_id, expires_at, users(id, email, full_name, is_vip, payment_status, listing_limit, membership_tier, plan)')
+      .eq('token_hash', hashSessionToken(token))
+      .gt('expires_at', new Date().toISOString())
+      .maybeSingle();
+
+    if (error || !session || !session.users) {
+      clearSessionCookie(res);
+      return res.status(401).json({ success: false, message: 'Session expired. Please sign in again.' });
+    }
+
+    req.authSessionId = session.id;
+    req.user = session.users;
+    return next();
+  } catch (err) {
+    console.error('Session Verification Error:', err);
+    return res.status(500).json({ success: false, message: 'Unable to verify session.' });
+  }
 }
 
 // Root Health Check
@@ -61,7 +143,7 @@ app.get('/api/square-config', (req, res) => {
 });
 
 // Image Upload Endpoint -> Cloudflare R2
-app.post('/api/upload', upload.array('photos', 10), async (req, res) => {
+app.post('/api/upload', requireSession, upload.array('photos', 10), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ success: false, message: 'No image files provided.' });
@@ -166,9 +248,11 @@ app.post('/api/login', async (req, res) => {
     if (error || !user) {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
+console.log('LOGIN ATTEMPT:', cleanEmail);
 
-    const isMatch = await bcrypt.compare(password, user.password);
+const isMatch = await bcrypt.compare(password, user.password);
 
+console.log('PASSWORD MATCH:', isMatch);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
@@ -179,6 +263,21 @@ app.post('/api/login', async (req, res) => {
         message: 'Payment required before account access is granted.'
       });
     }
+
+    const sessionToken = crypto.randomBytes(48).toString('base64url');
+    const expiresAt = new Date(Date.now() + (SESSION_DAYS * 24 * 60 * 60 * 1000)).toISOString();
+
+    const { error: sessionError } = await supabase
+      .from('auth_sessions')
+      .insert([{
+        user_id: user.id,
+        token_hash: hashSessionToken(sessionToken),
+        expires_at: expiresAt
+      }]);
+
+    if (sessionError) throw sessionError;
+
+    setSessionCookie(res, sessionToken);
 
     return res.status(200).json({
       success: true,
@@ -194,6 +293,36 @@ app.post('/api/login', async (req, res) => {
   } catch (err) {
     console.error('Login Error:', err);
     return res.status(500).json({ success: false, message: 'Server error during login.' });
+  }
+});
+
+// Current Cloud Session
+app.get('/api/session', requireSession, async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    user: {
+      id: req.user.id,
+      email: req.user.email,
+      fullName: req.user.full_name,
+      isVip: req.user.is_vip,
+      paymentStatus: req.user.payment_status
+    }
+  });
+});
+
+// Secure Logout
+app.post('/api/logout', requireSession, async (req, res) => {
+  try {
+    await supabase
+      .from('auth_sessions')
+      .delete()
+      .eq('id', req.authSessionId);
+
+    clearSessionCookie(res);
+    return res.status(200).json({ success: true, message: 'Signed out successfully.' });
+  } catch (err) {
+    console.error('Logout Error:', err);
+    return res.status(500).json({ success: false, message: 'Unable to sign out.' });
   }
 });
 
@@ -564,8 +693,115 @@ app.post('/api/activate-account', async (req, res) => {
     });
   }
 });
+
+// Password Reset Email Request
+app.post('/api/request-password-reset', async (req, res) => {
+  const genericMessage = 'If the account exists, a password reset email has been sent.';
+
+  try {
+    const cleanEmail = String(req.body.email || '').toLowerCase().trim();
+    if (!cleanEmail) return res.status(200).json({ success: true, message: genericMessage });
+
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('id, email')
+      .eq('email', cleanEmail)
+      .maybeSingle();
+
+    if (userError) throw userError;
+    if (!user) return res.status(200).json({ success: true, message: genericMessage });
+
+    await supabase
+      .from('password_reset_tokens')
+      .delete()
+      .eq('user_id', user.id)
+      .is('used_at', null);
+
+    const rawToken = crypto.randomBytes(48).toString('base64url');
+    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+    const { error: tokenError } = await supabase
+      .from('password_reset_tokens')
+      .insert([{ user_id: user.id, token_hash: tokenHash, expires_at: expiresAt }]);
+
+    if (tokenError) throw tokenError;
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: Number(process.env.SMTP_PORT || 465),
+      secure: String(process.env.SMTP_SECURE || 'true').toLowerCase() === 'true',
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+    });
+
+    const resetBaseUrl = process.env.PASSWORD_RESET_URL;
+    if (!resetBaseUrl) throw new Error('PASSWORD_RESET_URL is not configured.');
+    const resetUrl = `${resetBaseUrl}?token=${encodeURIComponent(rawToken)}`;
+
+    await transporter.sendMail({
+      from: `RPM Equipment <${process.env.SMTP_USER}>`,
+      to: user.email,
+      subject: 'Reset your RPM Equipment password',
+      text: `Use this secure link to reset your RPM Equipment password: ${resetUrl}\n\nThis link expires in 1 hour. If you did not request this change, ignore this email.`,
+      html: `<p>A password reset was requested for your RPM Equipment account.</p><p><a href="${resetUrl}">Reset your password</a></p><p>This secure link expires in 1 hour. If you did not request this change, ignore this email.</p>`
+    });
+
+    return res.status(200).json({ success: true, message: genericMessage });
+  } catch (error) {
+    console.error('Password Reset Request Error:', error);
+    return res.status(500).json({ success: false, message: 'Unable to send the password reset email.' });
+  }
+});
+
+// Apply New Password
+app.post('/api/reset-password', async (req, res) => {
+  try {
+    const token = String(req.body.token || '');
+    const password = String(req.body.password || '');
+
+    if (!token || password.length < 8) {
+      return res.status(400).json({ success: false, message: 'A valid reset link and an 8-character password are required.' });
+    }
+
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const { data: resetRecord, error: resetError } = await supabase
+      .from('password_reset_tokens')
+      .select('id, user_id, expires_at, used_at')
+      .eq('token_hash', tokenHash)
+      .is('used_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .maybeSingle();
+
+    if (resetError) throw resetError;
+    if (!resetRecord) return res.status(400).json({ success: false, message: 'This password reset link is invalid or expired.' });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ password: hashedPassword })
+      .eq('id', resetRecord.user_id);
+
+    if (updateError) throw updateError;
+
+    await supabase
+      .from('password_reset_tokens')
+      .update({ used_at: new Date().toISOString() })
+      .eq('id', resetRecord.id);
+
+    await supabase
+      .from('auth_sessions')
+      .delete()
+      .eq('user_id', resetRecord.user_id);
+
+    return res.status(200).json({ success: true, message: 'Password updated successfully.' });
+  } catch (error) {
+    console.error('Password Reset Error:', error);
+    return res.status(500).json({ success: false, message: 'Unable to reset the password.' });
+  }
+});
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`RPM Server active on port ${PORT}`);
 });
+
 

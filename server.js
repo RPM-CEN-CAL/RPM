@@ -734,7 +734,9 @@ const resetBaseUrl = process.env.PASSWORD_RESET_URL;
 if (!resetBaseUrl) throw new Error('PASSWORD_RESET_URL is not configured.');
 
 const resetUrl = `${resetBaseUrl}?token=${encodeURIComponent(rawToken)}`;
-
+console.log('RAW TOKEN:', rawToken);
+console.log('TOKEN HASH STORED:', tokenHash);
+console.log('RESET URL:', resetUrl);
 await resend.emails.send({
   from: 'RPM Equipment <onboarding@resend.dev>',
   to: user.email,

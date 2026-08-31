@@ -106,21 +106,27 @@
 
   <script>
     const API_BASE = "https://rpm-qhrz.onrender.com";
-    (async () => {
+    document.documentElement.style.visibility = 'hidden';
+
+async function verifyPromoteAccess() {
   try {
     const response = await fetch(`${API_BASE}/api/session`, {
-      credentials: 'include'
+      credentials: 'include',
+      cache: 'no-store'
     });
 
     if (!response.ok) {
       window.location.replace('login.html');
       return;
     }
+
+    document.documentElement.style.visibility = 'visible';
   } catch (err) {
     window.location.replace('login.html');
-    return;
   }
-})();
+}
+
+window.addEventListener('pageshow', verifyPromoteAccess);
     let selectedFile = null;
 
     function handleB2BDragOver(e) {

@@ -725,7 +725,9 @@ app.post('/api/request-password-reset', async (req, res) => {
     const { error: tokenError } = await supabase
       .from('password_reset_tokens')
       .insert([{ user_id: user.id, token_hash: tokenHash, expires_at: expiresAt }]);
-
+const verifyHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+console.log('VERIFY HASH:', verifyHash);
+console.log('STORED HASH:', tokenHash);
     if (tokenError) throw tokenError;
 
     const resend = new Resend(process.env.RESEND_API_KEY);

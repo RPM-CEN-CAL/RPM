@@ -4,12 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>B2B Directory | Commercial Marketplace</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>body { font-family: 'Inter', sans-serif; }</style>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+
   <script>
     const supabaseClient = supabase.createClient(
       "https://qfjilrbhbcqwlrrwihcy.supabase.co",
@@ -17,6 +23,7 @@
     );
   </script>
 </head>
+
 <body class="bg-slate-900 text-slate-100 min-h-screen antialiased">
 
   <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
@@ -25,14 +32,19 @@
         <span class="bg-blue-600 text-white p-2 rounded-lg font-mono text-sm">HUB</span>
         <span>Marketplace</span>
       </a>
-      <a href="index.html" class="text-sm font-medium text-slate-300 hover:text-white">Back to Home</a>
+
+      <a href="index.html" class="text-sm font-medium text-slate-300 hover:text-white">
+        Back to Home
+      </a>
     </div>
   </header>
 
   <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
     <div>
       <h1 class="text-3xl font-black text-white">Commercial B2B Directory</h1>
-      <p class="text-slate-400 text-sm mt-1">Discover verified commercial contractors, asset providers, and B2B services.</p>
+      <p class="text-slate-400 text-sm mt-1">
+        Discover verified commercial contractors, asset providers, and B2B services.
+      </p>
     </div>
 
     <div id="b2bList" class="grid sm:grid-cols-2 gap-6">
@@ -43,43 +55,65 @@
   </main>
 
   <script>
-    async function loadB2BListings() {
-      const container = document.getElementById("b2bList");
-      const { data, error } = await supabaseClient
-  .from("b2b_listings")
-        .select("*")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false });
+    const API_BASE_URL = window.location.hostname === 'localhost' ||
+window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'
+  : 'https://rpm-qhrz.onrender.com';
 
-     if (error) {
-  console.error('B2B LIST ERROR:', error);
+async function loadB2BListings() {
+  const container = document.getElementById("b2bList");
 
-  container.innerHTML =
-    "<p class='text-red-400 text-sm col-span-2 text-center py-6'>" +
-    error.message +
-    "</p>";
+  try {
 
-  return;
+    const response = await fetch(`${API_BASE_URL}/api/b2b-listings`);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Unable to load B2B listings.');
+    }
+
+    if (!data || data.length === 0) {
+      container.innerHTML =
+        "<p class='text-slate-500 text-sm col-span-2 text-center py-6'>No active B2B listings available at this time.</p>";
+      return;
+    }
+
+    container.innerHTML = "";
+
+    data.forEach(item => {
+      const card = document.createElement("div");
+
+      card.className =
+        "bg-slate-800/80 border border-slate-700/80 p-6 rounded-xl space-y-3";
+
+      card.innerHTML = `
+        <h3 class="text-lg font-bold text-white">${item.company_name || ''}</h3>
+        <p class="text-xs text-slate-300">
+          <strong>Contact:</strong>
+          ${item.email || ''}
+        </p>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          <strong>Services:</strong>
+          ${item.description || ''}
+        </p>
+      `;
+
+      container.appendChild(card);
+    });
+
+  } catch (error) {
+
+    console.error("B2B LIST ERROR:", error);
+
+    container.innerHTML =
+      "<p class='text-red-400 text-sm col-span-2 text-center py-6'>" +
+      error.message +
+      "</p>";
+  }
 }
 
-      if (!data || data.length === 0) {
-        container.innerHTML = "<p class='text-slate-500 text-sm col-span-2 text-center py-6'>No active B2B listings available at this time.</p>";
-        return;
-      }
-
-      container.innerHTML = "";
-      data.forEach(item => {
-        const card = document.createElement("div");
-        card.className = "bg-slate-800/80 border border-slate-700/80 p-6 rounded-xl space-y-3";
-        card.innerHTML = `
-          <h3 class="text-lg font-bold text-white">${item.business_name}</h3>
-          <p class="text-xs text-slate-300"><strong>Contact:</strong> ${item.contact_info}</p>
-          <p class="text-xs text-slate-400 leading-relaxed"><strong>Services:</strong> ${item.services}</p>
-        `;
-        container.appendChild(card);
-      });
-    }
     loadB2BListings();
   </script>
+
 </body>
 </html>

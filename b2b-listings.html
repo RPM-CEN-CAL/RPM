@@ -51,10 +51,16 @@
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        container.innerHTML = "<p class='text-red-400 text-sm col-span-2 text-center py-6'>Error loading B2B listings.</p>";
-        return;
-      }
+     if (error) {
+  console.error('B2B LIST ERROR:', error);
+
+  container.innerHTML =
+    "<p class='text-red-400 text-sm col-span-2 text-center py-6'>" +
+    error.message +
+    "</p>";
+
+  return;
+}
 
       if (!data || data.length === 0) {
         container.innerHTML = "<p class='text-slate-500 text-sm col-span-2 text-center py-6'>No active B2B listings available at this time.</p>";

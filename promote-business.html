@@ -106,6 +106,21 @@
 
   <script>
     const API_BASE = "https://rpm-qhrz.onrender.com";
+    (async () => {
+  try {
+    const response = await fetch(`${API_BASE}/api/session`, {
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      window.location.replace('login.html');
+      return;
+    }
+  } catch (err) {
+    window.location.replace('login.html');
+    return;
+  }
+})();
     let selectedFile = null;
 
     function handleB2BDragOver(e) {

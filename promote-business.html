@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -91,6 +91,16 @@
           <textarea id="description" rows="3" placeholder="Detailed breakdown of equipment fleet, service radius, rates..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-200 focus:outline-none focus:border-blue-500"></textarea>
         </div>
 
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-slate-300 uppercase">B2B Promotion Payment</span>
+            <span class="font-black text-emerald-400">$2.06 total</span>
+          </div>
+          <p class="text-[10px] text-slate-500">$2.00 promotion fee plus 3% payment processing.</p>
+          <div id="card-container" class="bg-white rounded-lg p-3"></div>
+          <p id="paymentStatus" class="text-xs text-red-400 hidden"></p>
+        </div>
+
         <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider transition-colors shadow-lg shadow-blue-600/20">
           Submit & Publish B2B Promo
         </button>
@@ -106,28 +116,42 @@
 
   <script>
     const API_BASE = "https://rpm-qhrz.onrender.com";
-    document.documentElement.style.visibility = 'hidden';
+    let selectedFile = null;
+    let squareCard = null;
 
-async function verifyPromoteAccess() {
-  try {
-    const response = await fetch(`${API_BASE}/api/session`, {
-      credentials: 'include',
-      cache: 'no-store'
-    });
+    async function loadSquareSdk(environment) {
+      const script = document.createElement('script');
+      script.src = environment === 'production'
+        ? 'https://web.squarecdn.com/v1/square.js'
+        : 'https://sandbox.web.squarecdn.com/v1/square.js';
 
-    if (!response.ok) {
-      window.location.replace('login.html');
-      return;
+      await new Promise((resolve, reject) => {
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Unable to load Square payment form.'));
+        document.head.appendChild(script);
+      });
     }
 
-    document.documentElement.style.visibility = 'visible';
-  } catch (err) {
-    window.location.replace('login.html');
-  }
-}
+    async function initializeSquare() {
+      const configResponse = await fetch(`${API_BASE}/api/square-config`);
+      const config = await configResponse.json();
 
-window.addEventListener('pageshow', verifyPromoteAccess);
-    let selectedFile = null;
+      if (!configResponse.ok || !config.appId || !config.locationId) {
+        throw new Error('Square payment configuration is unavailable.');
+      }
+
+      await loadSquareSdk(config.environment);
+      const payments = window.Square.payments(config.appId, config.locationId);
+      squareCard = await payments.card();
+      await squareCard.attach('#card-container');
+    }
+
+    initializeSquare().catch(error => {
+      console.error('Square Initialization Error:', error);
+      const status = document.getElementById('paymentStatus');
+      status.textContent = error.message;
+      status.classList.remove('hidden');
+    });
 
     function handleB2BDragOver(e) {
       e.preventDefault(); e.stopPropagation();
@@ -162,54 +186,93 @@ window.addEventListener('pageshow', verifyPromoteAccess);
 
     document.getElementById('b2bForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const submitBtn = document.getElementById('submitBtn');
+      const paymentStatus = document.getElementById('paymentStatus');
+      const email = document.getElementById('email').value.trim().toLowerCase();
+
       submitBtn.disabled = true;
-      submitBtn.innerText = 'Uploading logo & publishing...';
+      submitBtn.innerText = 'Processing $2.06 payment...';
+      paymentStatus.classList.add('hidden');
 
       try {
+        if (!squareCard) throw new Error('Square payment form is not ready. Please wait and try again.');
+
+        const tokenResult = await squareCard.tokenize();
+        if (tokenResult.status !== 'OK') {
+          throw new Error(tokenResult.errors?.[0]?.message || 'Unable to verify card details.');
+        }
+
+        const paymentResponse = await fetch(`${API_BASE}/api/process-payment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sourceId: tokenResult.token,
+            basePrice: 2,
+            email,
+            productType: 'b2b-promo'
+          })
+        });
+
+        const paymentData = await paymentResponse.json();
+        if (!paymentResponse.ok || !paymentData.success || !paymentData.promoToken) {
+          throw new Error(paymentData.error || 'B2B payment failed.');
+        }
+
+        const promoToken = paymentData.promoToken;
         let imageUrl = '';
 
         if (selectedFile) {
+          submitBtn.innerText = 'Uploading logo...';
           const formData = new FormData();
           formData.append('photos', selectedFile);
 
-          const uploadRes = await fetch(`${API_BASE}/api/upload`, {
-  method: 'POST',
-  credentials: 'include',
-  body: formData
-});
+          const uploadRes = await fetch(`${API_BASE}/api/b2b-upload`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${promoToken}` },
+            body: formData
+          });
+
           const uploadData = await uploadRes.json();
-          if (uploadData.success && uploadData.urls.length > 0) {
-            imageUrl = uploadData.urls[0];
+          if (!uploadRes.ok || !uploadData.success || !uploadData.urls?.length) {
+            throw new Error(uploadData.error || uploadData.message || 'B2B logo upload failed.');
           }
+
+          imageUrl = uploadData.urls[0];
         }
+
+        submitBtn.innerText = 'Publishing B2B promo...';
 
         const payload = {
           companyName: document.getElementById('companyName').value,
-          email: document.getElementById('email').value,
+          email,
           phone: document.getElementById('phone').value,
           category: document.getElementById('category').value,
           description: document.getElementById('description').value,
-          imageUrl: imageUrl
+          imageUrl
         };
 
         const res = await fetch(`${API_BASE}/api/b2b-listings/create`, {
-  method: 'POST',
-  credentials: 'include',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(payload)
-});
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${promoToken}`
+          },
+          body: JSON.stringify(payload)
+        });
 
         const data = await res.json();
-        if (res.ok && data.success) {
-          alert('B2B Listing successfully created and saved!');
-          window.location.href = 'b2b-listings.html';
-        } else {
-          alert(data.error || 'Failed to publish listing.');
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Failed to publish listing.');
         }
+
+        alert('B2B payment approved and listing published successfully!');
+        window.location.href = 'b2b-listings.html';
       } catch (err) {
-        console.error(err);
-        alert('Network error connecting to backend server.');
+        console.error('B2B Promotion Error:', err);
+        paymentStatus.textContent = err.message;
+        paymentStatus.classList.remove('hidden');
+        alert(err.message);
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = 'Submit & Publish B2B Promo';

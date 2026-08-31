@@ -1,4 +1,4 @@
-﻿require('dotenv').config();
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
@@ -47,6 +47,55 @@ const VIP_EMAILS = [
 function isVIP(email) {
   if (!email) return false;
   return VIP_EMAILS.includes(email.toLowerCase().trim());
+}
+
+const B2B_PROMO_PRICE = 2;
+const B2B_PROCESSING_RATE = 0.03;
+const B2B_PROMO_TOTAL_CENTS = Math.round((B2B_PROMO_PRICE + (B2B_PROMO_PRICE * B2B_PROCESSING_RATE)) * 100);
+
+function b2bPromoSecret() {
+  return process.env.B2B_PROMO_SECRET || process.env.SQUARE_ACCESS_TOKEN || '';
+}
+
+function createB2BPromoToken(email, paymentId) {
+  const secret = b2bPromoSecret();
+  if (!secret) throw new Error('B2B promotion security secret is not configured.');
+
+  const payload = Buffer.from(JSON.stringify({
+    email: String(email || '').toLowerCase().trim(),
+    paymentId: paymentId || 'vip',
+    expiresAt: Date.now() + (30 * 60 * 1000)
+  })).toString('base64url');
+
+  const signature = crypto.createHmac('sha256', secret).update(payload).digest('base64url');
+  return `${payload}.${signature}`;
+}
+
+function verifyB2BPromoToken(token) {
+  const secret = b2bPromoSecret();
+  if (!secret || !token || !token.includes('.')) return null;
+
+  const [payload, signature] = token.split('.');
+  const expected = crypto.createHmac('sha256', secret).update(payload).digest('base64url');
+  const suppliedBuffer = Buffer.from(signature);
+  const expectedBuffer = Buffer.from(expected);
+
+  if (suppliedBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(suppliedBuffer, expectedBuffer)) {
+    return null;
+  }
+
+  try {
+    const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+    if (!data.email || !data.expiresAt || data.expiresAt < Date.now()) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function getB2BPromoToken(req) {
+  const authorization = String(req.headers.authorization || '');
+  return authorization.startsWith('Bearer ') ? authorization.slice(7).trim() : '';
 }
 
 const SESSION_COOKIE = 'rpm_session';
@@ -139,8 +188,39 @@ app.get('/', (req, res) => {
 app.get('/api/square-config', (req, res) => {
   res.json({
     appId: process.env.SQUARE_APPLICATION_ID || process.env.SQUARE_APP_ID || '',
-    locationId: process.env.SQUARE_LOCATION_ID || ''
+    locationId: process.env.SQUARE_LOCATION_ID || '',
+    environment: process.env.SQUARE_ENVIRONMENT === 'production' ? 'production' : 'sandbox'
   });
+});
+
+// Paid Public B2B Image Upload Endpoint -> Cloudflare R2
+app.post('/api/b2b-upload', upload.array('photos', 1), async (req, res) => {
+  try {
+    const promo = verifyB2BPromoToken(getB2BPromoToken(req));
+    if (!promo) {
+      return res.status(401).json({ success: false, message: 'Valid B2B payment authorization required.' });
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ success: false, message: 'No image file provided.' });
+    }
+
+    const file = req.files[0];
+    const fileKey = `b2b/${Date.now()}-${Math.random().toString(36).substring(7)}-${file.originalname}`;
+
+    await s3.send(new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME,
+      Key: fileKey,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    }));
+
+    const publicUrl = `${(process.env.R2_PUBLIC_URL || 'https://pub-r2.rpm-equipment.com')}/${fileKey}`;
+    return res.status(200).json({ success: true, urls: [publicUrl] });
+  } catch (err) {
+    console.error('B2B R2 Upload Error:', err);
+    return res.status(500).json({ success: false, error: 'Failed to upload B2B image: ' + err.message });
+  }
 });
 
 // Image Upload Endpoint -> Cloudflare R2
@@ -370,7 +450,7 @@ app.get('/api/listings/:id', async (req, res) => {
   }
 });
 // Equipment Listings Endpoint (Create New Listing - Supabase)
-app.post('/api/listings', async (req, res) => {
+app.post('/api/listings', requireSession, async (req, res) => {
   try {
     const { title, category, price, year, hours, condition, location, vin, email, images, description } = req.body;
 
@@ -493,13 +573,22 @@ app.get('/api/b2b-listings/lookup', async (req, res) => {
 });
 
 // Create or Update B2B Promo Listing (Supabase)
-app.post('/api/b2b-listings/create', requireSession, async (req, res) => {
+app.post('/api/b2b-listings/create', async (req, res) => {
   try {
+    const promo = verifyB2BPromoToken(getB2BPromoToken(req));
+    if (!promo) {
+      return res.status(401).json({ success: false, error: 'Valid B2B payment authorization required.' });
+    }
+
     const { companyName, email, phone, category, customCategory, website, location, imageUrl, description } = req.body;
     if (!companyName || !email) return res.status(400).json({ error: 'Missing required fields' });
 
     const formattedCategory = category === 'OTHER' ? (customCategory || 'COMMERCIAL SERVICE') : (category || 'COMMERCIAL SERVICE').toUpperCase();
     const cleanEmail = email.toLowerCase().trim();
+
+    if (promo.email !== cleanEmail) {
+      return res.status(403).json({ success: false, error: 'Payment email must match the B2B listing email.' });
+    }
 
     const { data: existing } = await supabase
       .from('b2b_listings')
@@ -552,9 +641,31 @@ app.post('/api/b2b-listings/create', requireSession, async (req, res) => {
 // Direct On-Page Card Payment Endpoint
 app.post('/api/process-payment', async (req, res) => {
   try {
-    const { sourceId, basePrice, email } = req.body;
-    const price = parseFloat(basePrice) || 5;
-    const totalCents = Math.round((price + (price * 0.03)) * 100);
+    const { sourceId, basePrice, email, productType } = req.body;
+    const cleanEmail = String(email || '').toLowerCase().trim();
+
+    if (!cleanEmail) {
+      return res.status(400).json({ success: false, error: 'Email is required.' });
+    }
+
+    if (productType === 'b2b-promo' && isVIP(cleanEmail)) {
+      return res.json({
+        success: true,
+        isVip: true,
+        promoToken: createB2BPromoToken(cleanEmail, 'vip')
+      });
+    }
+
+    if (!sourceId) {
+      return res.status(400).json({ success: false, error: 'Card payment token is required.' });
+    }
+
+    const price = productType === 'b2b-promo'
+      ? B2B_PROMO_PRICE
+      : (parseFloat(basePrice) || 5);
+    const totalCents = productType === 'b2b-promo'
+      ? B2B_PROMO_TOTAL_CENTS
+      : Math.round((price + (price * 0.03)) * 100);
 
     const { SquareClient, SquareEnvironment } = require('square');
     const squareClient = new SquareClient({
@@ -565,29 +676,37 @@ app.post('/api/process-payment', async (req, res) => {
     });
 
     const paymentsApi = squareClient.paymentsApi || squareClient.payments;
-
-    if (!paymentsApi) {
-      throw new Error('Square Payments API is unavailable.');
-    }
+    if (!paymentsApi) throw new Error('Square Payments API is unavailable.');
 
     const createFn = (paymentsApi.createPayment || paymentsApi.create).bind(paymentsApi);
     const response = await createFn({
-      sourceId: sourceId,
+      sourceId,
       idempotencyKey: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
       amountMoney: {
         amount: BigInt(totalCents),
         currency: 'USD'
       },
-      buyerEmailAddress: email
+      buyerEmailAddress: cleanEmail,
+      note: productType === 'b2b-promo' ? 'RPM B2B Business Promotion' : undefined
     });
 
     const rawPayment = response.result?.payment || response.payment;
-    // Convert BigInt values to string before returning JSON to prevent serialization crashes
     const payment = JSON.parse(JSON.stringify(rawPayment, (key, value) =>
       typeof value === 'bigint' ? value.toString() : value
     ));
 
-    return res.json({ success: true, payment: payment });
+    if (productType === 'b2b-promo') {
+      const paymentId = payment?.id || rawPayment?.id;
+      if (!paymentId) throw new Error('Square payment confirmation was not returned.');
+
+      return res.json({
+        success: true,
+        payment,
+        promoToken: createB2BPromoToken(cleanEmail, paymentId)
+      });
+    }
+
+    return res.json({ success: true, payment });
   } catch (error) {
     console.error('Direct Payment Processing Error:', error);
     return res.status(500).json({ success: false, error: error.message });

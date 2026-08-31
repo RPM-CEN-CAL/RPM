@@ -792,11 +792,32 @@ console.log('RESET ERROR:', resetError);
       .eq('id', resetRecord.id);
 
     await supabase
-      .from('auth_sessions')
-      .delete()
-      .eq('user_id', resetRecord.user_id);
+  .from('auth_sessions')
+  .delete()
+  .eq('user_id', resetRecord.user_id);
 
-    return res.status(200).json({ success: true, message: 'Password updated successfully.' });
+const sessionToken = crypto.randomBytes(48).toString('base64url');
+const sessionExpiresAt = new Date(
+  Date.now() + 30 * 24 * 60 * 60 * 1000
+).toISOString();
+
+const { error: sessionError } = await supabase
+  .from('auth_sessions')
+  .insert([{
+    user_id: resetRecord.user_id,
+    token_hash: hashSessionToken(sessionToken),
+    expires_at: sessionExpiresAt
+  }]);
+
+if (sessionError) throw sessionError;
+
+setSessionCookie(res, sessionToken);
+
+return res.status(200).json({
+  success: true,
+  message: 'Password updated successfully.',
+  redirect: 'dashboard.html'
+});
   } catch (error) {
     console.error('Password Reset Error:', error);
     return res.status(500).json({ success: false, message: 'Unable to reset the password.' });

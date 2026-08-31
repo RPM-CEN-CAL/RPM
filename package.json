@@ -21,6 +21,7 @@
     "multer": "^2.2.0",
     "multer-s3": "^3.0.1",
     "nodemailer": "^9.0.6",
+    "resend": "^6.25.0",
     "square": "^45.1.0"
   }
 }

@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const crypto = require('crypto');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const multer = require('multer');
@@ -727,24 +728,20 @@ app.post('/api/request-password-reset', async (req, res) => {
 
     if (tokenError) throw tokenError;
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: Number(process.env.SMTP_PORT || 465),
-      secure: String(process.env.SMTP_SECURE || 'true').toLowerCase() === 'true',
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-    });
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
-    const resetBaseUrl = process.env.PASSWORD_RESET_URL;
-    if (!resetBaseUrl) throw new Error('PASSWORD_RESET_URL is not configured.');
-    const resetUrl = `${resetBaseUrl}?token=${encodeURIComponent(rawToken)}`;
+const resetBaseUrl = process.env.PASSWORD_RESET_URL;
+if (!resetBaseUrl) throw new Error('PASSWORD_RESET_URL is not configured.');
 
-    await transporter.sendMail({
-      from: `RPM Equipment <${process.env.SMTP_USER}>`,
-      to: user.email,
-      subject: 'Reset your RPM Equipment password',
-      text: `Use this secure link to reset your RPM Equipment password: ${resetUrl}\n\nThis link expires in 1 hour. If you did not request this change, ignore this email.`,
-      html: `<p>A password reset was requested for your RPM Equipment account.</p><p><a href="${resetUrl}">Reset your password</a></p><p>This secure link expires in 1 hour. If you did not request this change, ignore this email.</p>`
-    });
+const resetUrl = `${resetBaseUrl}?token=${encodeURIComponent(rawToken)}`;
+
+await resend.emails.send({
+  from: 'RPM Equipment <onboarding@resend.dev>',
+  to: user.email,
+  subject: 'Reset your RPM Equipment password',
+  text: `Use this secure link to reset your RPM Equipment password: ${resetUrl}\n\nThis link expires in 1 hour. If you did not request this change, ignore this email.`,
+  html: `<p>A password reset was requested for your RPM Equipment account.</p><p><a href="${resetUrl}">Reset youra></p><p>This secure link expires in 1 hour. If you did not request this change, ignore this email.</p>`
+});
 
     return res.status(200).json({ success: true, message: genericMessage });
   } catch (error) {

@@ -493,7 +493,7 @@ app.get('/api/b2b-listings/lookup', async (req, res) => {
 });
 
 // Create or Update B2B Promo Listing (Supabase)
-app.post('/api/b2b-listings/create', async (req, res) => {
+app.post('/api/b2b-listings/create', requireSession, async (req, res) => {
   try {
     const { companyName, email, phone, category, customCategory, website, location, imageUrl, description } = req.body;
     if (!companyName || !email) return res.status(400).json({ error: 'Missing required fields' });

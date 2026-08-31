@@ -25,13 +25,15 @@
         <span class="text-xl font-bold tracking-tight text-white">EQUIPMENT DASHBOARD</span>
       </a>
       <div class="flex items-center gap-4">
-        <a href="login.html" class="text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 px-3 py-2 rounded-lg">Sign Out</a>
+        <button id="logoutBtn" class="text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 px-3 py-2 rounded-lg">
+  Sign Out
+</button>
       </div>
     </div>
   </header>
 
   <main class="flex-grow py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 w-full">
-    
+
     <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-xl">
       <div>
         <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/30">Active Client Account</span>
@@ -53,7 +55,7 @@
 
       <form id="equipmentListingForm" class="space-y-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          
+
           <div>
             <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Equipment Title *</label>
             <input type="text" id="pTitle" placeholder="e.g. 2021 Caterpillar 320 GC Excavator" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
@@ -114,7 +116,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Equipment Photos (Up to 10 Images)</label>
-          
+
           <div 
             id="dropZone"
             onclick="document.getElementById('pImages').click()"
@@ -153,6 +155,24 @@
       </form>
     </div>
 
+    <!-- LOWER PANELS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <h3 class="text-base font-bold text-white mb-2">Active Equipment Catalog</h3>
+        <div id="equipmentCatalog" class="space-y-3">
+          <p class="text-xs text-slate-500">Loading equipment inventory...</p>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex justify-between items-center">
+        <div>
+          <h3 class="text-base font-bold text-white mb-1">B2B Directory Listings</h3>
+          <p class="text-xs text-slate-500">No active B2B promotions listed.</p>
+        </div>
+        <a href="promote-business.html" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors">+ Promote B2B</a>
+      </div>
+    </div>
+
   </main>
 
   <footer class="bg-slate-950 border-t border-slate-800 py-6 text-center text-xs text-slate-500">
@@ -160,12 +180,41 @@
   </footer>
 
 <script>
+  
   let uploadedImages = []; // Stores { base64, blob, fileName }
 
   const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3000'
     : 'https://rpm-qhrz.onrender.com';
+    (async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/session`, {
+      credentials: 'include'
+    });
 
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      window.location.href = 'login.html';
+      return;
+    }
+  } catch (err) {
+    window.location.href = 'login.html';
+    return;
+  }
+})();
+document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+  try {
+    await fetch(`${API_BASE_URL}/api/logout`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+  } catch (e) {
+    console.error(e);
+  }
+
+  window.location.href = 'login.html';
+});
   function handleFileSelect(e) { processFiles(e.target.files); }
   function handleDragOver(e) { e.preventDefault(); }
   function handleDragLeave(e) { e.preventDefault(); }
@@ -263,9 +312,10 @@
     });
 
     const res = await fetch(`${API_BASE_URL}/api/upload`, {
-      method: 'POST',
-      body: formData
-    });
+  method: 'POST',
+  credentials: 'include',
+  body: formData
+});
 
     const data = await res.json();
     if (res.ok && data.success) {
@@ -275,7 +325,69 @@
     }
   }
 
+  async function loadEquipmentCatalog() {
+    const container = document.getElementById('equipmentCatalog');
+    if (!container) return;
+
+   try {
+
+const response = await fetch(`${API_BASE_URL}/api/listings`, {
+  credentials: 'include'
+});
+
+const result = await response.json();
+
+const listings = Array.isArray(result)
+  ? result
+  : (result.value || []);
+
+
+if (!response.ok) {
+  throw new Error(result.error || 'Failed to load equipment inventory.');
+}
+
+if (listings.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-500">No active equipment listings.</p>';
+        return;
+      }
+
+container.innerHTML = listings.map(item => `
+  <a
+    href="equipment-detail.html?id=${encodeURIComponent(item.id)}"
+    class="block border border-slate-700 rounded-xl p-3 bg-slate-800 hover:border-blue-500 hover:bg-slate-700 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+  >
+    <div class="flex justify-between items-start gap-3">
+
+      <div>
+        <h4 class="text-sm font-bold text-white">
+          ${item.title || 'Untitled Listing'}
+        </h4>
+
+        <p class="text-xs text-slate-400">
+          ${item.category || 'Equipment'}
+        </p>
+
+        <p class="text-xs text-slate-500 mt-1">
+          ${item.location || ''}
+        </p>
+      </div>
+
+      <span class="text-xs font-bold text-emerald-400">
+        $${Number(item.price || 0).toLocaleString()}
+      </span>
+
+    </div>
+  </a>
+`).join('');
+    } catch (err) {
+      console.error('Catalog Load Error:', err);
+      container.innerHTML = '<p class="text-xs text-red-400">Unable to load inventory.</p>';
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
+    loadEquipmentCatalog();
+
     const dropZone = document.getElementById('dropZone');
     if (dropZone) {
       ['dragenter', 'dragover'].forEach(eventName => {
@@ -337,6 +449,7 @@
 
         const res = await fetch(`${API_BASE_URL}/api/listings`, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });

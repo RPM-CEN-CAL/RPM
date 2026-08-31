@@ -16,7 +16,9 @@
         <span class="bg-blue-600 px-2 py-0.5 rounded-lg text-sm">RPM</span>
         <span>B2B PROMOTION</span>
       </a>
-      <a href="seller-dashboard.html" class="text-xs font-bold text-slate-400 hover:text-white transition-colors">Go to Dashboard &rarr;</a>
+      <a href="dashboard.html" class="text-xs font-bold text-slate-400 hover:text-white transition-colors">
+  Go to Dashboard →
+</a>
     </div>
   </header>
 
@@ -29,31 +31,30 @@
 
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5">
       
-      <form id="b2bForm" onsubmit="event.preventDefault();" class="space-y-4">
+      <form id="b2bForm" class="space-y-4">
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Company Name</label>
-            <input type="text" placeholder="e.g. Apex Heavy Machinery Rentals" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+            <input type="text" id="companyName" required placeholder="e.g. Apex Heavy Machinery Rentals" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Contact Email (VIP Check)</label>
-            <input type="email" value="" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+            <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Contact Email</label>
+            <input type="email" id="email" required placeholder="rpm.cen.cal@gmail.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Phone Number</label>
-            <input type="text" placeholder="e.g. (555) 019-2834" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+            <input type="text" id="phone" placeholder="e.g. (555) 019-2834" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Services Provided</label>
-            <input type="text" placeholder="e.g. Heavy Equipment Hauling, Tractor Repair" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+            <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Category / Services Provided</label>
+            <input type="text" id="category" placeholder="e.g. Heavy Equipment Hauling, Tractor Repair" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
           </div>
         </div>
 
-        <!-- FUNCTIONAL DROP-IN & FILE SEARCH FOR B2B PROMO -->
         <div>
           <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Company Logo / Banner Image Upload</label>
           
@@ -87,11 +88,11 @@
 
         <div>
           <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Business Overview & Service Coverage</label>
-          <textarea rows="3" placeholder="Detailed breakdown of equipment fleet, service radius, rates..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-200 focus:outline-none focus:border-blue-500"></textarea>
+          <textarea id="description" rows="3" placeholder="Detailed breakdown of equipment fleet, service radius, rates..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-200 focus:outline-none focus:border-blue-500"></textarea>
         </div>
 
-        <button type="button" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider transition-colors shadow-lg shadow-blue-600/20">
-          Pay $2 Fee & Submit B2B Promo
+        <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider transition-colors shadow-lg shadow-blue-600/20">
+          Submit & Publish B2B Promo
         </button>
 
       </form>
@@ -104,6 +105,9 @@
   </footer>
 
   <script>
+    const API_BASE = "https://rpm-qhrz.onrender.com";
+    let selectedFile = null;
+
     function handleB2BDragOver(e) {
       e.preventDefault(); e.stopPropagation();
       document.getElementById('b2bDropZone').classList.add('border-blue-500', 'bg-blue-950/20');
@@ -124,6 +128,7 @@
     }
     function displayB2BPreview(file) {
       if (!file.type.startsWith('image/')) return;
+      selectedFile = file;
       const reader = new FileReader();
       reader.onload = function(e) {
         document.getElementById('b2bPreviewImg').src = e.target.result;
@@ -133,6 +138,62 @@
       };
       reader.readAsDataURL(file);
     }
+
+    document.getElementById('b2bForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Uploading logo & publishing...';
+
+      try {
+        let imageUrl = '';
+
+        if (selectedFile) {
+          const formData = new FormData();
+          formData.append('photos', selectedFile);
+
+          const uploadRes = await fetch(`${API_BASE}/api/upload`, {
+  method: 'POST',
+  credentials: 'include',
+  body: formData
+});
+          const uploadData = await uploadRes.json();
+          if (uploadData.success && uploadData.urls.length > 0) {
+            imageUrl = uploadData.urls[0];
+          }
+        }
+
+        const payload = {
+          companyName: document.getElementById('companyName').value,
+          email: document.getElementById('email').value,
+          phone: document.getElementById('phone').value,
+          category: document.getElementById('category').value,
+          description: document.getElementById('description').value,
+          imageUrl: imageUrl
+        };
+
+        const res = await fetch(`${API_BASE}/api/b2b-listings/create`, {
+  method: 'POST',
+  credentials: 'include',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(payload)
+});
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          alert('B2B Listing successfully created and saved!');
+          window.location.href = 'b2b-listings.html';
+        } else {
+          alert(data.error || 'Failed to publish listing.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Network error connecting to backend server.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Submit & Publish B2B Promo';
+      }
+    });
   </script>
 
 </body>

@@ -768,7 +768,9 @@ app.post('/api/reset-password', async (req, res) => {
       .is('used_at', null)
       .gt('expires_at', new Date().toISOString())
       .maybeSingle();
-
+      console.log('RESET TOKEN HASH:', tokenHash);
+console.log('RESET RECORD:', resetRecord);
+console.log('RESET ERROR:', resetError);
     if (resetError) throw resetError;
     if (!resetRecord) return res.status(400).json({ success: false, message: 'This password reset link is invalid or expired.' });
 

@@ -1,4 +1,4 @@
-require('dotenv').config();
+﻿require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
@@ -255,58 +255,41 @@ app.post('/api/upload', requireSession, upload.array('photos', 10), async (req, 
 
 // Secure Password Registration (Supabase Database)
 app.post('/api/register', async (req, res) => {
-  try {
-    const { email, password, fullName, plan, membershipTier, listingLimit } = req.body;
+    try {
+        const { email, password, name, phone, accountType } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'Email and password are required.' });
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password are required' });
+        }
+
+        // 1. Create user in Supabase
+        const { data: user, error } = await supabase
+            .from('users')
+            .insert([{ email, password_hash: hashPassword(password), name, phone, account_type: accountType || 'buyer', payment_status: 'pending' }])
+            .select()
+            .single();
+
+        if (error) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        // 2. Automatically issue session cookie upon successful registration
+        setSessionCookie(res, user);
+
+        return res.status(201).json({
+            success: true,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                accountType: user.account_type,
+                paymentStatus: user.payment_status
+            }
+        });
+    } catch (err) {
+        console.error('Registration error:', err);
+        return res.status(500).json({ error: 'Internal server error during registration' });
     }
-
-    const cleanEmail = email.toLowerCase().trim();
-
-    // Check existing user
-    const { data: existingUser } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', cleanEmail)
-      .maybeSingle();
-
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: 'User account already exists.' });
-    }
-
-    // Hash raw password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const { data, error } = await supabase
-      .from('users')
-      .insert([{
-        email: cleanEmail,
-        password: hashedPassword,
-        full_name: fullName || '',
-        plan: plan || membershipTier || 'Starter Seller',
-        membership_tier: membershipTier || plan || 'Starter Seller',
-        listing_limit: isVIP(cleanEmail)
-          ? null
-          : (Number.isInteger(Number(listingLimit)) && Number(listingLimit) > 0
-              ? Number(listingLimit)
-              : 1),
-        is_vip: isVIP(cleanEmail),
-        payment_status: isVIP(cleanEmail) ? 'active' : 'pending'
-      }])
-      .select();
-
-    if (error) throw error;
-
-    return res.status(201).json({
-      success: true,
-      message: 'Account created and saved permanently!',
-      user: { id: data[0].id, email: data[0].email, fullName: data[0].full_name }
-    });
-  } catch (err) {
-    console.error('Registration Error:', err);
-    return res.status(500).json({ success: false, message: err.message });
-  }
 });
 
 // Secure Password Login (Supabase Verification)
@@ -329,22 +312,17 @@ app.post('/api/login', async (req, res) => {
     if (error || !user) {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
-console.log('LOGIN ATTEMPT:', cleanEmail);
 
-const isMatch = await bcrypt.compare(password, user.password);
+    console.log('LOGIN ATTEMPT:', cleanEmail);
 
-console.log('PASSWORD MATCH:', isMatch);
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    console.log('PASSWORD MATCH:', isMatch);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
 
-    if (!user.is_vip && user.payment_status !== 'active') {
-      return res.status(403).json({
-        success: false,
-        message: 'Payment required before account access is granted.'
-      });
-    }
-
+    // Generate session token and set cookie regardless of payment status
     const sessionToken = crypto.randomBytes(48).toString('base64url');
     const expiresAt = new Date(Date.now() + (SESSION_DAYS * 24 * 60 * 60 * 1000)).toISOString();
 
@@ -360,9 +338,12 @@ console.log('PASSWORD MATCH:', isMatch);
 
     setSessionCookie(res, sessionToken);
 
+    const requiresPayment = !user.is_vip && user.payment_status !== 'active';
+
     return res.status(200).json({
       success: true,
-      message: 'Login successful!',
+      message: requiresPayment ? 'Login successful. Payment required to unlock full access.' : 'Login successful!',
+      requiresPayment,
       user: {
         id: user.id,
         email: user.email,

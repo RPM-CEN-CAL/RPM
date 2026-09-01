@@ -124,7 +124,9 @@
             </div>
           </div>
 
-          <p id="paymentStatus" class="text-xs text-amber-400 text-center font-medium mt-2 hidden"></p>
+          <p id="paymentStatus" class="text-xs text-amber-400 font-bold text-center mt-2">
+  Please scan QR code to proceed.
+</p>
         </div>
 
         <!-- Locked Submit Button -->
@@ -179,21 +181,8 @@
 
     async function autoGenerateCheckout(email) {
       const paymentStatus = document.getElementById('paymentStatus');
-      // FIND THIS (around line 191):
-paymentStatus.textContent = 'Scan QR code to pay. Awaiting payment...';
-paymentStatus.className = 'text-xs text-amber-400 text-center font-medium mt-2';
-
-// REPLACE WITH THIS:
-paymentStatus.innerHTML = `
-  <div class="flex items-center justify-center gap-2 text-blue-400 font-semibold">
-    <svg class="animate-spin h-4 w-4 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-    </svg>
-    <span>Scan QR code to complete payment. Waiting for payment confirmation...</span>
-  </div>
-`;
-paymentStatus.className = 'text-xs text-center mt-2';
+      paymentStatus.textContent = 'Please scan QR code to proceed.';
+      paymentStatus.className = 'text-xs text-amber-400 font-bold text-center mt-2';
       paymentStatus.classList.remove('hidden');
 
       try {
@@ -210,15 +199,16 @@ paymentStatus.className = 'text-xs text-center mt-2';
 
         renderDefaultQR(result.checkoutUrl);
 
-        paymentStatus.textContent = 'Scan QR code to pay. Awaiting payment...';
-        paymentStatus.className = 'text-xs text-amber-400 text-center font-medium mt-2';
+        paymentStatus.textContent = 'Please scan QR code to proceed.';
+        paymentStatus.className = 'text-xs text-amber-400 font-bold text-center mt-2';
 
         clearInterval(paymentTimer);
         paymentTimer = setInterval(checkB2BPayment, 3000);
 
       } catch (error) {
-        paymentStatus.textContent = error.message;
-        paymentStatus.className = 'text-xs text-red-400 text-center font-medium mt-2';
+        console.error('B2B System Log:', error);
+        paymentStatus.textContent = 'Please scan QR code to proceed.';
+        paymentStatus.className = 'text-xs text-amber-400 font-bold text-center mt-2';
       }
     }
 
@@ -322,11 +312,10 @@ paymentStatus.className = 'text-xs text-center mt-2';
         alert('B2B payment approved and listing published successfully!');
         window.location.href = 'b2b-listings.html';
       } catch (err) {
-        console.error('B2B Error:', err);
-        paymentStatus.textContent = err.message;
-        paymentStatus.className = 'text-xs text-red-400 font-bold text-center mt-2';
+        console.error('B2B System Log:', err);
+        paymentStatus.textContent = 'Please scan QR code to proceed.';
+        paymentStatus.className = 'text-xs text-amber-400 font-bold text-center mt-2';
         paymentStatus.classList.remove('hidden');
-        alert(err.message);
         submitBtn.disabled = false;
         submitBtn.innerText = 'Submit & Publish B2B Promo';
       }

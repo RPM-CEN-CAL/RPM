@@ -253,43 +253,89 @@ app.post('/api/upload', requireSession, upload.array('photos', 10), async (req, 
   }
 });
 
-// Secure Password Registration (Supabase Database)
+// Secure Password Registration (Supabase Database + Auto-Session Handling)
 app.post('/api/register', async (req, res) => {
-    try {
-        const { email, password, name, phone, accountType } = req.body;
+  try {
+    const { email, password, fullName, name, plan, membershipTier, listingLimit } = req.body;
 
-        if (!email || !password) {
-            return res.status(400).json({ error: 'Email and password are required' });
-        }
-
-        // 1. Create user in Supabase
-        const { data: user, error } = await supabase
-            .from('users')
-            .insert([{ email, password_hash: hashPassword(password), name, phone, account_type: accountType || 'buyer', payment_status: 'pending' }])
-            .select()
-            .single();
-
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        // 2. Automatically issue session cookie upon successful registration
-        setSessionCookie(res, user);
-
-        return res.status(201).json({
-            success: true,
-            user: {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                accountType: user.account_type,
-                paymentStatus: user.payment_status
-            }
-        });
-    } catch (err) {
-        console.error('Registration error:', err);
-        return res.status(500).json({ error: 'Internal server error during registration' });
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Email and password are required.' });
     }
+
+    const cleanEmail = email.toLowerCase().trim();
+
+    // Check existing user
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', cleanEmail)
+      .maybeSingle();
+
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'User account already exists.' });
+    }
+
+    // Hash raw password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const vipFlag = isVIP(cleanEmail);
+
+    const { data, error } = await supabase
+      .from('users')
+      .insert([{
+        email: cleanEmail,
+        password: hashedPassword,
+        full_name: fullName || name || '',
+        plan: plan || membershipTier || 'Starter Seller',
+        membership_tier: membershipTier || plan || 'Starter Seller',
+        listing_limit: vipFlag
+          ? null
+          : (Number.isInteger(Number(listingLimit)) && Number(listingLimit) > 0
+              ? Number(listingLimit)
+              : 1),
+        is_vip: vipFlag,
+        payment_status: vipFlag ? 'active' : 'pending'
+      }])
+      .select();
+
+    if (error) throw error;
+
+    const user = data[0];
+
+    // Issue Session Cookie safely
+    try {
+      const sessionToken = crypto.randomBytes(48).toString('base64url');
+      const expiresAt = new Date(Date.now() + (SESSION_DAYS * 24 * 60 * 60 * 1000)).toISOString();
+
+      const { error: sessionError } = await supabase
+        .from('auth_sessions')
+        .insert([{
+          user_id: user.id,
+          token_hash: hashSessionToken(sessionToken),
+          expires_at: expiresAt
+        }]);
+
+      if (!sessionError) {
+        setSessionCookie(res, sessionToken);
+      }
+    } catch (sessionErr) {
+      console.warn('Auto-session creation warning on register:', sessionErr.message);
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: 'Account created successfully!',
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.full_name,
+        isVip: user.is_vip,
+        paymentStatus: user.payment_status
+      }
+    });
+  } catch (err) {
+    console.error('Registration Error:', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 // Secure Password Login (Supabase Verification)
@@ -404,7 +450,6 @@ app.get('/api/listings', async (req, res) => {
   }
 });
 
-
 // Equipment Listing Endpoint (Get One - Supabase)
 app.get('/api/listings/:id', async (req, res) => {
   try {
@@ -430,6 +475,7 @@ app.get('/api/listings/:id', async (req, res) => {
     });
   }
 });
+
 // Equipment Listings Endpoint (Create New Listing - Supabase)
 app.post('/api/listings', requireSession, async (req, res) => {
   try {
@@ -756,6 +802,7 @@ app.post('/api/create-square-checkout', async (req, res) => {
     return res.status(500).json({ success: false, error: error.message });
   }
 });
+
 // Admin Account Activation Endpoint
 app.post('/api/activate-account', async (req, res) => {
   try {
@@ -825,27 +872,30 @@ app.post('/api/request-password-reset', async (req, res) => {
     const { error: tokenError } = await supabase
       .from('password_reset_tokens')
       .insert([{ user_id: user.id, token_hash: tokenHash, expires_at: expiresAt }]);
-const verifyHash = crypto.createHash('sha256').update(rawToken).digest('hex');
-console.log('VERIFY HASH:', verifyHash);
-console.log('STORED HASH:', tokenHash);
+
+    const verifyHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+    console.log('VERIFY HASH:', verifyHash);
+    console.log('STORED HASH:', tokenHash);
+
     if (tokenError) throw tokenError;
 
     const resend = new Resend(process.env.RESEND_API_KEY);
 
-const resetBaseUrl = process.env.PASSWORD_RESET_URL;
-if (!resetBaseUrl) throw new Error('PASSWORD_RESET_URL is not configured.');
+    const resetBaseUrl = process.env.PASSWORD_RESET_URL;
+    if (!resetBaseUrl) throw new Error('PASSWORD_RESET_URL is not configured.');
 
-const resetUrl = `${resetBaseUrl}?token=${encodeURIComponent(rawToken)}`;
-console.log('RAW TOKEN:', rawToken);
-console.log('TOKEN HASH STORED:', tokenHash);
-console.log('RESET URL:', resetUrl);
-await resend.emails.send({
-  from: 'RPM Equipment <onboarding@resend.dev>',
-  to: user.email,
-  subject: 'Reset your RPM Equipment password',
-  text: `Use this secure link to reset your RPM Equipment password: ${resetUrl}\n\nThis link expires in 1 hour. If you did not request this change, ignore this email.`,
-  html: `<p>A password reset was requested for your RPM Equipment account.</p><p><a href="${resetUrl}">Reset youra></p><p>This secure link expires in 1 hour. If you did not request this change, ignore this email.</p>`
-});
+    const resetUrl = `${resetBaseUrl}?token=${encodeURIComponent(rawToken)}`;
+    console.log('RAW TOKEN:', rawToken);
+    console.log('TOKEN HASH STORED:', tokenHash);
+    console.log('RESET URL:', resetUrl);
+
+    await resend.emails.send({
+      from: 'RPM Equipment <onboarding@resend.dev>',
+      to: user.email,
+      subject: 'Reset your RPM Equipment password',
+      text: `Use this secure link to reset your RPM Equipment password: ${resetUrl}\n\nThis link expires in 1 hour. If you did not request this change, ignore this email.`,
+      html: `<p>A password reset was requested for your RPM Equipment account.</p><p><a href="${resetUrl}">Reset your password</a></p><p>This secure link expires in 1 hour. If you did not request this change, ignore this email.</p>`
+    });
 
     return res.status(200).json({ success: true, message: genericMessage });
   } catch (error) {
@@ -872,9 +922,11 @@ app.post('/api/reset-password', async (req, res) => {
       .is('used_at', null)
       .gt('expires_at', new Date().toISOString())
       .maybeSingle();
-      console.log('RESET TOKEN HASH:', tokenHash);
-console.log('RESET RECORD:', resetRecord);
-console.log('RESET ERROR:', resetError);
+
+    console.log('RESET TOKEN HASH:', tokenHash);
+    console.log('RESET RECORD:', resetRecord);
+    console.log('RESET ERROR:', resetError);
+
     if (resetError) throw resetError;
     if (!resetRecord) return res.status(400).json({ success: false, message: 'This password reset link is invalid or expired.' });
 
@@ -892,40 +944,38 @@ console.log('RESET ERROR:', resetError);
       .eq('id', resetRecord.id);
 
     await supabase
-  .from('auth_sessions')
-  .delete()
-  .eq('user_id', resetRecord.user_id);
+      .from('auth_sessions')
+      .delete()
+      .eq('user_id', resetRecord.user_id);
 
-const sessionToken = crypto.randomBytes(48).toString('base64url');
-const sessionExpiresAt = new Date(
-  Date.now() + 30 * 24 * 60 * 60 * 1000
-).toISOString();
+    const sessionToken = crypto.randomBytes(48).toString('base64url');
+    const sessionExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
-const { error: sessionError } = await supabase
-  .from('auth_sessions')
-  .insert([{
-    user_id: resetRecord.user_id,
-    token_hash: hashSessionToken(sessionToken),
-    expires_at: sessionExpiresAt
-  }]);
+    const { error: sessionError } = await supabase
+      .from('auth_sessions')
+      .insert([{
+        user_id: resetRecord.user_id,
+        token_hash: hashSessionToken(sessionToken),
+        expires_at: sessionExpiresAt
+      }]);
 
-if (sessionError) throw sessionError;
+    if (sessionError) throw sessionError;
 
-setSessionCookie(res, sessionToken);
+    setSessionCookie(res, sessionToken);
 
-return res.status(200).json({
-  success: true,
-  message: 'Password updated successfully.',
-  redirect: 'dashboard.html'
-});
+    return res.status(200).json({
+      success: true,
+      message: 'Password updated successfully.',
+      redirect: 'dashboard.html'
+    });
   } catch (error) {
     console.error('Password Reset Error:', error);
     return res.status(500).json({ success: false, message: 'Unable to reset the password.' });
   }
 });
+
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`RPM Server active on port ${PORT}`);
 });
-
-
+module.exports = app;

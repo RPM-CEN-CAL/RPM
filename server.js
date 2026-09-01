@@ -711,78 +711,64 @@ app.post('/api/b2b-listings/create', async (req, res) => {
       return res.status(403).json({ success: false, error: 'Payment email must match the B2B listing email.' });
     }
 
-    const { data: existing } = await supabase
+    // 1. Database Upsert in Supabase
+    const { data, error } = await supabase
       .from('b2b_listings')
-      .select('id')
-      .eq('email', cleanEmail)
-      .maybeSingle();
-
-    let resultData;
-    let isUpdated = false;
-
-    if (existing) {
-      const { data, error } = await supabase
-        .from('b2b_listings')
-        .update({
-          company_name: companyName,
-          phone: phone || '',
-          category: formattedCategory,
-          website: website || '',
-          location: location || 'Central Valley',
-          image_url: imageUrl || 'https://via.placeholder.com/150',
-          description: description || '',
-          approved: true
-        })
-        .eq('id', existing.id)
-        .select();
-
-      if (error) throw error;
-      resultData = data[0];
-      isUpdated = true;
-    } else {
-      const { data, error } = await supabase
-        .from('b2b_listings')
-        .insert([{
+      .upsert(
+        {
           company_name: companyName,
           email: cleanEmail,
-          phone: phone || '',
+          phone: phone || null,
           category: formattedCategory,
-          website: website || '',
+          website: website || null,
           location: location || 'Central Valley',
-          image_url: imageUrl || 'https://via.placeholder.com/150',
-          description: description || '',
-          approved: true
-        }])
-        .select();
+          image_url: imageUrl || null,
+          description: description || null,
+          approved: true,
+          updated_at: new Date().toISOString()
+        },
+        { onConflict: 'email' }
+      )
+      .select()
+      .single();
 
-      if (error) throw error;
-      resultData = data[0];
+    if (error) {
+      console.error('Supabase Error:', error);
+      return res.status(500).json({ success: false, error: error.message });
     }
 
-    // Send Receipt Email to Promoter via Resend
+    // 2. Dispatch Email via Resend
     try {
-      const resend = new Resend(process.env.RESEND_API_KEY);
       await resend.emails.send({
-        from: 'RPM Equipment <no-reply@rpm-equipment.com>', // Use onboarding@resend.dev until your custom domain is verified in Resend
+        from: 'RPM Equipment <onboarding@resend.dev>',
         to: cleanEmail,
-        subject: '✓ B2B Promotion Published - RPM Equipment',
+        subject: 'B2B Listing Active - RPM Equipment',
         html: `
-          <div style="font-family: sans-serif; padding: 20px; color: #333;">
-            <h2>Thank you for promoting with RPM Equipment!</h2>
-            <p>Your business <strong>${companyName}</strong> is live in our commercial directory.</p>
-            <hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;" />
-            <p><strong>Notice:</strong> All directory submissions are final. If you require any future updates, edits, or removals, please contact RPM Support directly (administrative service fees may apply).</p>
-          </div>
+          <h2>Your B2B Listing is Live!</h2>
+          <p>Hi <strong>${companyName}</strong>,</p>
+          <p>Your B2B directory listing has been successfully updated and published.</p>
+          <ul>
+            <li><strong>Category:</strong> ${formattedCategory}</li>
+            <li><strong>Location:</strong> ${location || 'Central Valley'}</li>
+          </ul>
+          <p>Thank you for partnering with RPM Equipment!</p>
         `
       });
-    } catch (emailErr) {
-      console.warn('Receipt Email Warning:', emailErr.message);
+      console.log(`Resend receipt sent to ${cleanEmail}`);
+    } catch (resendError) {
+      console.error('Resend Dispatch Failed:', resendError);
+      // Log error but don't break response if DB update succeeded
     }
 
-    return res.status(201).json({ success: true, updated: isUpdated, listing: resultData });
+    return res.json({
+      success: true,
+      updated: true,
+      listing: data
+    });
+
   } catch (err) {
-    console.error('B2B Listing Error:', err);
-    return res.status(500).json({ error: 'Failed to process B2B listing: ' + err.message });
+    console.error('Server error:', err);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 

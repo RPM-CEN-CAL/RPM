@@ -763,7 +763,7 @@ app.post('/api/b2b-listings/create', async (req, res) => {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY);
       await resend.emails.send({
-        from: 'RPM Equipment <onboarding@resend.dev>', // Use onboarding@resend.dev until your custom domain is verified in Resend
+        from: 'RPM Equipment <no-reply@rpm-equipment.com>', // Use onboarding@resend.dev until your custom domain is verified in Resend
         to: cleanEmail,
         subject: '✓ B2B Promotion Published - RPM Equipment',
         html: `

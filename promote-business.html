@@ -125,8 +125,8 @@
           </div>
 
           <p id="paymentStatus" class="text-xs text-amber-400 font-bold text-center mt-2">
-  Please scan QR code to proceed.
-</p>
+            Please scan QR code to proceed.
+          </p>
         </div>
 
         <!-- Locked Submit Button -->
@@ -153,12 +153,18 @@
 
     // Render initial QR Code on load
     window.addEventListener('DOMContentLoaded', () => {
-      renderDefaultQR();
+      renderSquareQR();
     });
 
-    function renderDefaultQR(url = "https://rpm-qhrz.onrender.com") {
+    function renderSquareQR(url) {
       const qrContainer = document.getElementById('qrcode');
       qrContainer.innerHTML = '';
+
+      if (!url || !url.startsWith('http')) {
+        qrContainer.innerHTML = '<span class="text-[10px] text-slate-500 font-sans p-2">Enter email to generate payment QR</span>';
+        return;
+      }
+
       new QRCode(qrContainer, {
         text: url,
         width: 100,
@@ -193,11 +199,13 @@
         });
 
         const result = await response.json();
-        if (!response.ok || !result.success) throw new Error(result.error || 'Checkout generation failed.');
+        if (!response.ok || !result.success || !result.checkoutUrl) {
+          throw new Error(result.error || 'Checkout generation failed.');
+        }
 
         checkoutToken = result.checkoutToken;
 
-        renderDefaultQR(result.checkoutUrl);
+        renderSquareQR(result.checkoutUrl);
 
         paymentStatus.textContent = 'Please scan QR code to proceed.';
         paymentStatus.className = 'text-xs text-amber-400 font-bold text-center mt-2';

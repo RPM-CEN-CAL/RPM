@@ -53,6 +53,9 @@ const B2B_PROMO_PRICE = 2;
 const B2B_PROCESSING_RATE = 0.03;
 const B2B_PROMO_TOTAL_CENTS = Math.round((B2B_PROMO_PRICE + (B2B_PROMO_PRICE * B2B_PROCESSING_RATE)) * 100);
 
+// In-Memory Storage for Active B2B Square Checkout Sessions
+const b2bCheckoutSessions = new Map();
+
 function b2bPromoSecret() {
   return process.env.B2B_PROMO_SECRET || process.env.SQUARE_ACCESS_TOKEN || '';
 }
@@ -191,6 +194,139 @@ app.get('/api/square-config', (req, res) => {
     locationId: process.env.SQUARE_LOCATION_ID || '',
     environment: process.env.SQUARE_ENVIRONMENT === 'production' ? 'production' : 'sandbox'
   });
+});
+
+// Create B2B Checkout Link (Square QR Flow)
+app.post('/api/create-b2b-checkout', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const cleanEmail = String(email || '').toLowerCase().trim();
+
+    if (!cleanEmail) {
+      return res.status(400).json({ success: false, error: 'Email is required.' });
+    }
+
+    if (isVIP(cleanEmail)) {
+      return res.json({
+        success: true,
+        isVip: true,
+        checkoutToken: 'vip',
+        checkoutUrl: 'https://rpm-equipment.netlify.app/promote-business',
+        promoToken: createB2BPromoToken(cleanEmail, 'vip')
+      });
+    }
+
+    const { SquareClient, SquareEnvironment } = require('square');
+    const squareClient = new SquareClient({
+      token: process.env.SQUARE_ACCESS_TOKEN,
+      environment: process.env.SQUARE_ENVIRONMENT === 'production'
+        ? SquareEnvironment.Production
+        : SquareEnvironment.Sandbox,
+    });
+
+    const checkoutApi = squareClient.checkoutApi || squareClient.checkout;
+    if (!checkoutApi || !checkoutApi.createPaymentLink) {
+      throw new Error('Square Checkout API is unavailable.');
+    }
+
+    const response = await checkoutApi.createPaymentLink({
+      idempotencyKey: crypto.randomUUID(),
+      order: {
+        locationId: process.env.SQUARE_LOCATION_ID,
+        lineItems: [{
+          name: 'RPM B2B Promotion Listing',
+          quantity: '1',
+          basePriceMoney: {
+            amount: BigInt(B2B_PROMO_TOTAL_CENTS),
+            currency: 'USD'
+          }
+        }]
+      },
+      prePopulateBuyerEmail: cleanEmail
+    });
+
+    const paymentLink = response.result?.paymentLink || response.paymentLink;
+    if (!paymentLink || !paymentLink.url) {
+      throw new Error('Failed to generate Square payment link.');
+    }
+
+    const checkoutToken = paymentLink.id || crypto.randomUUID();
+    b2bCheckoutSessions.set(checkoutToken, {
+      email: cleanEmail,
+      orderId: paymentLink.orderId || null,
+      paid: false,
+      createdAt: Date.now()
+    });
+
+    return res.json({
+      success: true,
+      checkoutToken,
+      checkoutUrl: paymentLink.url
+    });
+  } catch (error) {
+    console.error('B2B Checkout Creation Error:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Check B2B Payment Status Polling Endpoint
+app.get('/api/b2b-payment-status', async (req, res) => {
+  try {
+    const { checkoutToken } = req.query;
+    if (!checkoutToken) {
+      return res.status(400).json({ success: false, error: 'Checkout token required.' });
+    }
+
+    if (checkoutToken === 'vip') {
+      return res.json({ paid: true, promoToken: createB2BPromoToken('vip', 'vip') });
+    }
+
+    const session = b2bCheckoutSessions.get(checkoutToken);
+    if (!session) {
+      return res.status(404).json({ success: false, error: 'Checkout session expired or not found.' });
+    }
+
+    if (session.paid) {
+      return res.json({
+        paid: true,
+        promoToken: session.promoToken
+      });
+    }
+
+    if (session.orderId) {
+      try {
+        const { SquareClient, SquareEnvironment } = require('square');
+        const squareClient = new SquareClient({
+          token: process.env.SQUARE_ACCESS_TOKEN,
+          environment: process.env.SQUARE_ENVIRONMENT === 'production'
+            ? SquareEnvironment.Production
+            : SquareEnvironment.Sandbox,
+        });
+
+        const ordersApi = squareClient.ordersApi || squareClient.orders;
+        const response = await ordersApi.retrieveOrder(session.orderId);
+        const order = response.result?.order || response.order;
+
+        if (order && order.state === 'COMPLETED') {
+          session.paid = true;
+          session.promoToken = createB2BPromoToken(session.email, session.orderId);
+          b2bCheckoutSessions.set(checkoutToken, session);
+
+          return res.json({
+            paid: true,
+            promoToken: session.promoToken
+          });
+        }
+      } catch (orderErr) {
+        console.warn('Square order polling error:', orderErr.message);
+      }
+    }
+
+    return res.json({ paid: false });
+  } catch (error) {
+    console.error('B2B Payment Status Error:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
 });
 
 // Paid Public B2B Image Upload Endpoint -> Cloudflare R2

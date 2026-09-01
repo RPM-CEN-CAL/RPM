@@ -20,6 +20,153 @@
       right: 28px;
       z-index: 99999;
     }
+
+    .category-membership-row {
+      display: flex;
+      align-items: stretch;
+      justify-content: flex-start;
+      gap: 0;
+      overflow-x: auto;
+      overflow-y: visible;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: 1rem;
+      overscroll-behavior-inline: contain;
+      -webkit-overflow-scrolling: touch;
+      padding: 28px 48px 48px;
+      scrollbar-width: thin;
+      scrollbar-color: #3b82f6 #0f172a;
+    }
+
+    .category-membership-row::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .category-membership-row::-webkit-scrollbar-track {
+      background: #0f172a;
+      border-radius: 999px;
+    }
+
+    .category-membership-row::-webkit-scrollbar-thumb {
+      background: #3b82f6;
+      border-radius: 999px;
+    }
+
+    .category-membership-card {
+      position: relative;
+      z-index: 1;
+      width: 310px;
+      height: 310px;
+      flex: 0 0 310px;
+      isolation: isolate;
+      scroll-snap-align: center;
+      background-color: rgba(30, 41, 59, 0.78);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transform-origin: center;
+      touch-action: pan-x;
+      transition: transform 220ms ease, opacity 220ms ease, filter 220ms ease, border-color 220ms ease, box-shadow 220ms ease, background-color 220ms ease;
+    }
+
+    .category-membership-card + .category-membership-card {
+      margin-left: -34px;
+    }
+
+    .category-membership-row:hover .category-membership-card:not(:hover),
+    .category-membership-row:focus-within .category-membership-card:not(:focus-visible) {
+      z-index: 1;
+      opacity: 0.34;
+      filter: brightness(0.54) saturate(0.68);
+      transform: scale(0.985);
+    }
+
+    .category-membership-row .category-membership-card:hover,
+    .category-membership-row .category-membership-card:focus-visible,
+    .category-membership-row .category-membership-card.is-active {
+      z-index: 60;
+      opacity: 1;
+      filter: brightness(1.2) saturate(1.14);
+      background-color: rgba(30, 58, 100, 0.94);
+      transform: translateY(-18px) scale(1.10);
+      border-color: #60a5fa !important;
+      outline: none;
+      box-shadow:
+        0 0 0 3px rgba(191, 219, 254, 0.92),
+        0 0 34px rgba(59, 130, 246, 0.58),
+        0 30px 60px rgba(0, 0, 0, 0.70);
+    }
+
+    .category-membership-row .category-membership-card:hover::before,
+    .category-membership-row .category-membership-card:focus-visible::before,
+    .category-membership-row .category-membership-card.is-active::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      z-index: -1;
+      border-radius: 1rem;
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.50), transparent 46%, rgba(37, 99, 235, 0.38));
+      filter: blur(12px);
+      pointer-events: none;
+    }
+
+    @media (max-width: 1023px) {
+      .category-membership-row {
+        justify-content: flex-start;
+        padding-inline: 24px;
+      }
+
+      .category-membership-card + .category-membership-card {
+        margin-left: -28px;
+      }
+    }
+
+    @media (max-width: 639px) {
+      .category-membership-row {
+        padding-top: 24px;
+        padding-bottom: 42px;
+        padding-inline: 16px;
+      }
+
+      .category-membership-card {
+        width: min(82vw, 310px);
+        height: min(82vw, 310px);
+        flex-basis: min(82vw, 310px);
+      }
+
+      .category-membership-card + .category-membership-card {
+        margin-left: -20px;
+      }
+
+      .category-membership-row .category-membership-card.is-active {
+        transform: translateY(-10px) scale(1.035);
+      }
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+      .category-membership-row:hover .category-membership-card:not(:hover) {
+        opacity: 1;
+        filter: none;
+        transform: none;
+      }
+
+      .category-membership-row.has-active-card .category-membership-card:not(.is-active) {
+        opacity: 0.38;
+        filter: brightness(0.58) saturate(0.72);
+        transform: scale(0.985);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .category-membership-card,
+      .category-membership-row .category-membership-card:hover,
+      .category-membership-row .category-membership-card:focus-visible,
+      .category-membership-row .category-membership-card.is-active,
+      .category-membership-row:hover .category-membership-card:not(:hover),
+      .category-membership-row:focus-within .category-membership-card:not(:focus-visible) {
+        transition: none;
+        transform: none;
+      }
+    }
+    }
   </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between antialiased relative">
@@ -52,10 +199,13 @@
     <section class="py-12 lg:py-16 bg-slate-900 border-b border-slate-800">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         
-        <!-- Main Heading -->
-        <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
-          Buy & Sell Equipment Across <span class="text-blue-400">All Industries</span>
-        </h1>
+        <!-- Centered Header with Forced Line Break for "All Industries" -->
+<div class="text-center w-full my-8">
+  <h2 class="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
+    Buy & Sell Equipment Across
+    <span class="block text-blue-500 mt-1">All Industries</span>
+  </h2>
+</div>
 
        <!-- SIDE-BY-SIDE 4" x 4" CARDS SECTION -->
 <div class="flex flex-col md:flex-row items-center justify-center gap-8 py-8 w-full max-w-6xl mx-auto">
@@ -140,10 +290,10 @@
         <div class="space-y-4 pt-6">
           <h2 class="text-2xl font-black text-white tracking-tight">Explore Categories</h2>
           
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div class="category-membership-row">
             
             <!-- Card 1: Heavy Equipment -->
-            <a href="heavy-equipment.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl hover:border-blue-500 transition-all transform hover:-translate-y-1 block">
+            <a href="heavy-equipment.html" class="category-membership-card group rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl block" aria-label="Open category">
               <img src="HeavyEquipment.jpg" alt="Heavy Equipment" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
               <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
               <div class="absolute bottom-0 left-0 right-0 p-4">
@@ -153,7 +303,7 @@
             </a>
 
             <!-- Card 2: Medium Equipment -->
-            <a href="medium-equipment.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl hover:border-blue-500 transition-all transform hover:-translate-y-1 block">
+            <a href="medium-equipment.html" class="category-membership-card group rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl block" aria-label="Open category">
               <img src="MediumEquip.jpg" alt="Medium Equipment" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
               <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
               <div class="absolute bottom-0 left-0 right-0 p-4">
@@ -163,7 +313,7 @@
             </a>
 
             <!-- Card 3: Attachments -->
-            <a href="attachments.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl hover:border-blue-500 transition-all transform hover:-translate-y-1 block">
+            <a href="attachments.html" class="category-membership-card group rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl block" aria-label="Open category">
               <img src="Attachments.jpg" alt="Attachments" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
               <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
               <div class="absolute bottom-0 left-0 right-0 p-4">
@@ -173,7 +323,7 @@
             </a>
 
             <!-- Card 4: Vehicles -->
-            <a href="vehicles.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl hover:border-blue-500 transition-all transform hover:-translate-y-1 block">
+            <a href="vehicles.html" class="category-membership-card group rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl block" aria-label="Open category">
               <img src="Vehicles.jpg" alt="Vehicles" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
               <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
               <div class="absolute bottom-0 left-0 right-0 p-4">
@@ -183,7 +333,7 @@
             </a>
 
             <!-- Card 5: Tools -->
-            <a href="tools.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl hover:border-blue-500 transition-all transform hover:-translate-y-1 block">
+            <a href="tools.html" class="category-membership-card group rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl block" aria-label="Open category">
               <img src="Tools.jpg" alt="Tools" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
               <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
               <div class="absolute bottom-0 left-0 right-0 p-4">
@@ -193,7 +343,7 @@
             </a>
 
             <!-- Card 6: B2B Solutions -->
-            <a href="b2b.html" class="group relative h-48 sm:h-52 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl hover:border-blue-500 transition-all transform hover:-translate-y-1 block">
+            <a href="b2b.html" class="category-membership-card group rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl block" aria-label="Open category">
               <img src="B2B.jpg" alt="B2B Solutions" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
               <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
               <div class="absolute bottom-0 left-0 right-0 p-4">
@@ -210,13 +360,15 @@
 
     <!-- EXPOSED VALUATION TOOL SECTION -->
     <section class="py-16 bg-slate-950">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div>
-          <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-            <span>⚙️</span> Equipment Market Valuation Tool
-          </h2>
-          <p class="text-slate-400 text-sm">Calculate detailed resale estimates using equipment specifications, operating hours, and condition records.</p>
-        </div>
+     <!-- Centered Valuation Tool Header -->
+<div class="w-full text-center flex flex-col items-center justify-center my-6">
+  <h2 class="text-2xl md:text-3xl font-bold text-white flex items-center justify-center gap-2">
+    ⚙️ Equipment Market Valuation Tool
+  </h2>
+  <p class="text-slate-400 text-sm md:text-base max-w-2xl mt-2 text-center">
+    Calculate detailed resale estimates using equipment specifications, operating hours, and condition records.
+  </p>
+</div>
 
         <div id="valuationDrawer" class="bg-slate-900 border-2 border-blue-500/60 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
           <form onsubmit="runDetailedValuation(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -503,5 +655,115 @@
       loadDirectory();
     });
   </script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const categoryRow = document.querySelector('.category-membership-row');
+    const categoryCards = Array.from(document.querySelectorAll('.category-membership-card'));
+
+    if (!categoryRow || categoryCards.length === 0) return;
+
+    categoryRow.scrollLeft = 0;
+    requestAnimationFrame(() => {
+      categoryRow.scrollLeft = 0;
+    });
+
+    const coarsePointer = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let edgeScrollFrame = null;
+    let edgeScrollSpeed = 0;
+
+    const centerCard = card => {
+      card.scrollIntoView({
+        behavior: reducedMotion ? 'auto' : 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      });
+    };
+
+    const activateCard = card => {
+      categoryCards.forEach(otherCard => otherCard.classList.remove('is-active'));
+      card.classList.add('is-active');
+      categoryRow.classList.add('has-active-card');
+      centerCard(card);
+    };
+
+    const stopEdgeScroll = () => {
+      edgeScrollSpeed = 0;
+      if (edgeScrollFrame) cancelAnimationFrame(edgeScrollFrame);
+      edgeScrollFrame = null;
+    };
+
+    const runEdgeScroll = () => {
+      if (!edgeScrollSpeed) {
+        edgeScrollFrame = null;
+        return;
+      }
+      categoryRow.scrollLeft += edgeScrollSpeed;
+      edgeScrollFrame = requestAnimationFrame(runEdgeScroll);
+    };
+
+    categoryCards.forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        if (!coarsePointer) centerCard(card);
+      });
+
+      card.addEventListener('focus', () => {
+        activateCard(card);
+      });
+
+      card.addEventListener('click', event => {
+        if (!coarsePointer || card.classList.contains('is-active')) return;
+        event.preventDefault();
+        activateCard(card);
+      });
+
+      card.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          activateCard(card);
+        }
+      });
+    });
+
+    categoryRow.addEventListener('pointermove', event => {
+      if (coarsePointer || categoryRow.scrollWidth <= categoryRow.clientWidth) return;
+
+      const bounds = categoryRow.getBoundingClientRect();
+      const edgeZone = Math.min(120, bounds.width * 0.18);
+      const leftDistance = event.clientX - bounds.left;
+      const rightDistance = bounds.right - event.clientX;
+
+      if (leftDistance < edgeZone) {
+        edgeScrollSpeed = -Math.max(2, Math.round((edgeZone - leftDistance) / 9));
+      } else if (rightDistance < edgeZone) {
+        edgeScrollSpeed = Math.max(2, Math.round((edgeZone - rightDistance) / 9));
+      } else {
+        stopEdgeScroll();
+        return;
+      }
+
+      if (!edgeScrollFrame) edgeScrollFrame = requestAnimationFrame(runEdgeScroll);
+    });
+
+    categoryRow.addEventListener('pointerleave', stopEdgeScroll);
+    categoryRow.addEventListener('pointercancel', stopEdgeScroll);
+
+    categoryRow.addEventListener('wheel', event => {
+      if (categoryRow.scrollWidth <= categoryRow.clientWidth) return;
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      event.preventDefault();
+      categoryRow.scrollBy({
+        left: event.deltaY,
+        behavior: reducedMotion ? 'auto' : 'smooth'
+      });
+    }, { passive: false });
+
+    document.addEventListener('click', event => {
+      if (categoryRow.contains(event.target)) return;
+      categoryCards.forEach(card => card.classList.remove('is-active'));
+      categoryRow.classList.remove('has-active-card');
+    });
+  });
+</script>
 </body>
 </html>

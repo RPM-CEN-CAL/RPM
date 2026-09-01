@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Promote Business | RPM Equipment</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
@@ -17,8 +18,8 @@
         <span>B2B PROMOTION</span>
       </a>
       <a href="dashboard.html" class="text-xs font-bold text-slate-400 hover:text-white transition-colors">
-  Go to Dashboard →
-</a>
+        Go to Dashboard →
+      </a>
     </div>
   </header>
 
@@ -40,7 +41,7 @@
           </div>
           <div>
             <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Contact Email</label>
-            <input type="email" id="email" required placeholder="rpm.cen.cal@gmail.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+            <input type="email" id="email" required placeholder="rpm.cen.cal@gmail.com" oninput="handleEmailInputChange()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
           </div>
         </div>
 
@@ -91,18 +92,44 @@
           <textarea id="description" rows="3" placeholder="Detailed breakdown of equipment fleet, service radius, rates..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-200 focus:outline-none focus:border-blue-500"></textarea>
         </div>
 
-        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
-          <div class="flex items-center justify-between text-xs">
-            <span class="font-bold text-slate-300 uppercase">B2B Promotion Payment</span>
-            <span class="font-black text-emerald-400">$2.06 total</span>
+        <!-- DIRECT PAYMENT CONTAINER -->
+        <div class="border-t border-slate-800 pt-4 space-y-2">
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">B2B Promotion Payment</label>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+            <!-- Left Card: Fee Breakdown -->
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 flex flex-col justify-center space-y-3">
+              <div class="flex justify-between items-center text-xs text-slate-400">
+                <span>Promotion Fee:</span>
+                <span class="font-mono text-slate-200">$2.00</span>
+              </div>
+              <div class="flex justify-between items-center text-xs text-slate-400">
+                <span>Processing Fee (3%):</span>
+                <span class="font-mono text-slate-200">$0.06</span>
+              </div>
+              <div class="border-t border-slate-800 pt-3 flex justify-between items-center">
+                <span class="text-sm font-bold text-white">Total Due Now:</span>
+                <span class="text-base font-extrabold text-emerald-400 font-mono">$2.06</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-2">
+                Scan the QR code to complete payment.
+              </p>
+            </div>
+
+            <!-- Right Card: Visible QR Code Container -->
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 flex flex-col items-center justify-center text-center space-y-2">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">MOBILE PAY QR</span>
+              <div id="qrcode" class="p-2 bg-white rounded-lg shadow-md flex items-center justify-center min-w-[116px] min-h-[116px]"></div>
+              <span class="text-xs font-bold text-emerald-400 font-mono">$2.06</span>
+            </div>
           </div>
-          <p class="text-[10px] text-slate-500">$2.00 promotion fee plus 3% payment processing.</p>
-          <div id="card-container" class="bg-white rounded-lg p-3"></div>
-          <p id="paymentStatus" class="text-xs text-red-400 hidden"></p>
+
+          <p id="paymentStatus" class="text-xs text-amber-400 text-center font-medium mt-2 hidden"></p>
         </div>
 
-        <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider transition-colors shadow-lg shadow-blue-600/20">
-          Submit & Publish B2B Promo
+        <!-- Locked Submit Button -->
+        <button type="submit" id="submitBtn" disabled class="w-full bg-blue-600/40 cursor-not-allowed text-white/50 font-black py-3.5 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 shadow-lg">
+          Submit & Publish B2B Promo (Payment Required)
         </button>
 
       </form>
@@ -117,60 +144,105 @@
   <script>
     const API_BASE = "https://rpm-qhrz.onrender.com";
     let selectedFile = null;
-    let squareCard = null;
+    let checkoutToken = null;
+    let promoToken = null;
+    let paymentTimer = null;
+    let debounceTimer = null;
 
-    async function loadSquareSdk(environment) {
-      const script = document.createElement('script');
-      script.src = environment === 'production'
-        ? 'https://web.squarecdn.com/v1/square.js'
-        : 'https://sandbox.web.squarecdn.com/v1/square.js';
+    // Render initial QR Code on load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderDefaultQR();
+    });
 
-      await new Promise((resolve, reject) => {
-        script.onload = resolve;
-        script.onerror = () => reject(new Error('Unable to load Square payment form.'));
-        document.head.appendChild(script);
+    function renderDefaultQR(url = "https://rpm-qhrz.onrender.com") {
+      const qrContainer = document.getElementById('qrcode');
+      qrContainer.innerHTML = '';
+      new QRCode(qrContainer, {
+        text: url,
+        width: 100,
+        height: 100,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
       });
     }
 
-    async function initializeSquare() {
-      const configResponse = await fetch(`${API_BASE}/api/square-config`);
-      const config = await configResponse.json();
+    function handleEmailInputChange() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const email = document.getElementById('email').value.trim().toLowerCase();
+        if (email && email.includes('@') && email.includes('.')) {
+          autoGenerateCheckout(email);
+        }
+      }, 500);
+    }
 
-      if (!configResponse.ok || !config.appId || !config.locationId) {
-        throw new Error('Square payment configuration is unavailable.');
+    async function autoGenerateCheckout(email) {
+      const paymentStatus = document.getElementById('paymentStatus');
+      paymentStatus.textContent = 'Generating payment QR code...';
+      paymentStatus.className = 'text-xs text-amber-400 text-center font-medium mt-2';
+      paymentStatus.classList.remove('hidden');
+
+      try {
+        const response = await fetch(`${API_BASE}/api/create-b2b-checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.error || 'Checkout generation failed.');
+
+        checkoutToken = result.checkoutToken;
+
+        renderDefaultQR(result.checkoutUrl);
+
+        paymentStatus.textContent = 'Scan QR code to pay. Awaiting payment...';
+        paymentStatus.className = 'text-xs text-amber-400 text-center font-medium mt-2';
+
+        clearInterval(paymentTimer);
+        paymentTimer = setInterval(checkB2BPayment, 3000);
+
+      } catch (error) {
+        paymentStatus.textContent = error.message;
+        paymentStatus.className = 'text-xs text-red-400 text-center font-medium mt-2';
       }
-
-      await loadSquareSdk(config.environment);
-      const payments = window.Square.payments(config.appId, config.locationId);
-      squareCard = await payments.card();
-      await squareCard.attach('#card-container');
     }
 
-    initializeSquare().catch(error => {
-      console.error('Square Initialization Error:', error);
-      const status = document.getElementById('paymentStatus');
-      status.textContent = error.message;
-      status.classList.remove('hidden');
-    });
+    async function checkB2BPayment() {
+      if (!checkoutToken) return;
 
-    function handleB2BDragOver(e) {
-      e.preventDefault(); e.stopPropagation();
-      document.getElementById('b2bDropZone').classList.add('border-blue-500', 'bg-blue-950/20');
+      try {
+        const response = await fetch(`${API_BASE}/api/b2b-payment-status?checkoutToken=${encodeURIComponent(checkoutToken)}`);
+        const result = await response.json();
+
+        if (response.ok && result.paid && result.promoToken) {
+          clearInterval(paymentTimer);
+          paymentTimer = null;
+          promoToken = result.promoToken;
+
+          const paymentStatus = document.getElementById('paymentStatus');
+          paymentStatus.textContent = '✓ Payment verified! Click Submit & Publish below to complete your listing.';
+          paymentStatus.className = 'text-xs text-emerald-400 font-bold text-center mt-2';
+
+          const submitBtn = document.getElementById('submitBtn');
+          submitBtn.disabled = false;
+          submitBtn.className = 'w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-blue-600/30 cursor-pointer';
+          submitBtn.innerText = 'Submit & Publish B2B Promo';
+        }
+      } catch (err) {
+        console.error('Payment check error:', err);
+      }
     }
-    function handleB2BDragLeave(e) {
-      e.preventDefault(); e.stopPropagation();
-      document.getElementById('b2bDropZone').classList.remove('border-blue-500', 'bg-blue-950/20');
-    }
+
+    function handleB2BDragOver(e) { e.preventDefault(); e.stopPropagation(); document.getElementById('b2bDropZone').classList.add('border-blue-500', 'bg-blue-950/20'); }
+    function handleB2BDragLeave(e) { e.preventDefault(); e.stopPropagation(); document.getElementById('b2bDropZone').classList.remove('border-blue-500', 'bg-blue-950/20'); }
     function handleB2BFileDrop(e) {
       e.preventDefault(); e.stopPropagation();
       document.getElementById('b2bDropZone').classList.remove('border-blue-500', 'bg-blue-950/20');
-      const files = e.dataTransfer.files;
-      if (files.length > 0) displayB2BPreview(files[0]);
+      if (e.dataTransfer.files.length > 0) displayB2BPreview(e.dataTransfer.files[0]);
     }
-    function handleB2BFileSelect(e) {
-      const files = e.target.files;
-      if (files.length > 0) displayB2BPreview(files[0]);
-    }
+    function handleB2BFileSelect(e) { if (e.target.files.length > 0) displayB2BPreview(e.target.files[0]); }
     function displayB2BPreview(file) {
       if (!file.type.startsWith('image/')) return;
       selectedFile = file;
@@ -186,44 +258,22 @@
 
     document.getElementById('b2bForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const submitBtn = document.getElementById('submitBtn');
       const paymentStatus = document.getElementById('paymentStatus');
       const email = document.getElementById('email').value.trim().toLowerCase();
 
+      if (!promoToken) {
+        alert('Payment verification is required before submitting your listing.');
+        return;
+      }
+
       submitBtn.disabled = true;
-      submitBtn.innerText = 'Processing $2.06 payment...';
-      paymentStatus.classList.add('hidden');
+      submitBtn.innerText = 'Processing promotion submission...';
 
       try {
-        if (!squareCard) throw new Error('Square payment form is not ready. Please wait and try again.');
-
-        const tokenResult = await squareCard.tokenize();
-        if (tokenResult.status !== 'OK') {
-          throw new Error(tokenResult.errors?.[0]?.message || 'Unable to verify card details.');
-        }
-
-        const paymentResponse = await fetch(`${API_BASE}/api/process-payment`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sourceId: tokenResult.token,
-            basePrice: 2,
-            email,
-            productType: 'b2b-promo'
-          })
-        });
-
-        const paymentData = await paymentResponse.json();
-        if (!paymentResponse.ok || !paymentData.success || !paymentData.promoToken) {
-          throw new Error(paymentData.error || 'B2B payment failed.');
-        }
-
-        const promoToken = paymentData.promoToken;
         let imageUrl = '';
-
         if (selectedFile) {
-          submitBtn.innerText = 'Uploading logo...';
+          submitBtn.innerText = 'Uploading company logo...';
           const formData = new FormData();
           formData.append('photos', selectedFile);
 
@@ -232,17 +282,12 @@
             headers: { Authorization: `Bearer ${promoToken}` },
             body: formData
           });
-
           const uploadData = await uploadRes.json();
-          if (!uploadRes.ok || !uploadData.success || !uploadData.urls?.length) {
-            throw new Error(uploadData.error || uploadData.message || 'B2B logo upload failed.');
-          }
-
+          if (!uploadRes.ok || !uploadData.success || !uploadData.urls?.length) throw new Error(uploadData.error || 'Logo upload failed.');
           imageUrl = uploadData.urls[0];
         }
 
         submitBtn.innerText = 'Publishing B2B promo...';
-
         const payload = {
           companyName: document.getElementById('companyName').value,
           email,
@@ -254,31 +299,25 @@
 
         const res = await fetch(`${API_BASE}/api/b2b-listings/create`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${promoToken}`
-          },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${promoToken}` },
           body: JSON.stringify(payload)
         });
 
         const data = await res.json();
-        if (!res.ok || !data.success) {
-          throw new Error(data.error || 'Failed to publish listing.');
-        }
+        if (!res.ok || !data.success) throw new Error(data.error || 'Failed to publish listing.');
 
         alert('B2B payment approved and listing published successfully!');
         window.location.href = 'b2b-listings.html';
       } catch (err) {
-        console.error('B2B Promotion Error:', err);
+        console.error('B2B Error:', err);
         paymentStatus.textContent = err.message;
+        paymentStatus.className = 'text-xs text-red-400 font-bold text-center mt-2';
         paymentStatus.classList.remove('hidden');
         alert(err.message);
-      } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = 'Submit & Publish B2B Promo';
       }
     });
   </script>
-
 </body>
 </html>

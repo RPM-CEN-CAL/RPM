@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -18,6 +18,64 @@
       bottom: 28px;
       right: 28px;
       z-index: 99999;
+    }
+
+    .tier-card {
+      position: relative;
+      z-index: 1;
+      isolation: isolate;
+      transform-origin: center;
+      transition: transform 220ms ease, opacity 220ms ease, border-color 220ms ease, box-shadow 220ms ease, filter 220ms ease;
+    }
+
+    .tier-grid:hover .tier-card:not(:hover) {
+      opacity: 0.48;
+      filter: brightness(0.72) saturate(0.75);
+      transform: scale(0.97);
+    }
+
+    .tier-grid .tier-card:hover {
+      z-index: 50;
+      opacity: 1;
+      filter: brightness(1.18) saturate(1.12);
+      transform: translateY(-12px) scale(1.075);
+      border-color: #60a5fa !important;
+      box-shadow:
+        0 0 0 1px rgba(96, 165, 250, 0.65),
+        0 0 30px rgba(59, 130, 246, 0.48),
+        0 28px 55px rgba(0, 0, 0, 0.62);
+    }
+
+    .tier-grid .tier-card:hover::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      z-index: -1;
+      border-radius: 1rem;
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.42), transparent 45%, rgba(37, 99, 235, 0.32));
+      filter: blur(10px);
+      pointer-events: none;
+    }
+
+    .tier-grid #tier-card-corporate:hover {
+      border-color: #fbbf24 !important;
+      box-shadow:
+        0 0 0 1px rgba(251, 191, 36, 0.65),
+        0 0 30px rgba(251, 191, 36, 0.38),
+        0 28px 55px rgba(0, 0, 0, 0.62);
+    }
+
+    .tier-grid #tier-card-corporate:hover::before {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.38), transparent 45%, rgba(245, 158, 11, 0.28));
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tier-card,
+      .tier-grid .tier-card:hover,
+      .tier-grid:hover .tier-card:not(:hover) {
+        transition: none;
+        transform: none;
+      }
     }
   </style>
 </head>
@@ -49,33 +107,81 @@
     </div>
 
     <!-- Membership Tiers Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div id="tier-card-5" onclick="selectTier(5, '1 Active Listing', 'tier-card-5')" class="tier-card bg-slate-800 border-2 border-blue-500 rounded-2xl p-6 text-center space-y-4 cursor-pointer transition-all">
-        <div class="text-3xl font-black text-white">$5 <span class="text-xs font-normal text-slate-400">/mo</span></div>
-        <div class="text-sm font-semibold text-blue-400">1 Active Listing</div>
-        <p class="text-xs text-slate-400">Ideal for single equipment sales.</p>
-        <button type="button" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg text-sm">Selected</button>
+    <div class="tier-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6 items-stretch overflow-visible">
+      <div id="tier-card-5" onclick="selectTier(5, 'Starter Seller', 'tier-card-5')" class="tier-card bg-slate-800 border-2 border-blue-500 rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10 min-h-[24rem] aspect-square flex flex-col">
+        <div class="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-400 mb-3">Simple Start</div>
+        <div class="text-4xl font-black text-white">$5</div>
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1">One-Time Payment</div>
+        <div class="text-base font-bold text-blue-400 mt-4">Starter Seller</div>
+        <p class="text-xs text-slate-300 mt-3 leading-relaxed">A focused package for owners selling one machine without unnecessary overhead.</p>
+        <ul class="text-left text-xs text-slate-400 space-y-2 mt-5 flex-grow">
+          <li>✓ 1 active equipment listing</li>
+          <li>✓ Up to 10 listing photos</li>
+          <li>✓ Direct buyer contact</li>
+          <li>✓ Client portal access</li>
+        </ul>
+        <button type="button" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-lg text-sm mt-5">Selected</button>
       </div>
 
-      <div id="tier-card-10" onclick="selectTier(10, '5 Active Listings', 'tier-card-10')" class="tier-card bg-slate-800/80 border-2 border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center space-y-4 cursor-pointer transition-all">
-        <div class="text-3xl font-black text-white">$10 <span class="text-xs font-normal text-slate-400">/mo</span></div>
-        <div class="text-sm font-semibold text-blue-400">5 Active Listings</div>
-        <p class="text-xs text-slate-400">Great for small fleet liquidation.</p>
-        <button type="button" class="w-full bg-slate-700 text-slate-300 font-semibold py-2 rounded-lg text-sm">Select Tier</button>
+      <div id="tier-card-10" onclick="selectTier(10, 'Marketplace Seller', 'tier-card-10')" class="tier-card bg-slate-800/80 border-2 border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10 min-h-[24rem] aspect-square flex flex-col">
+        <div class="text-[10px] font-black uppercase tracking-[0.18em] text-blue-300 mb-3">Best for Small Fleets</div>
+        <div class="text-4xl font-black text-white">$10</div>
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1">One-Time Payment</div>
+        <div class="text-base font-bold text-blue-400 mt-4">Marketplace Seller</div>
+        <p class="text-xs text-slate-300 mt-3 leading-relaxed">More room to market multiple machines, vehicles, tools, or attachments together.</p>
+        <ul class="text-left text-xs text-slate-400 space-y-2 mt-5 flex-grow">
+          <li>✓ 5 active equipment listings</li>
+          <li>✓ Up to 10 photos per listing</li>
+          <li>✓ Ideal for fleet reduction</li>
+          <li>✓ Manage listings in one portal</li>
+        </ul>
+        <button type="button" class="w-full bg-slate-700 hover:bg-blue-600 text-slate-200 hover:text-white font-semibold py-2.5 rounded-lg text-sm mt-5">Select Tier</button>
       </div>
 
-      <div id="tier-card-20" onclick="selectTier(20, '15 Active Listings', 'tier-card-20')" class="tier-card bg-slate-800/80 border-2 border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center space-y-4 cursor-pointer transition-all">
-        <div class="text-3xl font-black text-white">$20 <span class="text-xs font-normal text-slate-400">/mo</span></div>
-        <div class="text-sm font-semibold text-blue-400">15 Active Listings</div>
-        <p class="text-xs text-slate-400">For active equipment dealers.</p>
-        <button type="button" class="w-full bg-slate-700 text-slate-300 font-semibold py-2 rounded-lg text-sm">Select Tier</button>
+      <div id="tier-card-20" onclick="selectTier(20, 'Equipment Dealer', 'tier-card-20')" class="tier-card bg-slate-800/80 border-2 border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10 min-h-[24rem] aspect-square flex flex-col relative overflow-hidden">
+        <div class="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-full">Popular</div>
+        <div class="text-[10px] font-black uppercase tracking-[0.18em] text-blue-300 mb-3">Built for Dealers</div>
+        <div class="text-4xl font-black text-white">$20</div>
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1">One-Time Payment</div>
+        <div class="text-base font-bold text-blue-400 mt-4">Equipment Dealer</div>
+        <p class="text-xs text-slate-300 mt-3 leading-relaxed">A stronger inventory presence for active sellers who need consistent marketplace visibility.</p>
+        <ul class="text-left text-xs text-slate-400 space-y-2 mt-5 flex-grow">
+          <li>✓ 15 active equipment listings</li>
+          <li>✓ Dealer-scale inventory capacity</li>
+          <li>✓ Faster multi-item promotion</li>
+          <li>✓ Centralized listing management</li>
+        </ul>
+        <button type="button" class="w-full bg-slate-700 hover:bg-blue-600 text-slate-200 hover:text-white font-semibold py-2.5 rounded-lg text-sm mt-5">Select Tier</button>
       </div>
 
-      <div id="tier-card-50" onclick="selectTier(50, 'Unlimited Listings', 'tier-card-50')" class="tier-card bg-slate-800/80 border-2 border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center space-y-4 cursor-pointer transition-all">
-        <div class="text-3xl font-black text-white">$50 <span class="text-xs font-normal text-slate-400">/mo</span></div>
-        <div class="text-sm font-semibold text-blue-400">Unlimited Listings</div>
-        <p class="text-xs text-slate-400">Enterprise volume & priority placement.</p>
-        <button type="button" class="w-full bg-slate-700 text-slate-300 font-semibold py-2 rounded-lg text-sm">Select Tier</button>
+      <div id="tier-card-50" onclick="selectTier(50, 'Enterprise Dealer', 'tier-card-50')" class="tier-card bg-slate-800/80 border-2 border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10 min-h-[24rem] aspect-square flex flex-col">
+        <div class="text-[10px] font-black uppercase tracking-[0.18em] text-purple-300 mb-3">Maximum Reach</div>
+        <div class="text-4xl font-black text-white">$50</div>
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1">One-Time Payment</div>
+        <div class="text-base font-bold text-blue-400 mt-4">Enterprise Dealer</div>
+        <p class="text-xs text-slate-300 mt-3 leading-relaxed">High-capacity marketplace access for established dealers and larger commercial inventories.</p>
+        <ul class="text-left text-xs text-slate-400 space-y-2 mt-5 flex-grow">
+          <li>✓ 30 active equipment listings</li>
+          <li>✓ Priority marketplace placement</li>
+          <li>✓ Large inventory flexibility</li>
+          <li>✓ Professional client portal tools</li>
+        </ul>
+        <button type="button" class="w-full bg-slate-700 hover:bg-blue-600 text-slate-200 hover:text-white font-semibold py-2.5 rounded-lg text-sm mt-5">Select Tier</button>
+      </div>
+
+      <div id="tier-card-corporate" class="tier-card bg-slate-800/80 border-2 border-slate-700 hover:border-amber-400 rounded-2xl p-6 text-center transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-amber-400/10 min-h-[24rem] aspect-square flex flex-col">
+        <div class="text-[10px] font-black uppercase tracking-[0.18em] text-amber-300 mb-3">Tailored Partnership</div>
+        <div class="text-2xl font-black text-white mt-2">Enterprise Partnership</div>
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-2">Custom Consultation</div>
+        <div class="text-base font-bold text-amber-400 mt-4">Corporate Solutions</div>
+        <p class="text-xs text-slate-300 mt-3 leading-relaxed">Custom marketplace support for corporations, multi-location fleets, and specialized commercial programs.</p>
+        <ul class="text-left text-xs text-slate-400 space-y-2 mt-5 flex-grow">
+          <li>✓ Custom listing capacity</li>
+          <li>✓ Multi-location inventory options</li>
+          <li>✓ API and data integration</li>
+          <li>✓ Branding and priority support</li>
+        </ul>
+        <button type="button" onclick="window.location.href='mailto:rpm.cen.cal@gmail.com?subject=RPM%20Enterprise%20Partnership%20Inquiry'" class="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-semibold py-2.5 rounded-lg text-sm mt-5">Contact Sales</button>
       </div>
     </div>
 
@@ -83,21 +189,32 @@
     <div class="max-w-xl mx-auto bg-slate-800/90 border border-slate-700 rounded-2xl p-8 space-y-6 shadow-2xl">
       <div class="text-center space-y-1">
         <h2 class="text-2xl font-bold text-white">Create Account & Pay</h2>
-        <p id="selected-tier-display" class="text-xs text-blue-400 font-medium">Selected Tier: $5 / mo (1 Active Listing)</p>
+        <p id="selected-tier-display" class="text-xs text-blue-400 font-medium">Selected Tier: Starter Seller ($5 / mo)</p>
       </div>
 
       <form id="signup-form" onsubmit="handleAccountRegistration(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">EMAIL ADDRESS *</label>
-          <input type="email" id="signupEmail" required placeholder="name@company.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+          <input type="email" id="signupEmail" required placeholder="name@company.com" oninput="handleEmailInputChange()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">CREATE PASSWORD *</label>
-          <input type="password" id="signupPassword" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+          <div class="relative">
+            <input type="password" id="signupPassword" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 pr-12 text-sm text-white focus:outline-none focus:border-blue-500">
+            <button type="button" onclick="togglePassword('signupPassword', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white" aria-label="Show or hide password">&#128065;</button>
+          </div>
         </div>
 
-        <!-- NEW PAYMENT METHOD LAYOUT: Side-by-Side Cards -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">CONFIRM PASSWORD *</label>
+          <div class="relative">
+            <input type="password" id="confirmPassword" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 pr-12 text-sm text-white focus:outline-none focus:border-blue-500">
+            <button type="button" onclick="togglePassword('confirmPassword', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white" aria-label="Show or hide confirmed password">&#128065;</button>
+          </div>
+        </div>
+
+        <!-- PAYMENT METHOD LAYOUT: Side-by-Side Cards -->
         <div class="border-t border-slate-700/80 pt-4 space-y-2">
           <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Payment Method</label>
           
@@ -118,13 +235,20 @@
               </div>
             </div>
 
-            <!-- Right Card: 3"x3" Dynamic Mobile Pay QR -->
+            <!-- Right Card: Dynamic Mobile & Desktop Pay Target -->
             <div class="bg-slate-900 border border-slate-700 rounded-xl p-5 flex flex-col items-center justify-center text-center space-y-2">
               <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mobile Pay QR</span>
-              <div id="qrcode" class="p-2 bg-white rounded-lg shadow-md flex items-center justify-center"></div>
+              <div id="qrcode" class="p-2 bg-white rounded-lg shadow-md flex items-center justify-center min-w-[116px] min-h-[116px]"></div>
               <span id="qrAmountDisplay" class="text-xs font-bold text-blue-400 font-mono">$5.15</span>
+              
+              <!-- Direct Click Link for Desktop Users -->
+              <a id="square-pay-link" href="#" target="_blank" class="hidden text-xs text-emerald-400 font-bold hover:underline mt-1">
+                Open Square Checkout Page →
+              </a>
             </div>
           </div>
+
+          <p id="paymentStatus" class="text-xs text-amber-400 text-center font-medium mt-2 hidden"></p>
         </div>
 
         <div class="space-y-3 pt-2">
@@ -141,7 +265,7 @@
           </label>
         </div>
 
-        <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 px-6 rounded-lg shadow-lg shadow-blue-600/30 transition-all text-sm flex items-center justify-center gap-2 cursor-pointer">
+        <button type="submit" id="submit-btn" disabled class="w-full bg-blue-600/40 cursor-not-allowed text-white/50 font-bold py-3.5 px-6 rounded-lg shadow-lg transition-all text-sm flex items-center justify-center gap-2">
           <span>Complete Registration & Pay ($<span id="btn-total">5.15</span>)</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
@@ -222,121 +346,227 @@
   </footer>
 
   <script>
+    const API_BASE = "https://rpm-qhrz.onrender.com";
+
     let selectedBasePrice = 5;
-    let selectedTierName = "1 Active Listing";
-    let qrCodeInstance = null;
+    let selectedTierName = 'Starter Seller';
+    let checkoutToken = null;
+    let membershipToken = null;
+    let paymentTimer = null;
+    let debounceTimer = null;
 
     function selectTier(price, tierName, cardId) {
       selectedBasePrice = price;
       selectedTierName = tierName;
 
-      // Card active states
       document.querySelectorAll('.tier-card').forEach(card => {
+        if (card.id === 'tier-card-corporate') return;
         card.classList.remove('border-blue-500', 'bg-slate-800');
         card.classList.add('border-slate-700', 'bg-slate-800/80');
+
         const btn = card.querySelector('button');
         if (btn) {
-          btn.className = "w-full bg-slate-700 text-slate-300 font-semibold py-2 rounded-lg text-sm";
-          btn.innerText = "Select Tier";
+          btn.className = 'w-full bg-slate-700 hover:bg-blue-600 text-slate-200 hover:text-white font-semibold py-2.5 rounded-lg text-sm mt-5';
+          btn.innerText = 'Select Tier';
         }
       });
 
       const activeCard = document.getElementById(cardId);
-      if(activeCard) {
+      if (activeCard) {
         activeCard.classList.remove('border-slate-700', 'bg-slate-800/80');
         activeCard.classList.add('border-blue-500', 'bg-slate-800');
+
         const activeBtn = activeCard.querySelector('button');
         if (activeBtn) {
-          activeBtn.className = "w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg text-sm";
-          activeBtn.innerText = "Selected";
+          activeBtn.className = 'w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-lg text-sm mt-5';
+          activeBtn.innerText = 'Selected';
         }
       }
 
-      // Financial breakdown math with 3% fee
       const fee = selectedBasePrice * 0.03;
-      const total = (selectedBasePrice + fee).toFixed(2);
+      const total = selectedBasePrice + fee;
 
-      document.getElementById('selected-tier-display').innerText = `Selected Tier: $${selectedBasePrice} / mo (${tierName})`;
+      document.getElementById('selected-tier-display').innerText = `Selected Tier: ${tierName} ($${selectedBasePrice} / mo)`;
       document.getElementById('summary-base').innerText = `$${selectedBasePrice.toFixed(2)}`;
       document.getElementById('summary-fee').innerText = `$${fee.toFixed(2)}`;
-      document.getElementById('summary-total').innerText = `$${total}`;
-      document.getElementById('btn-total').innerText = total;
-      document.getElementById('qrAmountDisplay').innerText = `$${total}`;
+      document.getElementById('summary-total').innerText = `$${total.toFixed(2)}`;
+      document.getElementById('btn-total').innerText = total.toFixed(2);
+      document.getElementById('qrAmountDisplay').innerText = `$${total.toFixed(2)}`;
 
-      // Dynamically update embedded QR code payload
-      updateQRCode(`https://rpm-qhrz.onrender.com/pay?tier=${encodeURIComponent(tierName)}&amount=${total}`);
+      const email = document.getElementById('signupEmail').value.trim().toLowerCase();
+      if (email && email.includes('@') && email.includes('.')) {
+        autoGenerateCheckout(email);
+      }
     }
 
-    function updateQRCode(payloadUrl) {
+    function renderDefaultQR(url = "https://rpm-qhrz.onrender.com") {
       const qrContainer = document.getElementById('qrcode');
-      if (!qrContainer) return;
-      qrContainer.innerHTML = ''; 
-      qrCodeInstance = new QRCode(qrContainer, {
-        text: payloadUrl,
+      if (!qrContainer || typeof QRCode === 'undefined') return;
+
+      qrContainer.innerHTML = '';
+      new QRCode(qrContainer, {
+        text: url,
         width: 100,
         height: 100,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
+        colorDark: '#000000',
+        colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.H
       });
     }
 
-    async function handleAccountRegistration(e) {
-      e.preventDefault();
+    function handleEmailInputChange() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const email = document.getElementById('signupEmail').value.trim().toLowerCase();
+        if (email && email.includes('@') && email.includes('.')) {
+          autoGenerateCheckout(email);
+        }
+      }, 500);
+    }
 
+    async function autoGenerateCheckout(email) {
+      const paymentStatus = document.getElementById('paymentStatus');
+      paymentStatus.textContent = 'Generating payment QR code...';
+      paymentStatus.className = 'text-xs text-amber-400 text-center font-medium mt-2';
+      paymentStatus.classList.remove('hidden');
+
+      try {
+        const response = await fetch(`${API_BASE}/api/create-membership-checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            email, 
+            tier: selectedTierName, 
+            price: selectedBasePrice 
+          })
+        });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.error || 'Checkout generation failed.');
+
+        checkoutToken = result.checkoutToken;
+        const targetUrl = result.checkoutUrl || result.url;
+
+        renderDefaultQR(targetUrl);
+
+        const payLink = document.getElementById('square-pay-link');
+        if (payLink) {
+          payLink.href = targetUrl;
+          payLink.classList.remove('hidden');
+        }
+
+        paymentStatus.textContent = 'Scan QR code to pay. Awaiting payment...';
+        paymentStatus.className = 'text-xs text-amber-400 text-center font-medium mt-2';
+
+        clearInterval(paymentTimer);
+        paymentTimer = setInterval(checkMembershipPayment, 3000);
+
+      } catch (error) {
+        paymentStatus.textContent = error.message;
+        paymentStatus.className = 'text-xs text-red-400 text-center font-medium mt-2';
+      }
+    }
+
+    async function checkMembershipPayment() {
+      if (!checkoutToken) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/api/membership-payment-status?checkoutToken=${encodeURIComponent(checkoutToken)}`);
+        const result = await response.json();
+
+        if (response.ok && result.paid && result.membershipToken) {
+          clearInterval(paymentTimer);
+          paymentTimer = null;
+          membershipToken = result.membershipToken;
+
+          const paymentStatus = document.getElementById('paymentStatus');
+          paymentStatus.textContent = '✓ Payment verified! Click Complete Registration below.';
+          paymentStatus.className = 'text-xs text-emerald-400 font-bold text-center mt-2';
+
+          const submitBtn = document.getElementById('submit-btn');
+          submitBtn.disabled = false;
+          submitBtn.className = 'w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 px-6 rounded-lg shadow-lg shadow-blue-600/30 transition-all text-sm flex items-center justify-center gap-2 cursor-pointer';
+          submitBtn.innerHTML = `<span>Complete Registration & Proceed →</span>`;
+        }
+      } catch (err) {
+        console.error('Payment check error:', err);
+      }
+    }
+
+    async function handleAccountRegistration(event) {
+      event.preventDefault();
+
+      const submitBtn = document.getElementById('submit-btn');
+      const paymentStatus = document.getElementById('paymentStatus');
       const agreeTerms = document.getElementById('agreeTerms');
+
       if (!agreeTerms || !agreeTerms.checked) {
-        alert("Please review and accept the User Agreement to proceed with checkout.");
+        alert('Please review and accept the User Agreement to proceed.');
         return;
       }
 
       const email = document.getElementById('signupEmail').value.trim().toLowerCase();
       const password = document.getElementById('signupPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
 
-      if (!email || !password) {
-        alert("Please enter a valid email and password.");
+      if (password !== confirmPassword) {
+        alert('Passwords do not match.');
         return;
       }
-      
-      const payload = {
-        email: email,
-        password: password,
-        tier: selectedTierName,
-        amountPaid: (selectedBasePrice * 1.03).toFixed(2)
-      };
+
+      if (!membershipToken) {
+        alert('Payment verification is required before registering.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Creating account...';
 
       try {
-        const res = await fetch('https://rpm-qhrz.onrender.com/api/register-direct', {
+        const res = await fetch(`${API_BASE}/api/register-seller`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${membershipToken}` 
+          },
+          body: JSON.stringify({ email, password, plan: selectedTierName })
         });
-        const data = await res.json();
 
-        if (res.ok) {
-          alert(`Account created and payment received for ${selectedTierName}! Redirecting...`);
-          window.location.href = '/seller-dashboard.html';
-        } else {
-          alert(data.message || "Registration failed. Please check your information.");
-        }
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Registration failed.');
+
+        alert('Account created and membership activated successfully!');
+        window.location.href = 'dashboard.html';
       } catch (err) {
-        console.error('Registration/Payment Error:', err);
-        alert("Transaction completed successfully! Redirecting...");
-        window.location.href = '/seller-dashboard.html';
+        console.error('Registration Error:', err);
+        paymentStatus.textContent = err.message;
+        paymentStatus.className = 'text-xs text-red-400 font-bold text-center mt-2';
+        paymentStatus.classList.remove('hidden');
+        alert(err.message);
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Complete Registration & Proceed →';
       }
+    }
+
+    function togglePassword(inputId, button) {
+      const input = document.getElementById(inputId);
+      const showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      button.textContent = showing ? '👁' : '🙈';
     }
 
     function openVisitorHelpModal() {
       document.getElementById('visitorHelpModal').classList.remove('hidden');
     }
+
     function closeVisitorHelpModal() {
       document.getElementById('visitorHelpModal').classList.add('hidden');
     }
 
-    // Default initialization
-    window.onload = function() {
-      selectTier(5, '1 Active Listing', 'tier-card-5');
-    };
+    window.addEventListener('DOMContentLoaded', () => {
+      renderDefaultQR();
+      selectTier(5, 'Starter Seller', 'tier-card-5');
+    });
   </script>
 </body>
 </html>

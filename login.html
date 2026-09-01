@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -51,12 +51,17 @@
 
       <div>
         <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Password</label>
-        <input id="password" type="password" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500" required>
+        <div class="relative">
+          <input id="password" type="password" placeholder="Enter your password" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500" required>
+        </div>
       </div>
 
       <button id="submitBtn" type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-lg shadow-lg shadow-blue-600/30 transition-all mt-2">
         Continue &rarr;
       </button>
+      <div class="text-center pt-2">
+        <a href="forgot-password.html" class="text-xs text-blue-400 font-semibold hover:underline">Forgot Password?</a>
+      </div>
     </form>
 
     <div class="text-center pt-4 border-t border-slate-700/60">
@@ -77,7 +82,7 @@
     <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-lg w-full p-6 space-y-6 text-white shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
         <h3 class="text-lg font-bold text-amber-400 flex items-center gap-2">
-          <span>💡</span> Login & Account Assistance
+          <span>💡</span> Login &amp; Account Assistance
         </h3>
         <button onclick="toggleLoginHelpModal()" class="text-slate-400 hover:text-white font-bold text-xl px-2">&times;</button>
       </div>
@@ -89,7 +94,7 @@
         </div>
 
         <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700">
-          <p class="font-bold text-white">Step 2: New Sellers & Membership Requirements</p>
+          <p class="font-bold text-white">Step 2: New Sellers &amp; Membership Requirements</p>
           <p class="mt-1">If you have not selected a membership tier or completed payment, click "Register here" to choose a plan and activate your portal access.</p>
         </div>
       </div>
@@ -106,6 +111,7 @@
 
     document.getElementById("authForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+
       const submitBtn = document.getElementById("submitBtn");
       const email = document.getElementById("email").value.trim().toLowerCase();
       const password = document.getElementById("password").value;
@@ -114,60 +120,40 @@
       submitBtn.innerText = "Verifying Credentials...";
 
       try {
-        // 1. Backend Server Authentication Check
         const response = await fetch(`${API_BASE_URL}/api/login`, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
         });
 
-        const result = await response.json();
+        const contentType = response.headers.get('content-type') || '';
+        const result = contentType.includes('application/json')
+          ? await response.json()
+          : { message: await response.text() };
 
-        if (response.ok && result.success) {
-          // Authentication Succeeded
-          localStorage.setItem("userEmail", result.user.email);
-          localStorage.setItem("rpm_user_email", result.user.email);
-          localStorage.setItem("rpm_verified_session", "active");
-
-          if (result.user.isPaid || VIP_EMAILS.includes(email)) {
-            localStorage.setItem(`rpm_paid_client_${email}`, "true");
-            window.location.href = "dashboard.html";
-          } else {
-            alert("Account authenticated! Please select a seller plan to complete setup.");
-            window.location.href = "membership.html";
-          }
-          return;
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || result.error || 'Invalid email or password. Access denied.');
         }
 
-        // 2. Direct Supabase Auth Verification (Fallback)
-        const { data: sbData, error: sbError } = await supabaseClient.auth.signInWithPassword({ email, password });
-
-        if (!sbError && sbData?.user) {
-          localStorage.setItem("userEmail", email);
-          localStorage.setItem("rpm_user_email", email);
-          localStorage.setItem("rpm_verified_session", "active");
-
-          const isPaid = localStorage.getItem(`rpm_paid_client_${email}`) === "true" || VIP_EMAILS.includes(email);
-          if (isPaid) {
-            window.location.href = "dashboard.html";
-          } else {
-            alert("Account verified! Please select a membership plan to activate your dashboard.");
-            window.location.href = "membership.html";
-          }
-          return;
-        }
-
-        // Access Denied on Invalid Passwords
-        alert(result.error || sbError?.message || "Invalid email or password. Access denied.");
-
+        window.location.href = "dashboard.html";
       } catch (err) {
         console.error("Auth error:", err);
-        alert("Authentication server unreachable. Please verify your connection.");
+        alert(err.message || "Authentication failed. Please try again.");
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerText = "Continue →";
+        submitBtn.innerHTML = "Continue &rarr;";
       }
     });
+
+    function togglePasswordVisibility() {
+      const passwordInput = document.getElementById('password');
+      const button = event.currentTarget;
+      const showing = passwordInput.type === 'text';
+
+      passwordInput.type = showing ? 'password' : 'text';
+      button.textContent = showing ? '👁' : '🙈';
+    }
 
     function toggleLoginHelpModal() {
       document.getElementById("loginHelpModal").classList.toggle("hidden");

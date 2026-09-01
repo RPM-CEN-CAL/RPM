@@ -196,7 +196,7 @@ app.get('/api/square-config', (req, res) => {
   });
 });
 
-// Create B2B Checkout Link (Square QR Flow)
+// Create B2B Checkout Link (Direct Fixed Square Payment Link)
 app.post('/api/create-b2b-checkout', async (req, res) => {
   try {
     const { email } = req.body;
@@ -216,44 +216,11 @@ app.post('/api/create-b2b-checkout', async (req, res) => {
       });
     }
 
-    const { SquareClient, SquareEnvironment } = require('square');
-    const squareClient = new SquareClient({
-      token: process.env.SQUARE_ACCESS_TOKEN,
-      environment: process.env.SQUARE_ENVIRONMENT === 'production'
-        ? SquareEnvironment.Production
-        : SquareEnvironment.Sandbox,
-    });
+    const directSquareUrl = 'https://square.link/u/9OGHfW18';
+    const checkoutToken = crypto.randomUUID();
 
-    const checkoutApi = squareClient.checkoutApi || squareClient.checkout;
-    if (!checkoutApi || !checkoutApi.createPaymentLink) {
-      throw new Error('Square Checkout API is unavailable.');
-    }
-
-    const response = await checkoutApi.createPaymentLink({
-      idempotencyKey: crypto.randomUUID(),
-      order: {
-        locationId: process.env.SQUARE_LOCATION_ID,
-        lineItems: [{
-          name: 'RPM B2B Promotion Listing',
-          quantity: '1',
-          basePriceMoney: {
-            amount: BigInt(B2B_PROMO_TOTAL_CENTS),
-            currency: 'USD'
-          }
-        }]
-      },
-      prePopulateBuyerEmail: cleanEmail
-    });
-
-    const paymentLink = response.result?.paymentLink || response.paymentLink;
-    if (!paymentLink || !paymentLink.url) {
-      throw new Error('Failed to generate Square payment link.');
-    }
-
-    const checkoutToken = paymentLink.id || crypto.randomUUID();
     b2bCheckoutSessions.set(checkoutToken, {
       email: cleanEmail,
-      orderId: paymentLink.orderId || null,
       paid: false,
       createdAt: Date.now()
     });
@@ -261,10 +228,10 @@ app.post('/api/create-b2b-checkout', async (req, res) => {
     return res.json({
       success: true,
       checkoutToken,
-      checkoutUrl: paymentLink.url
+      checkoutUrl: directSquareUrl
     });
   } catch (error) {
-    console.error('B2B Checkout Creation Error:', error);
+    console.error('B2B Checkout Error:', error);
     return res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -389,7 +356,7 @@ app.post('/api/upload', requireSession, upload.array('photos', 10), async (req, 
   }
 });
 
-// Secure Password Registration (Supabase Database + Auto-Session Handling)
+// Secure Password Registration
 app.post('/api/register', async (req, res) => {
   try {
     const { email, password, fullName, name, plan, membershipTier, listingLimit } = req.body;
@@ -400,7 +367,6 @@ app.post('/api/register', async (req, res) => {
 
     const cleanEmail = email.toLowerCase().trim();
 
-    // Check existing user
     const { data: existingUser } = await supabase
       .from('users')
       .select('id')
@@ -411,7 +377,6 @@ app.post('/api/register', async (req, res) => {
       return res.status(400).json({ success: false, message: 'User account already exists.' });
     }
 
-    // Hash raw password
     const hashedPassword = await bcrypt.hash(password, 10);
     const vipFlag = isVIP(cleanEmail);
 
@@ -437,7 +402,6 @@ app.post('/api/register', async (req, res) => {
 
     const user = data[0];
 
-    // Issue Session Cookie safely
     try {
       const sessionToken = crypto.randomBytes(48).toString('base64url');
       const expiresAt = new Date(Date.now() + (SESSION_DAYS * 24 * 60 * 60 * 1000)).toISOString();
@@ -474,7 +438,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Secure Password Login (Supabase Verification)
+// Secure Password Login
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -495,16 +459,12 @@ app.post('/api/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
 
-    console.log('LOGIN ATTEMPT:', cleanEmail);
-
     const isMatch = await bcrypt.compare(password, user.password);
 
-    console.log('PASSWORD MATCH:', isMatch);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
 
-    // Generate session token and set cookie regardless of payment status
     const sessionToken = crypto.randomBytes(48).toString('base64url');
     const expiresAt = new Date(Date.now() + (SESSION_DAYS * 24 * 60 * 60 * 1000)).toISOString();
 
@@ -598,17 +558,13 @@ app.get('/api/listings/:id', async (req, res) => {
     if (error) throw error;
 
     if (!data) {
-      return res.status(404).json({
-        error: 'Equipment listing not found.'
-      });
+      return res.status(404).json({ error: 'Equipment listing not found.' });
     }
 
     return res.status(200).json(data);
   } catch (err) {
     console.error('Fetch Listing Detail Error:', err);
-    return res.status(500).json({
-      error: err.message
-    });
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -697,12 +653,14 @@ app.post('/api/listings', requireSession, async (req, res) => {
   }
 });
 
-// B2B Directory Endpoint (Get All - Supabase)
+// B2B Directory Endpoint (Get All Approved & Non-Expired - Supabase)
 app.get('/api/b2b-listings', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('b2b_listings')
       .select('*')
+      .eq('approved', true)
+      .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -759,6 +717,9 @@ app.post('/api/b2b-listings/create', async (req, res) => {
       .eq('email', cleanEmail)
       .maybeSingle();
 
+    let resultData;
+    let isUpdated = false;
+
     if (existing) {
       const { data, error } = await supabase
         .from('b2b_listings')
@@ -768,33 +729,57 @@ app.post('/api/b2b-listings/create', async (req, res) => {
           category: formattedCategory,
           website: website || '',
           location: location || 'Central Valley',
-          image_url: imageUrl || '',
+          image_url: imageUrl || 'https://via.placeholder.com/150',
           description: description || '',
-          updated_at: new Date().toISOString()
+          approved: true
         })
-        .eq('email', cleanEmail)
+        .eq('id', existing.id)
         .select();
 
       if (error) throw error;
-      return res.status(200).json({ success: true, updated: true, listing: data[0] });
+      resultData = data[0];
+      isUpdated = true;
+    } else {
+      const { data, error } = await supabase
+        .from('b2b_listings')
+        .insert([{
+          company_name: companyName,
+          email: cleanEmail,
+          phone: phone || '',
+          category: formattedCategory,
+          website: website || '',
+          location: location || 'Central Valley',
+          image_url: imageUrl || 'https://via.placeholder.com/150',
+          description: description || '',
+          approved: true
+        }])
+        .select();
+
+      if (error) throw error;
+      resultData = data[0];
     }
 
-    const { data, error } = await supabase
-      .from('b2b_listings')
-      .insert([{
-        company_name: companyName,
-        email: cleanEmail,
-        phone: phone || '',
-        category: formattedCategory,
-        website: website || '',
-        location: location || 'Central Valley',
-        image_url: imageUrl || 'https://via.placeholder.com/150',
-        description: description || ''
-      }])
-      .select();
+    // Send Receipt Email to Promoter via Resend
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      await resend.emails.send({
+        from: 'RPM Equipment <onboarding@resend.dev>', // Use onboarding@resend.dev until your custom domain is verified in Resend
+        to: cleanEmail,
+        subject: '✓ B2B Promotion Published - RPM Equipment',
+        html: `
+          <div style="font-family: sans-serif; padding: 20px; color: #333;">
+            <h2>Thank you for promoting with RPM Equipment!</h2>
+            <p>Your business <strong>${companyName}</strong> is live in our commercial directory.</p>
+            <hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;" />
+            <p><strong>Notice:</strong> All directory submissions are final. If you require any future updates, edits, or removals, please contact RPM Support directly (administrative service fees may apply).</p>
+          </div>
+        `
+      });
+    } catch (emailErr) {
+      console.warn('Receipt Email Warning:', emailErr.message);
+    }
 
-    if (error) throw error;
-    return res.status(201).json({ success: true, updated: false, listing: data[0] });
+    return res.status(201).json({ success: true, updated: isUpdated, listing: resultData });
   } catch (err) {
     console.error('B2B Listing Error:', err);
     return res.status(500).json({ error: 'Failed to process B2B listing: ' + err.message });
@@ -1013,105 +998,14 @@ app.post('/api/request-password-reset', async (req, res) => {
     console.log('VERIFY HASH:', verifyHash);
     console.log('STORED HASH:', tokenHash);
 
-    if (tokenError) throw tokenError;
-
-    const resend = new Resend(process.env.RESEND_API_KEY);
-
-    const resetBaseUrl = process.env.PASSWORD_RESET_URL;
-    if (!resetBaseUrl) throw new Error('PASSWORD_RESET_URL is not configured.');
-
-    const resetUrl = `${resetBaseUrl}?token=${encodeURIComponent(rawToken)}`;
-    console.log('RAW TOKEN:', rawToken);
-    console.log('TOKEN HASH STORED:', tokenHash);
-    console.log('RESET URL:', resetUrl);
-
-    await resend.emails.send({
-      from: 'RPM Equipment <onboarding@resend.dev>',
-      to: user.email,
-      subject: 'Reset your RPM Equipment password',
-      text: `Use this secure link to reset your RPM Equipment password: ${resetUrl}\n\nThis link expires in 1 hour. If you did not request this change, ignore this email.`,
-      html: `<p>A password reset was requested for your RPM Equipment account.</p><p><a href="${resetUrl}">Reset your password</a></p><p>This secure link expires in 1 hour. If you did not request this change, ignore this email.</p>`
-    });
-
     return res.status(200).json({ success: true, message: genericMessage });
-  } catch (error) {
-    console.error('Password Reset Request Error:', error);
-    return res.status(500).json({ success: false, message: 'Unable to send the password reset email.' });
+  } catch (err) {
+    console.error('Password Reset Error:', err);
+    return res.status(500).json({ success: false, message: 'Failed to process request.' });
   }
 });
 
-// Apply New Password
-app.post('/api/reset-password', async (req, res) => {
-  try {
-    const token = String(req.body.token || '');
-    const password = String(req.body.password || '');
-
-    if (!token || password.length < 8) {
-      return res.status(400).json({ success: false, message: 'A valid reset link and an 8-character password are required.' });
-    }
-
-    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-    const { data: resetRecord, error: resetError } = await supabase
-      .from('password_reset_tokens')
-      .select('id, user_id, expires_at, used_at')
-      .eq('token_hash', tokenHash)
-      .is('used_at', null)
-      .gt('expires_at', new Date().toISOString())
-      .maybeSingle();
-
-    console.log('RESET TOKEN HASH:', tokenHash);
-    console.log('RESET RECORD:', resetRecord);
-    console.log('RESET ERROR:', resetError);
-
-    if (resetError) throw resetError;
-    if (!resetRecord) return res.status(400).json({ success: false, message: 'This password reset link is invalid or expired.' });
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({ password: hashedPassword })
-      .eq('id', resetRecord.user_id);
-
-    if (updateError) throw updateError;
-
-    await supabase
-      .from('password_reset_tokens')
-      .update({ used_at: new Date().toISOString() })
-      .eq('id', resetRecord.id);
-
-    await supabase
-      .from('auth_sessions')
-      .delete()
-      .eq('user_id', resetRecord.user_id);
-
-    const sessionToken = crypto.randomBytes(48).toString('base64url');
-    const sessionExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-
-    const { error: sessionError } = await supabase
-      .from('auth_sessions')
-      .insert([{
-        user_id: resetRecord.user_id,
-        token_hash: hashSessionToken(sessionToken),
-        expires_at: sessionExpiresAt
-      }]);
-
-    if (sessionError) throw sessionError;
-
-    setSessionCookie(res, sessionToken);
-
-    return res.status(200).json({
-      success: true,
-      message: 'Password updated successfully.',
-      redirect: 'dashboard.html'
-    });
-  } catch (error) {
-    console.error('Password Reset Error:', error);
-    return res.status(500).json({ success: false, message: 'Unable to reset the password.' });
-  }
-});
-
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`RPM Server active on port ${PORT}`);
+  console.log(`Server listening on port ${PORT}`);
 });
-module.exports = app;
